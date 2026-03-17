@@ -50,7 +50,7 @@ export function AppShell() {
             />
           ) : (
             <span className="text-base font-bold text-blue-600">
-              {currentTenant?.name ?? 'PearlDesk'}
+              {currentTenant?.name ?? 'DentFlow'}
             </span>
           )}
         </div>
