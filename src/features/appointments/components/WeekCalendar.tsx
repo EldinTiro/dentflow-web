@@ -51,7 +51,6 @@ function layoutDay(appts: AppointmentResponse[]): Map<string, { col: number; col
 
   for (const appt of sorted) {
     const apptStart = new Date(appt.startAt).getTime();
-    const apptEnd = new Date(appt.endAt).getTime();
 
     // Find a cluster whose end time overlaps with this appt
     let placed = false;

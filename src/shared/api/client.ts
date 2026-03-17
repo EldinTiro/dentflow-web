@@ -2,9 +2,8 @@ import axios from 'axios'
 import { useAuthStore } from '@/features/auth/store/authStore'
 
 const apiClient = axios.create({
-  // In dev, Vite proxies /api → backend (no CORS needed).
-  // In production, VITE_API_URL is the full backend URL.
-  baseURL: import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL ?? ''),
+  // Always use relative URLs — Vite proxies /api in dev, nginx proxies /api in prod.
+  baseURL: '',
   headers: {
     'Content-Type': 'application/json',
   },
