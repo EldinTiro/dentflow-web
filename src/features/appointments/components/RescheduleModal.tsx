@@ -1,6 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { appointmentService, type AppointmentResponse } from '../services/appointmentService';
+import { getApiErrorMessage } from '@/shared/utils/apiError';
 
 interface Props {
   appointment: AppointmentResponse;
@@ -21,7 +23,7 @@ export function RescheduleModal({ appointment, onClose }: Props) {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   })();
 
-  const { register, handleSubmit, formState: { errors }, setError } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     defaultValues: {
       newStartAt: defaultStart,
       durationMinutes: appointment.durationMinutes,
@@ -41,8 +43,8 @@ export function RescheduleModal({ appointment, onClose }: Props) {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       onClose();
     },
-    onError: () => {
-      setError('root', { message: 'Failed to reschedule. Please try again.' });
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Failed to reschedule. Please try again.'));
     },
   });
 
@@ -55,12 +57,6 @@ export function RescheduleModal({ appointment, onClose }: Props) {
         </div>
 
         <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
-          {errors.root && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-              {errors.root.message}
-            </div>
-          )}
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               New Start <span className="text-red-500">*</span>

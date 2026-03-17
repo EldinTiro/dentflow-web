@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Drawer } from '@/shared/components/Drawer';
 import { appointmentService, type BookAppointmentRequest } from '../services/appointmentService';
 import { patientService } from '@/features/patients/services/patientService';
+import { toast } from 'sonner';
 import { staffService, type StaffMemberResponse } from '@/features/staff/services/staffService';
+import { getApiErrorMessage } from '@/shared/utils/apiError';
 
 interface Props {
   onClose: () => void;
@@ -50,7 +52,6 @@ export function BookAppointmentDrawer({ onClose }: Props) {
     register,
     handleSubmit,
     formState: { errors },
-    setError,
   } = useForm<FormData>({
     defaultValues: {
       startAt: defaultStartAt,
@@ -65,8 +66,8 @@ export function BookAppointmentDrawer({ onClose }: Props) {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       onClose();
     },
-    onError: () => {
-      setError('root', { message: 'Failed to book appointment. Please try again.' });
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Failed to book appointment. Please try again.'));
     },
   });
 
@@ -98,11 +99,6 @@ export function BookAppointmentDrawer({ onClose }: Props) {
   return (
     <Drawer title="Book Appointment" onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-6">
-        {errors.root && (
-          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-            {errors.root.message}
-          </div>
-        )}
 
         {/* Patient */}
         <div>

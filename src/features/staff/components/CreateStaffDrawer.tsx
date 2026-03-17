@@ -1,5 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/shared/utils/apiError';
 import { Drawer } from '@/shared/components/Drawer';
 import {
   staffService,
@@ -19,7 +21,6 @@ export function CreateStaffDrawer({ onClose }: Props) {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    setError,
   } = useForm<CreateStaffRequest>({
     defaultValues: {
       staffType: 'Receptionist',
@@ -33,8 +34,8 @@ export function CreateStaffDrawer({ onClose }: Props) {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
       onClose();
     },
-    onError: () => {
-      setError('root', { message: 'Failed to create staff member. Please try again.' });
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Failed to create staff member. Please try again.'));
     },
   });
 
@@ -43,12 +44,6 @@ export function CreateStaffDrawer({ onClose }: Props) {
   return (
     <Drawer title="Add Staff Member" onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-6">
-        {errors.root && (
-          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-            {errors.root.message}
-          </div>
-        )}
-
         {/* First Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/shared/utils/apiError';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Drawer } from '@/shared/components/Drawer';
 import {
@@ -24,7 +26,6 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    setError,
   } = useForm<UpdateStaffRequest>({
     defaultValues: {
       firstName: staff.firstName,
@@ -46,8 +47,8 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
       onClose();
     },
-    onError: () => {
-      setError('root', { message: 'Failed to update. Please try again.' });
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Failed to update staff member. Please try again.'));
     },
   });
 
@@ -64,12 +65,6 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
   return (
     <Drawer title={`Edit — ${staff.fullName}`} onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-6">
-        {errors.root && (
-          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-            {errors.root.message}
-          </div>
-        )}
-
         {/* Name */}
         <div className="grid grid-cols-2 gap-4">
           <div>

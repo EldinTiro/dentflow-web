@@ -13,6 +13,7 @@ import { PatientsPage } from '@/features/patients/pages/PatientsPage'
 import { PatientDetailPage } from '@/features/patients/pages/PatientDetailPage'
 import { UsersPage } from '@/features/users/pages/UsersPage'
 import { StaffPage } from '@/features/staff/pages/StaffPage'
+import { StaffDetailPage } from '@/features/staff/pages/StaffDetailPage'
 import { AppointmentsPage } from '@/features/appointments/pages/AppointmentsPage'
 import { useAuthStore } from '@/features/auth/store/authStore'
 
@@ -46,6 +47,7 @@ export function AppRouter() {
           <Route path="patients" element={<PatientsPage />} />
           <Route path="patients/:id" element={<PatientDetailPage />} />
           <Route path="staff" element={<StaffPage />} />
+          <Route path="staff/:id" element={<StaffDetailPage />} />
           <Route path="appointments" element={<AppointmentsPage />} />
           <Route path="settings/users" element={<UsersPage />} />
         </Route>

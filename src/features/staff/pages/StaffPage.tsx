@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import {
   staffService,
@@ -12,6 +13,7 @@ import { EditStaffDrawer } from '../components/EditStaffDrawer';
 import { useAuthStore } from '@/features/auth/store/authStore';
 
 export function StaffPage() {
+  const navigate = useNavigate();
   const roles = useAuthStore((s) => s.user?.roles ?? []);
   const canManage =
     roles.includes('ClinicOwner') || roles.includes('ClinicAdmin') || roles.includes('SuperAdmin');
@@ -107,8 +109,8 @@ export function StaffPage() {
               </tr>
             ) : (
               members.map((m) => (
-                <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{m.fullName}</td>
+                <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" onClick={() => navigate(`/staff/${m.id}`)}>
+                  <td className="px-4 py-3 font-medium text-indigo-600 dark:text-indigo-400 hover:underline">{m.fullName}</td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{STAFF_TYPE_LABELS[m.staffType]}</td>
                   <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.email ?? '—'}</td>
                   <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.phone ?? '—'}</td>
@@ -133,7 +135,7 @@ export function StaffPage() {
                   {canManage && (
                     <td className="px-4 py-3 text-right">
                       <button
-                        onClick={() => setEditing(m)}
+                        onClick={(e) => { e.stopPropagation(); setEditing(m); }}
                         className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium"
                       >
                         Edit
