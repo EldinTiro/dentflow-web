@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PearlDesk</title>
+    <script>
+      (function () {
+        var saved = localStorage.getItem('theme')
+        if (saved === 'dark') { document.documentElement.classList.add('dark'); return }
+        if (saved === 'light') return
+        var h = new Date().getHours()
+        if (h >= 20 || h < 6) document.documentElement.classList.add('dark')
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -15,7 +15,11 @@ interface FormData {
 export function RescheduleModal({ appointment, onClose }: Props) {
   const queryClient = useQueryClient();
 
-  const defaultStart = appointment.startAt.slice(0, 16); // "YYYY-MM-DDTHH:mm"
+  const defaultStart = (() => {
+    const d = new Date(appointment.startAt);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  })();
 
   const { register, handleSubmit, formState: { errors }, setError } = useForm<FormData>({
     defaultValues: {

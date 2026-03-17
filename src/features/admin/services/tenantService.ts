@@ -8,6 +8,7 @@ export interface TenantResponse {
   planExpiresAt: string | null
   isActive: boolean
   createdAt: string
+  logoBase64: string | null
 }
 
 export interface TenantCreatedResponse extends TenantResponse {
@@ -32,10 +33,12 @@ export interface CreateTenantRequest {
   ownerEmail: string
   ownerFirstName: string
   ownerLastName: string
+  logoBase64?: string
 }
 
 export interface UpdateTenantRequest {
   name: string
+  logoBase64?: string | null
 }
 
 export interface UpdateTenantPlanRequest {
@@ -77,4 +80,7 @@ export const tenantService = {
     apiClient
       .put<TenantResponse>(`/api/v1/tenants/${id}/plan`, body)
       .then((r) => r.data),
+
+  getCurrent: () =>
+    apiClient.get<TenantResponse>('/api/v1/tenant/current').then((r) => r.data),
 }

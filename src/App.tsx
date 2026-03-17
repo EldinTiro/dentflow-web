@@ -1,5 +1,10 @@
+import { ThemeProvider } from '@/shared/context/ThemeContext'
 import { AppRouter } from '@/routes'
 
 export default function App() {
-  return <AppRouter />
+  return (
+    <ThemeProvider>
+      <AppRouter />
+    </ThemeProvider>
+  )
 }

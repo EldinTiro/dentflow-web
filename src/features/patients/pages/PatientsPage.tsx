@@ -48,9 +48,9 @@ export function PatientsPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Patients</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Patients</h1>
           {data && (
-            <p className="text-xs text-gray-400 mt-0.5">{data.totalCount} total</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{data.totalCount} total</p>
           )}
         </div>
         <button
@@ -66,12 +66,12 @@ export function PatientsPage() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
           placeholder="Search by name, email, phone…"
-          className="w-72 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-72 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <select
           value={status}
           onChange={(e) => { setStatus(e.target.value as PatientStatus | ''); setPage(1) }}
-          className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none"
+          className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none"
         >
           {STATUS_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
@@ -79,9 +79,9 @@ export function PatientsPage() {
         </select>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+          <thead className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
             <tr>
               <th className="px-4 py-3 text-left">Patient #</th>
               <th className="px-4 py-3 text-left">Name</th>
@@ -91,7 +91,7 @@ export function PatientsPage() {
               <th className="px-4 py-3 text-left">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {isLoading && (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-gray-400">Loading…</td>
@@ -103,20 +103,20 @@ export function PatientsPage() {
               </tr>
             )}
             {data?.items.map((p: PatientResponse) => (
-              <tr key={p.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-mono text-xs text-gray-400">{p.patientNumber}</td>
-                <td className="px-4 py-3 font-medium text-gray-900">
-                  <Link to={`/patients/${p.id}`} className="hover:text-blue-600">
+              <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td className="px-4 py-3 font-mono text-xs text-gray-400 dark:text-gray-500">{p.patientNumber}</td>
+                <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                  <Link to={`/patients/${p.id}`} className="hover:text-blue-600 dark:hover:text-blue-400">
                     {p.fullName}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-gray-500">
+                <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
                   {p.dateOfBirth
                     ? new Date(p.dateOfBirth + 'T00:00:00').toLocaleDateString()
                     : '—'}
                 </td>
-                <td className="px-4 py-3 text-gray-500">{p.phoneMobile ?? '—'}</td>
-                <td className="px-4 py-3 text-gray-500">{p.email ?? '—'}</td>
+                <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{p.phoneMobile ?? '—'}</td>
+                <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{p.email ?? '—'}</td>
                 <td className="px-4 py-3">
                   <StatusBadge status={p.status} />
                 </td>
@@ -126,20 +126,20 @@ export function PatientsPage() {
         </table>
 
         {data && data.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 text-xs text-gray-500">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
             <span>Page {data.page} of {data.totalPages} ({data.totalCount} total)</span>
             <div className="flex gap-2">
               <button
                 disabled={!data.hasPreviousPage}
                 onClick={() => setPage((p) => p - 1)}
-                className="px-2 py-1 rounded border border-gray-200 disabled:opacity-40 hover:bg-gray-50"
+                className="px-2 py-1 rounded border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
               >
                 Previous
               </button>
               <button
                 disabled={!data.hasNextPage}
                 onClick={() => setPage((p) => p + 1)}
-                className="px-2 py-1 rounded border border-gray-200 disabled:opacity-40 hover:bg-gray-50"
+                className="px-2 py-1 rounded border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
               >
                 Next
               </button>

@@ -27,6 +27,20 @@ interface Props {
 export function CreateTenantModal({ onClose }: Props) {
   const queryClient = useQueryClient()
   const [created, setCreated] = useState<TenantCreatedResponse | null>(null)
+  const [logoBase64, setLogoBase64] = useState<string | undefined>(undefined)
+
+  function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Logo must be under 2 MB')
+      e.target.value = ''
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => setLogoBase64(reader.result as string)
+    reader.readAsDataURL(file)
+  }
 
   const {
     register,
@@ -44,6 +58,10 @@ export function CreateTenantModal({ onClose }: Props) {
       setCreated(data)
     },
   })
+
+  function onSubmit(values: FormValues) {
+    mutation.mutate({ ...values, logoBase64 })
+  }
 
   if (created) {
     return (
@@ -81,7 +99,7 @@ export function CreateTenantModal({ onClose }: Props) {
   return (
     <ModalShell title="New Tenant" onClose={onClose}>
       <form
-        onSubmit={handleSubmit((values) => mutation.mutate(values))}
+        onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 text-sm"
       >
         <Field label="Slug" error={errors.slug?.message}>
@@ -111,6 +129,25 @@ export function CreateTenantModal({ onClose }: Props) {
           <Field label="Last Name" error={errors.ownerLastName?.message}>
             <input {...register('ownerLastName')} className="input" />
           </Field>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Clinic Logo (optional)</label>
+          <div className="flex items-center gap-3">
+            {logoBase64 && (
+              <img src={logoBase64} alt="Logo preview" className="h-12 w-12 object-contain rounded border border-gray-200 bg-gray-50" />
+            )}
+            <label className="cursor-pointer inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-xs text-gray-600 hover:bg-gray-50">
+              {logoBase64 ? 'Change' : 'Upload image'}
+              <input type="file" accept="image/*" className="sr-only" onChange={handleLogoChange} />
+            </label>
+            {logoBase64 && (
+              <button type="button" onClick={() => setLogoBase64(undefined)} className="text-xs text-red-500 hover:text-red-700">
+                Remove
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 mt-1">PNG, JPG or SVG — max 2 MB</p>
         </div>
 
         {mutation.isError && (

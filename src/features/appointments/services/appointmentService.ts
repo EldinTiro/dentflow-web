@@ -142,13 +142,13 @@ export const appointmentService = {
 
   updateStatus(id: string, newStatus: AppointmentStatus) {
     return apiClient
-      .put<AppointmentResponse>(`${BASE}/${id}/status`, { newStatus })
+      .patch<AppointmentResponse>(`${BASE}/${id}/status`, { status: newStatus })
       .then((r) => r.data);
   },
 
   cancel(id: string, reason?: string) {
     return apiClient
-      .put<AppointmentResponse>(`${BASE}/${id}/cancel`, { reason })
+      .post<AppointmentResponse>(`${BASE}/${id}/cancel`, { reason })
       .then((r) => r.data);
   },
 

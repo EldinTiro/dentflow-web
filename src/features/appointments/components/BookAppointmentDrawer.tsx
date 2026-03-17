@@ -41,8 +41,9 @@ export function BookAppointmentDrawer({ onClose }: Props) {
   const defaultStartAt = (() => {
     const d = new Date();
     d.setMinutes(Math.ceil(d.getMinutes() / 15) * 15, 0, 0);
-    // datetime-local expects "YYYY-MM-DDTHH:mm"
-    return d.toISOString().slice(0, 16);
+    // datetime-local expects local "YYYY-MM-DDTHH:mm" — NOT toISOString() which is UTC
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   })();
 
   const {

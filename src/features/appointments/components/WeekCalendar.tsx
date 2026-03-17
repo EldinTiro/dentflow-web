@@ -1,20 +1,22 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { AppointmentResponse, AppointmentStatus } from '../services/appointmentService';
 import { APPOINTMENT_STATUS_LABELS } from '../services/appointmentService';
 
 interface Props {
-  weekStart: Date; // Monday of the displayed week
+  weekStart: Date;
   appointments: AppointmentResponse[];
-  /**
-   * Map from providerId → colorHex (from staffService results)
-   */
   providerColors: Record<string, string>;
+  providerNames: Record<string, string>;
+  patientNames: Record<string, string>;
+  appointmentTypeNames: Record<string, string>;
   onAppointmentClick?: (appt: AppointmentResponse) => void;
 }
 
-const HOUR_START = 7;  // 07:00
-const HOUR_END   = 20; // 20:00
-const HOURS      = HOUR_END - HOUR_START; // 13
+type TooltipState = { appt: AppointmentResponse; x: number; y: number } | null;
+
+const HOUR_START = 6;  // 06:00
+const HOUR_END   = 21; // 21:00
+const HOURS      = HOUR_END - HOUR_START; // 15
 
 function addDays(date: Date, n: number) {
   const d = new Date(date);
@@ -35,7 +37,47 @@ function minutesSinceDayStart(iso: string) {
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-export function WeekCalendar({ weekStart, appointments, providerColors, onAppointmentClick }: Props) {
+/** Assigns a column index and total columns count to each appointment so that
+ *  overlapping appointments are rendered side-by-side rather than stacked. */
+function layoutDay(appts: AppointmentResponse[]): Map<string, { col: number; cols: number }> {
+  // Sort by start time
+  const sorted = [...appts].sort(
+    (a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
+  );
+
+  // Each "cluster" is a group of mutually-overlapping appointments
+  const layout = new Map<string, { col: number; cols: number }>();
+  const clusters: AppointmentResponse[][] = [];
+
+  for (const appt of sorted) {
+    const apptStart = new Date(appt.startAt).getTime();
+    const apptEnd = new Date(appt.endAt).getTime();
+
+    // Find a cluster whose end time overlaps with this appt
+    let placed = false;
+    for (const cluster of clusters) {
+      const clusterEnd = Math.max(...cluster.map((a) => new Date(a.endAt).getTime()));
+      if (apptStart < clusterEnd) {
+        cluster.push(appt);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) clusters.push([appt]);
+  }
+
+  for (const cluster of clusters) {
+    const cols = cluster.length;
+    cluster.forEach((appt, colIdx) => {
+      layout.set(appt.id, { col: colIdx, cols });
+    });
+  }
+
+  return layout;
+}
+
+export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick }: Props) {
+  const [tooltip, setTooltip] = useState<TooltipState>(null);
   const days = useMemo(
     () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
     [weekStart],
@@ -104,6 +146,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, onAppoin
               const dateStr = isoDate(d);
               const dayAppts = byDay[dateStr] ?? [];
               const isToday = dateStr === todayStr;
+              const dayLayout = layoutDay(dayAppts);
 
               return (
                 <div
@@ -130,25 +173,37 @@ export function WeekCalendar({ weekStart, appointments, providerColors, onAppoin
                     const topPct = (offsetMin / totalMinutes) * 100;
                     const heightPct = (appt.durationMinutes / totalMinutes) * 100;
                     const color = appt.colorHex ?? providerColors[appt.providerId] ?? '#6366F1';
+                    const { col, cols } = dayLayout.get(appt.id) ?? { col: 0, cols: 1 };
+                    const GAP = 2;
+                    const widthPct = 100 / cols;
+
+                    const patientName = patientNames[appt.patientId];
+                    const typeName = appointmentTypeNames[appt.appointmentTypeId];
+                    const chipLabel = [patientName, typeName].filter(Boolean).join(' · ') || APPOINTMENT_STATUS_LABELS[appt.status as AppointmentStatus];
 
                     return (
                       <button
                         key={appt.id}
                         onClick={() => onAppointmentClick?.(appt)}
-                        className="absolute left-0.5 right-0.5 overflow-hidden rounded text-left text-xs px-1.5 py-0.5 shadow-sm hover:brightness-95 transition"
+                        onMouseEnter={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setTooltip({ appt, x: rect.right + 8, y: rect.top });
+                        }}
+                        onMouseLeave={() => setTooltip(null)}
+                        className="absolute overflow-hidden rounded text-left text-xs px-1.5 py-0.5 shadow-sm hover:brightness-95 transition"
                         style={{
                           top: `${topPct}%`,
                           height: `${Math.max(heightPct, 1.5)}%`,
-                          backgroundColor: color + '33', // 20% opacity background
+                          left: `calc(${col * widthPct}% + ${col === 0 ? 2 : GAP / 2}px)`,
+                          width: `calc(${widthPct}% - ${col === 0 ? 2 + GAP / 2 : GAP}px)`,
+                          backgroundColor: color + '33',
                           borderLeft: `3px solid ${color}`,
                         }}
                       >
                         <span className="font-semibold truncate block" style={{ color }}>
-                          {new Date(appt.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(appt.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                         </span>
-                        <span className="truncate block text-gray-700">
-                          {APPOINTMENT_STATUS_LABELS[appt.status as AppointmentStatus]}
-                        </span>
+                        <span className="truncate block text-gray-700">{chipLabel}</span>
                       </button>
                     );
                   })}
@@ -158,6 +213,43 @@ export function WeekCalendar({ weekStart, appointments, providerColors, onAppoin
           </div>
         </div>
       </div>
+
+      {/* Hover tooltip */}
+      {tooltip && (() => {
+        const a = tooltip.appt;
+        const color = a.colorHex ?? providerColors[a.providerId] ?? '#6366F1';
+        const startTime = new Date(a.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        const endTime   = new Date(a.endAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        // Clamp to viewport
+        const leftPos = tooltip.x + 220 > window.innerWidth ? tooltip.x - 228 : tooltip.x;
+        const topPos  = Math.min(tooltip.y, window.innerHeight - 160);
+        return (
+          <div
+            className="fixed z-[9999] w-52 rounded-xl border border-gray-200 bg-white shadow-xl p-3 pointer-events-none"
+            style={{ left: leftPos, top: topPos }}
+          >
+            <div className="flex items-center gap-1.5 mb-2">
+              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+              <span className="text-xs font-semibold text-gray-800 truncate">
+                {providerNames[a.providerId] ?? '—'}
+              </span>
+            </div>
+            <p className="text-sm font-medium text-gray-900 leading-snug">
+              {patientNames[a.patientId] ?? 'Unknown patient'}
+            </p>
+            {appointmentTypeNames[a.appointmentTypeId] && (
+              <p className="text-xs text-gray-500 mt-0.5">{appointmentTypeNames[a.appointmentTypeId]}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1 tabular-nums">{startTime} – {endTime} · {a.durationMinutes} min</p>
+            <span
+              className="mt-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium"
+              style={{ backgroundColor: color + '22', color }}
+            >
+              {APPOINTMENT_STATUS_LABELS[a.status as AppointmentStatus] ?? a.status}
+            </span>
+          </div>
+        );
+      })()}
     </div>
   );
 }

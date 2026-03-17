@@ -8,6 +8,7 @@ import { AdminDashboardPage } from '@/features/admin/pages/AdminDashboardPage'
 import { TenantsPage } from '@/features/admin/pages/TenantsPage'
 import { TenantDetailPage } from '@/features/admin/pages/TenantDetailPage'
 import { UsersPage as AdminUsersPage } from '@/features/admin/pages/UsersPage'
+import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { PatientsPage } from '@/features/patients/pages/PatientsPage'
 import { PatientDetailPage } from '@/features/patients/pages/PatientDetailPage'
 import { UsersPage } from '@/features/users/pages/UsersPage'
@@ -17,7 +18,7 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 
 function RootRedirect() {
   const isSuperAdmin = useAuthStore((s) => s.user?.roles?.includes('SuperAdmin') ?? false)
-  return <Navigate to={isSuperAdmin ? '/admin' : '/patients'} replace />
+  return <Navigate to={isSuperAdmin ? '/admin' : '/dashboard'} replace />
 }
 
 
@@ -39,8 +40,9 @@ export function AppRouter() {
 
         {/* Regular app shell */}
         <Route element={<AppShell />}>
-          {/* Root index: redirect SuperAdmin → /admin, everyone else → /patients */}
+          {/* Root index: redirect SuperAdmin → /admin, everyone else → /dashboard */}
           <Route index element={<RootRedirect />} />
+          <Route path="dashboard" element={<DashboardPage />} />
           <Route path="patients" element={<PatientsPage />} />
           <Route path="patients/:id" element={<PatientDetailPage />} />
           <Route path="staff" element={<StaffPage />} />

@@ -43,8 +43,8 @@ export function StaffPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Staff</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{total} member{total !== 1 ? 's' : ''}</p>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Staff</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{total} member{total !== 1 ? 's' : ''}</p>
         </div>
         {canManage && (
           <button
@@ -63,12 +63,12 @@ export function StaffPage() {
           placeholder="Search by name or email…"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm w-64 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <select
           value={staffTypeFilter}
           onChange={(e) => { setStaffTypeFilter(e.target.value as StaffType | ''); setPage(1); }}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
           <option value="">All types</option>
           {ALL_STAFF_TYPES.map((t) => (
@@ -78,21 +78,21 @@ export function StaffPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Type</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Phone</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Specialty</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Color</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Name</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Type</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Email</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Phone</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Specialty</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Color</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Status</th>
               {canManage && <th className="px-4 py-3" />}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {isLoading ? (
               <tr>
                 <td colSpan={canManage ? 8 : 7} className="text-center py-10 text-gray-400">
@@ -107,15 +107,15 @@ export function StaffPage() {
               </tr>
             ) : (
               members.map((m) => (
-                <tr key={m.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{m.fullName}</td>
-                  <td className="px-4 py-3 text-gray-600">{STAFF_TYPE_LABELS[m.staffType]}</td>
-                  <td className="px-4 py-3 text-gray-500">{m.email ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500">{m.phone ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500">{m.specialty ?? '—'}</td>
+                <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{m.fullName}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{STAFF_TYPE_LABELS[m.staffType]}</td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.email ?? '—'}</td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.phone ?? '—'}</td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.specialty ?? '—'}</td>
                   <td className="px-4 py-3">
                     <span
-                      className="inline-block w-5 h-5 rounded-full border border-gray-200"
+                      className="inline-block w-5 h-5 rounded-full border border-gray-200 dark:border-gray-600"
                       style={{ backgroundColor: m.colorHex ?? '#3B82F6' }}
                     />
                   </td>
@@ -134,7 +134,7 @@ export function StaffPage() {
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => setEditing(m)}
-                        className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium"
                       >
                         Edit
                       </button>
@@ -149,7 +149,7 @@ export function StaffPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-gray-500">
+        <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
           <span>
             Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
           </span>
@@ -157,14 +157,14 @@ export function StaffPage() {
             <button
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
-              className="px-3 py-1 rounded border border-gray-300 disabled:opacity-40 hover:bg-gray-50"
+              className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Prev
             </button>
             <button
               disabled={page === totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="px-3 py-1 rounded border border-gray-300 disabled:opacity-40 hover:bg-gray-50"
+              className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Next
             </button>
