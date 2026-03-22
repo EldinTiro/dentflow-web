@@ -5,9 +5,10 @@ type Theme = 'light' | 'dark'
 interface ThemeContextValue {
   theme: Theme
   toggle: () => void
+  setTheme: (t: Theme) => void
 }
 
-const ThemeContext = createContext<ThemeContextValue>({ theme: 'light', toggle: () => {} })
+const ThemeContext = createContext<ThemeContextValue>({ theme: 'light', toggle: () => {}, setTheme: () => {} })
 
 function getInitialTheme(): Theme {
   const saved = localStorage.getItem('theme') as Theme | null
@@ -43,7 +44,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <ThemeContext.Provider value={{ theme, toggle: () => setTheme(t => t === 'dark' ? 'light' : 'dark') }}>
+    <ThemeContext.Provider value={{ theme, toggle: () => setTheme(t => t === 'dark' ? 'light' : 'dark'), setTheme }}>
       {children}
     </ThemeContext.Provider>
   )

@@ -1,0 +1,124 @@
+{
+  "title": "Pacijenti",
+  "totalCount": "{{count}} ukupno",
+  "button": { "newPatient": "+ Novi pacijent" },
+  "search": { "placeholder": "Pretraži po imenu, emailu, telefonu…" },
+  "emptyState": "Nema pronađenih pacijenata.",
+  "table": {
+    "patientNumber": "Br. pacijenta",
+    "name": "Ime",
+    "dateOfBirth": "Datum rođenja",
+    "mobile": "Mobitel",
+    "email": "Email",
+    "status": "Status"
+  },
+  "backToPatients": "← Nazad na pacijente",
+  "notFound": "Pacijent nije pronađen.",
+  "goesBy": "Poznato ime: \"{{name}}\"",
+  "parentGuardian": "Roditelj/Staratelj:",
+  "tab": {
+    "billing": "Naplata",
+    "overview": "Pregled",
+    "appointments": "Termini",
+    "treatments": "Tretmani",
+    "files": "Datoteke"
+  },
+  "section": {
+    "demographics": "Demografija",
+    "contactInfo": "Kontakt informacije",
+    "address": "Adresa",
+    "notes": "Bilješke"
+  },
+  "field": {
+    "dateOfBirth": "Datum rođenja",
+    "gender": "Spol",
+    "preferredContact": "Preferirani kontakt",
+    "firstVisit": "Prva posjeta",
+    "lastVisit": "Zadnja posjeta",
+    "recallDue": "Poziv za pregled",
+    "mobile": "Mobitel",
+    "home": "Kućni",
+    "work": "Poslovni",
+    "smsOptIn": "SMS pristanak",
+    "emailOptIn": "Email pristanak",
+    "addressLine1": "Adresa 1",
+    "addressLine2": "Adresa 2",
+    "city": "Grad",
+    "stateProvince": "Kanton/Entitet",
+    "postalCode": "Poštanski broj",
+    "country": "Država",
+    "countryCode": "Pozivni broj"
+  },
+  "meta": {
+    "created": "Kreirano:",
+    "updated": "Ažurirano:"
+  },
+  "appointments": {
+    "emptyState": "Nema termina za ovog pacijenta.",
+    "totalCount": "{{count}} termin(a) ukupno"
+  },
+  "confirm": {
+    "deleteTitle": "Obrisati pacijenta?",
+    "deleteDescription": "{{name}} će biti obrisano. Admin može poništiti ovu akciju.",
+    "deleteFile": "Obrisati \"{{fileName}}\"?"
+  },
+  "drawer": {
+    "createTitle": "Novi pacijent",
+    "patientNumber": "Broj pacijenta",
+    "autoGenerate": "(ostavi prazno za automatsko generisanje)",
+    "patientNumberPlaceholder": "npr. P-000123",
+    "firstName": "Ime *",
+    "lastName": "Prezime *",
+    "preferredName": "Nadimak",
+    "nicknamePlaceholder": "Opcionalni nadimak",
+    "parentName": "Ime roditelja / staratelja",
+    "parentNamePlaceholder": "npr. Marko Tiro",
+    "dateOfBirth": "Datum rođenja",
+    "email": "Email",
+    "emailPlaceholder": "ime@primjer.ba",
+    "mobilePhone": "Mobilni telefon",
+    "phonePlaceholder": "61 123 456",
+    "smsOptIn": "SMS pristanak",
+    "emailOptIn": "Email pristanak",
+    "notesPlaceholder": "Opcionalne bilješke…",
+    "creating": "Kreiranje…",
+    "createButton": "Kreiraj pacijenta",
+    "editTitle": "Uredi — {{name}}",
+    "pronouns": "Zamjenice",
+    "pronounsPlaceholder": "npr. on/ona",
+    "sectionContact": "Kontakt",
+    "sectionAddress": "Adresa",
+    "sectionOther": "Ostalo",
+    "occupation": "Zanimanje",
+    "countryCodePlaceholder": "npr. BA",
+    "saving": "Čuvanje…",
+    "saveChanges": "Sačuvaj promjene"
+  },
+  "validation": { "required": "Obavezno" },
+  "error": {
+    "createFailed": "Kreiranje pacijenta nije uspjelo. Pokušajte ponovo.",
+    "updateFailed": "Čuvanje promjena nije uspjelo. Pokušajte ponovo."
+  },
+  "files": {
+    "uploadTitle": "Učitaj datoteke",
+    "chooseFiles": "Odaberi datoteke…",
+    "supportedFormats": "Slike, PDF, Word. Odaberite više datoteka odjednom.",
+    "category": "Kategorija",
+    "notesOptional": "Bilješke (opcionalno)",
+    "notesPlaceholder": "npr. Gornji desni kvadrant",
+    "uploading": "Učitavanje…",
+    "uploadButton": "Učitaj {{count}} datoteku/e",
+    "imagesHeading": "Slike",
+    "documentsHeading": "Dokumenti",
+    "emptyState": "Nema učitanih datoteka",
+    "couldNotLoadImage": "Nije moguće učitati sliku",
+    "deleteTooltip": "Obriši"
+  },
+  "toast": {
+    "filesUploaded": "{{count}} datoteka/e učitano",
+    "filesUploadFailed": "{{count}} datoteka/e nije učitano",
+    "fileDeleted": "Datoteka obrisana",
+    "deleteFailed": "Brisanje nije uspjelo",
+    "couldNotOpenFile": "Nije moguće otvoriti datoteku"
+  }
+}

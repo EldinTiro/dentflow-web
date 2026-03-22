@@ -1,9 +1,23 @@
 import { useForm, useController } from 'react-hook-form'
 import { useState, useRef, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { ChevronDown } from 'lucide-react'
+import axios from 'axios'
 import { Drawer } from '@/shared/components/Drawer'
 import { patientService, type CreatePatientRequest, type Gender, type PatientStatus } from '../services/patientService'
+
+function getApiError(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data
+    if (data?.errors) {
+      const messages = Object.values(data.errors).flat() as string[]
+      if (messages.length > 0) return messages[0]
+    }
+    if (data?.message) return data.message as string
+  }
+  return fallback
+}
 
 function countryFlag(code: string): string {
   if (code === 'XK') return '🏳'
@@ -105,8 +119,10 @@ function DialPicker({ value, onChange }: DialPickerProps) {
 }
 
 interface FormValues {
+  patientNumber: string
   firstName: string
   lastName: string
+  parentName: string
   preferredName: string
   dateOfBirth: string
   gender: Gender | ''
@@ -124,13 +140,17 @@ interface Props {
 }
 
 export function CreatePatientDrawer({ onClose }: Props) {
+  const { t } = useTranslation('patients')
+  const tc = useTranslation('common').t
   const queryClient = useQueryClient()
 
   const { register, handleSubmit, control, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
+      patientNumber: '',
       status: 'Active',
       gender: '',
       phoneDialCode: '+387',
+      dateOfBirth: '2000-01-01',
       smsOptIn: false,
       emailOptIn: false,
     },
@@ -141,9 +161,11 @@ export function CreatePatientDrawer({ onClose }: Props) {
   const create = useMutation({
     mutationFn: (values: FormValues) => {
       const body: CreatePatientRequest = {
+        patientNumber: values.patientNumber || null,
         firstName: values.firstName,
         lastName: values.lastName,
         preferredName: values.preferredName || null,
+        parentName: values.parentName || null,
         dateOfBirth: values.dateOfBirth || null,
         gender: (values.gender as Gender) || null,
         email: values.email || null,
@@ -167,23 +189,33 @@ export function CreatePatientDrawer({ onClose }: Props) {
   const errorClass = 'text-xs text-red-500 mt-0.5'
 
   return (
-    <Drawer title="New Patient" onClose={onClose}>
+    <Drawer title={t('drawer.createTitle')} onClose={onClose}>
       <form onSubmit={handleSubmit((v) => create.mutate(v))} className="space-y-4">
+        {/* Patient Number (optional override) */}
+        <div>
+          <label className={labelClass}>{t('drawer.patientNumber')} <span className="text-gray-400 font-normal">{t('drawer.autoGenerate')}</span></label>
+          <input
+            {...register('patientNumber')}
+            className={inputClass}
+            placeholder={t('drawer.patientNumberPlaceholder')}
+          />
+        </div>
+
         {/* Name row */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>First Name *</label>
+            <label className={labelClass}>{t('drawer.firstName')}</label>
             <input
-              {...register('firstName', { required: 'Required' })}
+              {...register('firstName', { required: t('validation.required') })}
               className={inputClass}
               placeholder="Jane"
             />
             {errors.firstName && <p className={errorClass}>{errors.firstName.message}</p>}
           </div>
           <div>
-            <label className={labelClass}>Last Name *</label>
+            <label className={labelClass}>{t('drawer.lastName')}</label>
             <input
-              {...register('lastName', { required: 'Required' })}
+              {...register('lastName', { required: t('validation.required') })}
               className={inputClass}
               placeholder="Doe"
             />
@@ -192,41 +224,46 @@ export function CreatePatientDrawer({ onClose }: Props) {
         </div>
 
         <div>
-          <label className={labelClass}>Preferred Name</label>
-          <input {...register('preferredName')} className={inputClass} placeholder="Optional nickname" />
+          <label className={labelClass}>{t('drawer.preferredName')}</label>
+          <input {...register('preferredName')} className={inputClass} placeholder={t('drawer.nicknamePlaceholder')} />
+        </div>
+
+        <div>
+          <label className={labelClass}>{t('drawer.parentName')}</label>
+          <input {...register('parentName')} className={inputClass} placeholder={t('drawer.parentNamePlaceholder')} />
         </div>
 
         {/* DOB + Gender */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>Date of Birth</label>
+            <label className={labelClass}>{t('drawer.dateOfBirth')}</label>
             <input type="date" {...register('dateOfBirth')} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Gender</label>
+            <label className={labelClass}>{t('field.gender')}</label>
             <select {...register('gender')} className={inputClass}>
-              <option value="">Select…</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-              <option value="PreferNotToSay">Prefer not to say</option>
+              <option value="">{tc('gender.select')}</option>
+              <option value="Male">{tc('gender.male')}</option>
+              <option value="Female">{tc('gender.female')}</option>
+              <option value="Other">{tc('gender.other')}</option>
+              <option value="PreferNotToSay">{tc('gender.preferNotToSay')}</option>
             </select>
           </div>
         </div>
 
         {/* Contact */}
         <div>
-          <label className={labelClass}>Email</label>
-          <input type="email" {...register('email')} className={inputClass} placeholder="jane@example.com" />
+          <label className={labelClass}>{t('drawer.email')}</label>
+          <input type="email" {...register('email')} className={inputClass} placeholder={t('drawer.emailPlaceholder')} />
         </div>
         <div>
-          <label className={labelClass}>Mobile Phone</label>
+          <label className={labelClass}>{t('drawer.mobilePhone')}</label>
           <div className="flex gap-2">
             <DialPicker value={dialField.value} onChange={dialField.onChange} />
             <input
               {...register('phoneMobile')}
               className={inputClass}
-              placeholder="61 123 456"
+              placeholder={t('drawer.phonePlaceholder')}
             />
           </div>
         </div>
@@ -235,11 +272,11 @@ export function CreatePatientDrawer({ onClose }: Props) {
         <div className="flex gap-5">
           <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
             <input type="checkbox" {...register('smsOptIn')} className="rounded" />
-            SMS opt-in
+            {t('drawer.smsOptIn')}
           </label>
           <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
             <input type="checkbox" {...register('emailOptIn')} className="rounded" />
-            Email opt-in
+            {t('drawer.emailOptIn')}
           </label>
         </div>
 
@@ -250,12 +287,12 @@ export function CreatePatientDrawer({ onClose }: Props) {
             {...register('notes')}
             rows={3}
             className={inputClass + ' resize-none'}
-            placeholder="Optional notes…"
+            placeholder={t('drawer.notesPlaceholder')}
           />
         </div>
 
         {create.isError && (
-          <p className="text-sm text-red-600">Failed to create patient. Please try again.</p>
+          <p className="text-sm text-red-600">{getApiError(create.error, t('error.createFailed'))}</p>
         )}
 
         <div className="flex gap-3 pt-2">
@@ -264,14 +301,14 @@ export function CreatePatientDrawer({ onClose }: Props) {
             disabled={create.isPending}
             className="flex-1 bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
           >
-            {create.isPending ? 'Creating…' : 'Create Patient'}
+            {create.isPending ? t('drawer.creating') : t('drawer.createButton')}
           </button>
           <button
             type="button"
             onClick={onClose}
             className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-md text-sm font-medium hover:bg-gray-50"
           >
-            Cancel
+            {tc('button.cancel')}
           </button>
         </div>
       </form>

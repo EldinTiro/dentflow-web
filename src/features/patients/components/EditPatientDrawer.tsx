@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Drawer } from '@/shared/components/Drawer'
 import {
   patientService,
@@ -13,6 +14,7 @@ interface FormValues {
   firstName: string
   lastName: string
   preferredName: string
+  parentName: string
   pronouns: string
   dateOfBirth: string
   gender: Gender | ''
@@ -39,6 +41,8 @@ interface Props {
 }
 
 export function EditPatientDrawer({ patient, onClose }: Props) {
+  const { t } = useTranslation('patients')
+  const { t: tc } = useTranslation('common')
   const queryClient = useQueryClient()
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
@@ -46,6 +50,7 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
       firstName: patient.firstName,
       lastName: patient.lastName,
       preferredName: patient.preferredName ?? '',
+      parentName: patient.parentName ?? '',
       pronouns: '',
       dateOfBirth: patient.dateOfBirth ?? '',
       gender: (patient.gender as Gender) ?? '',
@@ -73,6 +78,7 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
         firstName: values.firstName,
         lastName: values.lastName,
         preferredName: values.preferredName || null,
+        parentName: values.parentName || null,
         pronouns: values.pronouns || null,
         dateOfBirth: values.dateOfBirth || null,
         gender: (values.gender as Gender) || null,
@@ -108,79 +114,84 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
   const sectionTitle = 'text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3'
 
   return (
-    <Drawer title={`Edit — ${patient.fullName}`} onClose={onClose}>
+    <Drawer title={t('drawer.editTitle', { name: patient.fullName })} onClose={onClose}>
       <form onSubmit={handleSubmit((v) => update.mutate(v))} className="space-y-4">
         {/* Demographics */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>First Name *</label>
-            <input {...register('firstName', { required: 'Required' })} className={inputClass} />
+            <label className={labelClass}>{t('drawer.firstName')}</label>
+            <input {...register('firstName', { required: t('validation.required') })} className={inputClass} />
             {errors.firstName && <p className={errorClass}>{errors.firstName.message}</p>}
           </div>
           <div>
-            <label className={labelClass}>Last Name *</label>
-            <input {...register('lastName', { required: 'Required' })} className={inputClass} />
+            <label className={labelClass}>{t('drawer.lastName')}</label>
+            <input {...register('lastName', { required: t('validation.required') })} className={inputClass} />
             {errors.lastName && <p className={errorClass}>{errors.lastName.message}</p>}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>Preferred Name</label>
+            <label className={labelClass}>{t('drawer.preferredName')}</label>
             <input {...register('preferredName')} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Pronouns</label>
-            <input {...register('pronouns')} className={inputClass} placeholder="e.g. she/her" />
+            <label className={labelClass}>{t('drawer.pronouns')}</label>
+            <input {...register('pronouns')} className={inputClass} placeholder={t('drawer.pronounsPlaceholder')} />
           </div>
+        </div>
+
+        <div>
+          <label className={labelClass}>{t('drawer.parentName')}</label>
+          <input {...register('parentName')} className={inputClass} placeholder={t('drawer.parentNamePlaceholder')} />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>Date of Birth</label>
+            <label className={labelClass}>{t('drawer.dateOfBirth')}</label>
             <input type="date" {...register('dateOfBirth')} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Gender</label>
+            <label className={labelClass}>{t('field.gender')}</label>
             <select {...register('gender')} className={inputClass}>
-              <option value="">Select…</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-              <option value="PreferNotToSay">Prefer not to say</option>
+              <option value="">{tc('gender.select')}</option>
+              <option value="Male">{tc('gender.male')}</option>
+              <option value="Female">{tc('gender.female')}</option>
+              <option value="Other">{tc('gender.other')}</option>
+              <option value="PreferNotToSay">{tc('gender.preferNotToSay')}</option>
             </select>
           </div>
         </div>
 
         {/* Contact */}
         <div className={sectionClass}>
-          <p className={sectionTitle}>Contact</p>
+          <p className={sectionTitle}>{t('drawer.sectionContact')}</p>
           <div className="space-y-3">
             <div>
-              <label className={labelClass}>Email</label>
+              <label className={labelClass}>{t('drawer.email')}</label>
               <input type="email" {...register('email')} className={inputClass} />
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className={labelClass}>Mobile</label>
+                <label className={labelClass}>{t('field.mobile')}</label>
                 <input {...register('phoneMobile')} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Home</label>
+                <label className={labelClass}>{t('field.home')}</label>
                 <input {...register('phoneHome')} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Work</label>
+                <label className={labelClass}>{t('field.work')}</label>
                 <input {...register('phoneWork')} className={inputClass} />
               </div>
             </div>
             <div>
-              <label className={labelClass}>Preferred Contact</label>
+              <label className={labelClass}>{t('field.preferredContact')}</label>
               <select {...register('preferredContactMethod')} className={inputClass}>
-                <option value="">Select…</option>
-                <option value="Email">Email</option>
-                <option value="Phone">Phone</option>
-                <option value="Sms">SMS</option>
+                <option value="">{tc('gender.select')}</option>
+                <option value="Email">{tc('contactMethod.email')}</option>
+                <option value="Phone">{tc('contactMethod.phone')}</option>
+                <option value="Sms">{tc('contactMethod.sms')}</option>
               </select>
             </div>
           </div>
@@ -188,53 +199,53 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
 
         {/* Address */}
         <div className={sectionClass}>
-          <p className={sectionTitle}>Address</p>
+          <p className={sectionTitle}>{t('drawer.sectionAddress')}</p>
           <div className="space-y-3">
             <div>
-              <label className={labelClass}>Address Line 1</label>
+              <label className={labelClass}>{t('field.addressLine1')}</label>
               <input {...register('addressLine1')} className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>Address Line 2</label>
+              <label className={labelClass}>{t('field.addressLine2')}</label>
               <input {...register('addressLine2')} className={inputClass} />
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className={labelClass}>City</label>
+                <label className={labelClass}>{t('field.city')}</label>
                 <input {...register('city')} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>State/Province</label>
+                <label className={labelClass}>{t('field.stateProvince')}</label>
                 <input {...register('stateProvince')} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Postal Code</label>
+                <label className={labelClass}>{t('field.postalCode')}</label>
                 <input {...register('postalCode')} className={inputClass} />
               </div>
             </div>
             <div>
-              <label className={labelClass}>Country Code</label>
-              <input {...register('countryCode')} className={inputClass} placeholder="e.g. US" />
+              <label className={labelClass}>{t('field.countryCode')}</label>
+              <input {...register('countryCode')} className={inputClass} placeholder={t('drawer.countryCodePlaceholder')} />
             </div>
           </div>
         </div>
 
         {/* Other */}
         <div className={sectionClass}>
-          <p className={sectionTitle}>Other</p>
+          <p className={sectionTitle}>{t('drawer.sectionOther')}</p>
           <div className="space-y-3">
             <div>
-              <label className={labelClass}>Occupation</label>
+              <label className={labelClass}>{t('drawer.occupation')}</label>
               <input {...register('occupation')} className={inputClass} />
             </div>
             <div className="flex gap-5">
               <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
                 <input type="checkbox" {...register('smsOptIn')} className="rounded" />
-                SMS opt-in
+                {t('drawer.smsOptIn')}
               </label>
               <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
                 <input type="checkbox" {...register('emailOptIn')} className="rounded" />
-                Email opt-in
+                {t('drawer.emailOptIn')}
               </label>
             </div>
             <div>
@@ -249,7 +260,7 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
         </div>
 
         {update.isError && (
-          <p className="text-sm text-red-600">Failed to save changes. Please try again.</p>
+          <p className="text-sm text-red-600">{t('error.updateFailed')}</p>
         )}
 
         <div className="flex gap-3 pt-2">
@@ -258,14 +269,14 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
             disabled={update.isPending}
             className="flex-1 bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
           >
-            {update.isPending ? 'Saving…' : 'Save Changes'}
+            {update.isPending ? t('drawer.saving') : t('drawer.saveChanges')}
           </button>
           <button
             type="button"
             onClick={onClose}
             className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-md text-sm font-medium hover:bg-gray-50"
           >
-            Cancel
+            {tc('button.cancel')}
           </button>
         </div>
       </form>

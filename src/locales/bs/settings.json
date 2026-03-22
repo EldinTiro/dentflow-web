@@ -1,0 +1,51 @@
+{
+  "team": {
+    "title": "Tim",
+    "memberCount": "{{count}} članova",
+    "button": { "invite": "+ Pozovi člana" },
+    "search": { "placeholder": "Pretraži po imenu ili emailu…" },
+    "emptyState": "Nema članova tima.",
+    "table": {
+      "name": "Ime",
+      "email": "Email",
+      "role": "Uloga",
+      "status": "Status",
+      "lastLogin": "Zadnja prijava"
+    },
+    "resetPwd": { "title": "Privremena lozinka" }
+  },
+  "invite": {
+    "title": "Pozovi člana tima",
+    "successTitle": "Korisnik pozvan",
+    "successMessage": "Račun uspješno kreiran. Podijelite pristupne podatke sa novim članom tima.",
+    "email": "Email",
+    "tempPassword": "Privremena lozinka",
+    "tempPasswordWarning": "Ova lozinka neće biti ponovo prikazana.",
+    "firstName": "Ime *",
+    "lastName": "Prezime *",
+    "emailLabel": "Email *",
+    "roleLabel": "Uloga *",
+    "sendButton": "Pošalji poziv",
+    "sending": "Slanje poziva…",
+    "error": "Pozivanje korisnika nije uspjelo. Možda već imaju račun."
+  },
+  "adminUsers": {
+    "title": "Korisnici",
+    "search": { "placeholder": "Pretraži korisnike…" },
+    "filter": { "allRoles": "Sve uloge", "allTenants": "Svi klijenti" },
+    "emptyState": "Nema pronađenih korisnika.",
+    "table": {
+      "name": "Ime",
+      "email": "Email",
+      "role": "Uloga",
+      "status": "Status",
+      "actions": "Akcije"
+    },
+    "resetPassword": "Resetuj lozinku",
+    "resetPwd": {
+      "title": "Reset lozinke",
+      "label": "Nova privremena lozinka",
+      "warning": "Podijelite ovo sa korisnikom. Neće biti ponovo prikazano."
+    }
+  }
+}

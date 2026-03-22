@@ -1,0 +1,111 @@
+{
+  "layout": {
+    "brand": "DentFlow",
+    "badge": "Admin",
+    "nav": { "dashboard": "Startseite", "tenants": "Mandanten", "users": "Benutzer" },
+    "signOut": "Abmelden"
+  },
+  "dashboard": {
+    "title": "Startseite",
+    "loading": "Statistiken werden geladen…",
+    "error": "Plattformstatistiken konnten nicht geladen werden.",
+    "totalTenants": "Mandanten gesamt",
+    "activeTenants": "Aktive Mandanten",
+    "inactiveTenants": "Inaktive Mandanten",
+    "totalUsers": "Benutzer gesamt",
+    "usersByRole": "Benutzer nach Rolle",
+    "planDistribution": "Planverteilung",
+    "noData": "Keine Daten"
+  },
+  "tenants": {
+    "title": "Mandanten",
+    "button": { "newTenant": "Neuer Mandant" },
+    "search": { "placeholder": "Mandanten suchen…" },
+    "emptyState": "Keine Mandanten gefunden.",
+    "expiryDays": "Abl. {{days}}T",
+    "table": {
+      "name": "Name",
+      "slug": "Slug",
+      "plan": "Plan",
+      "status": "Status",
+      "created": "Erstellt"
+    },
+    "create": {
+      "title": "Neuer Mandant",
+      "successTitle": "Mandant erstellt",
+      "successMessage": "Mandant <strong>{{name}}</strong> erfolgreich erstellt.",
+      "savePassword": "Dieses temporäre Passwort speichern",
+      "ownerEmail": "Inhaber-E-Mail:",
+      "tempPassword": "Temporäres Passwort:",
+      "tempPasswordWarning": "Dieses Passwort wird nicht erneut angezeigt.",
+      "slug": "Slug",
+      "practiceName": "Praxisname",
+      "plan": "Plan",
+      "ownerEmailLabel": "Inhaber-E-Mail",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "logo": "Klinik-Logo (optional)",
+      "logoChange": "Ändern",
+      "logoUpload": "Bild hochladen",
+      "logoRemove": "Entfernen",
+      "logoHint": "PNG, JPG oder SVG — max. 2 MB",
+      "logoTooBig": "Logo muss unter 2 MB sein",
+      "error": "Mandant konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+      "creating": "Wird erstellt…",
+      "createButton": "Mandant erstellen"
+    }
+  },
+  "tenant": {
+    "backToTenants": "← Zurück zu Mandanten",
+    "notFound": "Mandant nicht gefunden.",
+    "tab": { "details": "Details", "users": "Benutzer" },
+    "detail": {
+      "practiceName": "Praxisname",
+      "saving": "Wird gespeichert…",
+      "subscriptionPlan": "Abonnement-Plan",
+      "planFree": "Kostenlos",
+      "planPro": "Pro",
+      "planEnterprise": "Enterprise",
+      "updating": "Wird aktualisiert…",
+      "updatePlan": "Plan aktualisieren",
+      "expires": "Läuft ab:",
+      "accountStatus": "Kontostatus",
+      "deactivateWarning": "Deaktivierung sperrt den Zugriff. Daten bleiben erhalten und der Mandant kann wieder aktiviert werden.",
+      "deactivateButton": "Mandant deaktivieren",
+      "deactivating": "Wird deaktiviert…",
+      "activateButton": "Mandant aktivieren",
+      "activating": "Wird aktiviert…"
+    },
+    "users": {
+      "addUser": "+ Benutzer hinzufügen",
+      "emptyState": "Keine Benutzer für diesen Mandanten.",
+      "resetPwd": {
+        "title": "Passwort zurückgesetzt",
+        "label": "Neues temporäres Passwort",
+        "warning": "Teilen Sie dies mit dem Benutzer — es wird nicht erneut angezeigt."
+      },
+      "resetPwdButton": "Passwort zurücksetzen",
+      "table": {
+        "name": "Name",
+        "email": "E-Mail",
+        "role": "Rolle",
+        "status": "Status"
+      },
+      "addModal": {
+        "title": "Benutzer hinzufügen",
+        "successTitle": "Benutzer erstellt!",
+        "successMessage": "Konto zu <strong>{{tenantName}}</strong> hinzugefügt.",
+        "email": "E-Mail",
+        "tempPassword": "Temporäres Passwort",
+        "tempPasswordWarning": "Dieses Passwort wird nicht erneut angezeigt.",
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "emailLabel": "E-Mail",
+        "roleLabel": "Rolle",
+        "error": "Benutzer konnte nicht erstellt werden. Die E-Mail ist möglicherweise bereits registriert.",
+        "creating": "Wird erstellt…",
+        "addButton": "Benutzer hinzufügen"
+      }
+    }
+  }
+}

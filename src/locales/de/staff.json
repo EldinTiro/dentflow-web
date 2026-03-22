@@ -1,0 +1,39 @@
+{
+  "title": "Personal",
+  "memberCount": "{{count}} Mitglied(er)",
+  "button": { "addStaff": "+ Personal hinzufügen" },
+  "search": { "placeholder": "Nach Name oder E-Mail suchen…" },
+  "emptyState": "Keine Personalmitglieder gefunden.",
+  "table": {
+    "name": "Name",
+    "type": "Typ",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "specialty": "Fachgebiet",
+    "color": "Farbe",
+    "status": "Status"
+  },
+  "backToStaff": "← Zurück zum Personal",
+  "notFound": "Personalmitglied nicht gefunden.",
+  "tab": {
+    "overview": "Übersicht",
+    "absence": "Abwesenheit"
+  },
+  "section": {
+    "contact": "Kontakt",
+    "employment": "Beschäftigung",
+    "credentials": "Qualifikationen",
+    "biography": "Biografie"
+  },
+  "field": {
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "staffType": "Personaltyp",
+    "specialty": "Fachgebiet",
+    "hireDate": "Einstellungsdatum",
+    "terminationDate": "Beendigungsdatum",
+    "licenseNumber": "Lizenznummer",
+    "licenseExpiry": "Lizenzablauf",
+    "npiNumber": "NPI-Nummer"
+  }
+}

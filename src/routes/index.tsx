@@ -15,6 +15,10 @@ import { UsersPage } from '@/features/users/pages/UsersPage'
 import { StaffPage } from '@/features/staff/pages/StaffPage'
 import { StaffDetailPage } from '@/features/staff/pages/StaffDetailPage'
 import { AppointmentsPage } from '@/features/appointments/pages/AppointmentsPage'
+import { AppointmentTypesPage } from '@/features/appointments/pages/AppointmentTypesPage'
+import { ProfilePage } from '@/features/auth/pages/ProfilePage'
+import { InvoicesPage } from '@/features/billing/pages/InvoicesPage'
+import { InvoiceDetailPage } from '@/features/billing/pages/InvoiceDetailPage'
 import { useAuthStore } from '@/features/auth/store/authStore'
 
 function RootRedirect() {
@@ -49,7 +53,11 @@ export function AppRouter() {
           <Route path="staff" element={<StaffPage />} />
           <Route path="staff/:id" element={<StaffDetailPage />} />
           <Route path="appointments" element={<AppointmentsPage />} />
+          <Route path="invoices" element={<InvoicesPage />} />
+          <Route path="invoices/:id" element={<InvoiceDetailPage />} />
           <Route path="settings/users" element={<UsersPage />} />
+          <Route path="settings/appointment-types" element={<AppointmentTypesPage />} />
+          <Route path="settings/profile" element={<ProfilePage />} />
         </Route>
       </Route>
 

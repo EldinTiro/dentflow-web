@@ -1,0 +1,107 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "patients": "Patients",
+    "staff": "Staff",
+    "appointments": "Appointments",
+    "billing": "Billing",
+    "team": "Team",
+    "appointmentTypes": "Appt. Types",
+    "adminPanel": "Admin Panel",
+    "profileSettings": "Profile & Settings",
+    "signOut": "Sign out",
+    "appName": "DentFlow"
+  },
+  "button": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "done": "Done",
+    "confirm": "Confirm",
+    "prev": "Prev",
+    "next": "Next",
+    "previous": "Previous",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "exportCsv": "Export CSV"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "archived": "Archived",
+    "transferred": "Transferred",
+    "allStatuses": "All statuses"
+  },
+  "appointmentStatus": {
+    "scheduled": "Scheduled",
+    "confirmed": "Confirmed",
+    "checkedIn": "Checked In",
+    "inChair": "In Chair",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "noShow": "No Show",
+    "rescheduled": "Rescheduled"
+  },
+  "appointmentAction": {
+    "checkIn": "Check In",
+    "startTreatment": "Start Treatment",
+    "complete": "Complete"
+  },
+  "staffType": {
+    "dentist": "Dentist",
+    "dentalAssistant": "Dental Assistant",
+    "hygienist": "Hygienist",
+    "receptionist": "Receptionist",
+    "clinicAdmin": "Clinic Admin",
+    "officeManager": "Office Manager",
+    "allTypes": "All types"
+  },
+  "gender": {
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "preferNotToSay": "Prefer not to say",
+    "select": "Select…"
+  },
+  "contactMethod": {
+    "email": "Email",
+    "phone": "Phone",
+    "sms": "SMS"
+  },
+  "documentCategory": {
+    "xRay": "X-Ray",
+    "photo": "Photo",
+    "consentForm": "Consent Form",
+    "insurance": "Insurance",
+    "other": "Other"
+  },
+  "day": {
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday"
+  },
+  "loading": "Loading…",
+  "total": "total",
+  "unit": { "min": "min" },
+  "boolean": { "yes": "Yes", "no": "No" },
+  "lastLogin": { "never": "Never" },
+  "expiry": { "expired": "Expired" },
+  "role": { "staff": "Staff" },
+  "pagination": {
+    "pageOfTotal": "Page {{page}} of {{totalPages}} ({{totalCount}} total)",
+    "showingRange": "Showing {{from}}–{{to}} of {{total}}"
+  },
+  "aria": {
+    "closeSidebar": "Close sidebar",
+    "openSidebar": "Open sidebar",
+    "toggleDarkMode": "Toggle dark mode",
+    "close": "Close",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password"
+  }
+}

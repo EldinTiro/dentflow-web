@@ -1,0 +1,51 @@
+{
+  "team": {
+    "title": "Team",
+    "memberCount": "{{count}} members",
+    "button": { "invite": "+ Invite Member" },
+    "search": { "placeholder": "Search by name or email…" },
+    "emptyState": "No team members found.",
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "lastLogin": "Last Login"
+    },
+    "resetPwd": { "title": "Temporary Password" }
+  },
+  "invite": {
+    "title": "Invite Team Member",
+    "successTitle": "User Invited",
+    "successMessage": "Account created successfully. Share the credentials below with the new team member.",
+    "email": "Email",
+    "tempPassword": "Temporary Password",
+    "tempPasswordWarning": "This password will not be shown again.",
+    "firstName": "First Name *",
+    "lastName": "Last Name *",
+    "emailLabel": "Email *",
+    "roleLabel": "Role *",
+    "sendButton": "Send Invite",
+    "sending": "Inviting…",
+    "error": "Failed to invite user. They may already have an account."
+  },
+  "adminUsers": {
+    "title": "Users",
+    "search": { "placeholder": "Search users…" },
+    "filter": { "allRoles": "All roles", "allTenants": "All tenants" },
+    "emptyState": "No users found.",
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "resetPassword": "Reset password",
+    "resetPwd": {
+      "title": "Password Reset",
+      "label": "New temporary password",
+      "warning": "Share this with the user. It will not be shown again."
+    }
+  }
+}

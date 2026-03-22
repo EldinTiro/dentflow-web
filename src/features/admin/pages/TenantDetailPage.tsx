@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { tenantService } from '../services/tenantService'
 import { userAdminService, type UserAdminResponse } from '../services/userAdminService'
 import { AddTenantUserModal } from '../components/AddTenantUserModal'
@@ -24,6 +25,8 @@ function TabButton({ label, active, onClick }: { label: string; active: boolean;
 }
 
 function DetailsTab({ id }: { id: string }) {
+  const { t } = useTranslation('admin')
+  const { t: tc } = useTranslation('common')
   const queryClient = useQueryClient()
   const { data: tenant } = useQuery({
     queryKey: ['tenant', id],
@@ -56,7 +59,7 @@ function DetailsTab({ id }: { id: string }) {
     <div className="space-y-5">
       {/* Rename */}
       <section className="bg-white rounded-lg border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">Practice Name</h2>
+        <h2 className="text-sm font-semibold text-gray-700 mb-3">{t('tenant.detail.practiceName')}</h2>
         <form onSubmit={submitName((v) => updateName.mutate(v))} className="flex gap-3">
           <input
             {...regName('name')}
@@ -68,44 +71,44 @@ function DetailsTab({ id }: { id: string }) {
             disabled={updateName.isPending}
             className="bg-indigo-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
           >
-            {updateName.isPending ? 'Saving…' : 'Save'}
+            {updateName.isPending ? t('tenant.detail.saving') : tc('button.save')}
           </button>
         </form>
       </section>
 
       {/* Plan */}
       <section className="bg-white rounded-lg border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">Subscription Plan</h2>
+        <h2 className="text-sm font-semibold text-gray-700 mb-3">{t('tenant.detail.subscriptionPlan')}</h2>
         <form onSubmit={submitPlan((v) => updatePlan.mutate(v))} className="flex gap-3">
           <select
             {...regPlan('plan')}
             defaultValue={tenant.plan}
             className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none"
           >
-            <option>Free</option>
-            <option>Pro</option>
-            <option>Enterprise</option>
+            <option>{t('tenant.detail.planFree')}</option>
+            <option>{t('tenant.detail.planPro')}</option>
+            <option>{t('tenant.detail.planEnterprise')}</option>
           </select>
           <button
             type="submit"
             disabled={updatePlan.isPending}
             className="bg-indigo-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
           >
-            {updatePlan.isPending ? 'Updating…' : 'Update Plan'}
+            {updatePlan.isPending ? t('tenant.detail.updating') : t('tenant.detail.updatePlan')}
           </button>
         </form>
         {tenant.planExpiresAt && (
           <p className="text-xs text-gray-400 mt-2">
-            Expires: {new Date(tenant.planExpiresAt).toLocaleDateString()}
+            {t('tenant.detail.expires')} {new Date(tenant.planExpiresAt).toLocaleDateString()}
           </p>
         )}
       </section>
 
       {/* Status */}
       <section className="bg-white rounded-lg border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-700 mb-1">Account Status</h2>
+        <h2 className="text-sm font-semibold text-gray-700 mb-1">{t('tenant.detail.accountStatus')}</h2>
         <p className="text-xs text-gray-400 mb-3">
-          Deactivating suspends access. Data is preserved and the tenant can be re-activated.
+          {t('tenant.detail.deactivateWarning')}
         </p>
         {tenant.isActive ? (
           <button
@@ -113,7 +116,7 @@ function DetailsTab({ id }: { id: string }) {
             disabled={deactivate.isPending}
             className="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-md text-sm font-medium hover:bg-red-100 disabled:opacity-50"
           >
-            {deactivate.isPending ? 'Deactivating…' : 'Deactivate Tenant'}
+            {deactivate.isPending ? t('tenant.detail.deactivating') : t('tenant.detail.deactivateButton')}
           </button>
         ) : (
           <button
@@ -121,7 +124,7 @@ function DetailsTab({ id }: { id: string }) {
             disabled={activate.isPending}
             className="bg-green-50 text-green-700 border border-green-200 px-4 py-2 rounded-md text-sm font-medium hover:bg-green-100 disabled:opacity-50"
           >
-            {activate.isPending ? 'Activating…' : 'Activate Tenant'}
+            {activate.isPending ? t('tenant.detail.activating') : t('tenant.detail.activateButton')}
           </button>
         )}
       </section>
@@ -130,6 +133,8 @@ function DetailsTab({ id }: { id: string }) {
 }
 
 function UsersTab({ id, tenantName }: { id: string; tenantName: string }) {
+  const { t } = useTranslation('admin')
+  const { t: tc } = useTranslation('common')
   const [showAdd, setShowAdd] = useState(false)
   const [resetResult, setResetResult] = useState<string | null>(null)
   const queryClient = useQueryClient()
@@ -165,7 +170,7 @@ function UsersTab({ id, tenantName }: { id: string; tenantName: string }) {
           onClick={() => setShowAdd(true)}
           className="bg-indigo-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-indigo-700"
         >
-          + Add User
+          {t('tenant.users.addUser')}
         </button>
       </div>
 
@@ -173,19 +178,19 @@ function UsersTab({ id, tenantName }: { id: string; tenantName: string }) {
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
             <tr>
-              <th className="px-4 py-3 text-left">Name</th>
-              <th className="px-4 py-3 text-left">Email</th>
-              <th className="px-4 py-3 text-left">Role</th>
-              <th className="px-4 py-3 text-left">Status</th>
+              <th className="px-4 py-3 text-left">{t('tenant.users.table.name')}</th>
+              <th className="px-4 py-3 text-left">{t('tenant.users.table.email')}</th>
+              <th className="px-4 py-3 text-left">{t('tenant.users.table.role')}</th>
+              <th className="px-4 py-3 text-left">{t('tenant.users.table.status')}</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {isLoading && (
-              <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400">Loading…</td></tr>
+              <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400">{tc('loading')}</td></tr>
             )}
             {!isLoading && data?.items.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400">No users for this tenant.</td></tr>
+              <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400">{t('tenant.users.emptyState')}</td></tr>
             )}
             {data?.items.map((u: UserAdminResponse) => (
               <tr key={u.id} className="hover:bg-gray-50">
@@ -204,7 +209,7 @@ function UsersTab({ id, tenantName }: { id: string; tenantName: string }) {
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                     u.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                   }`}>
-                    {u.isActive ? 'Active' : 'Inactive'}
+                    {u.isActive ? tc('status.active') : tc('status.inactive')}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -213,13 +218,13 @@ function UsersTab({ id, tenantName }: { id: string; tenantName: string }) {
                       onClick={() => toggleStatus.mutate({ userId: u.id, isActive: !u.isActive })}
                       className={u.isActive ? 'text-red-500 hover:text-red-700' : 'text-green-600 hover:text-green-700'}
                     >
-                      {u.isActive ? 'Deactivate' : 'Activate'}
+                      {u.isActive ? tc('button.deactivate') : tc('button.activate')}
                     </button>
                     <button
                       onClick={() => resetPwd.mutate(u.id)}
                       className="text-gray-500 hover:text-gray-700"
                     >
-                      Reset pwd
+                      {t('tenant.users.resetPwdButton')}
                     </button>
                   </div>
                 </td>
@@ -236,13 +241,13 @@ function UsersTab({ id, tenantName }: { id: string; tenantName: string }) {
       {resetResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-sm p-5">
-            <h3 className="font-semibold text-gray-900 mb-3">Password Reset</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">{t('tenant.users.resetPwd.title')}</h3>
             <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mb-4">
-              <p className="text-xs text-amber-700 font-medium mb-1">New temporary password</p>
+              <p className="text-xs text-amber-700 font-medium mb-1">{t('tenant.users.resetPwd.label')}</p>
               <p className="font-mono text-xs bg-white px-2 py-1 rounded border border-amber-200 break-all">{resetResult}</p>
-              <p className="text-xs text-amber-600 mt-1">Share this with the user — it won't be shown again.</p>
+              <p className="text-xs text-amber-600 mt-1">{t('tenant.users.resetPwd.warning')}</p>
             </div>
-            <button onClick={() => setResetResult(null)} className="w-full bg-indigo-600 text-white py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Done</button>
+            <button onClick={() => setResetResult(null)} className="w-full bg-indigo-600 text-white py-2 rounded-md text-sm font-medium hover:bg-indigo-700">{tc('button.done')}</button>
           </div>
         </div>
       )}
@@ -251,6 +256,8 @@ function UsersTab({ id, tenantName }: { id: string; tenantName: string }) {
 }
 
 export function TenantDetailPage() {
+  const { t } = useTranslation('admin')
+  const { t: tc } = useTranslation('common')
   const { id } = useParams<{ id: string }>()
   const [tab, setTab] = useState<Tab>('details')
 
@@ -260,13 +267,13 @@ export function TenantDetailPage() {
     enabled: !!id,
   })
 
-  if (isLoading) return <div className="p-8 text-gray-400 text-sm">Loading…</div>
-  if (!tenant) return <div className="p-8 text-red-500 text-sm">Tenant not found.</div>
+  if (isLoading) return <div className="p-8 text-gray-400 text-sm">{tc('loading')}</div>
+  if (!tenant) return <div className="p-8 text-red-500 text-sm">{t('tenant.notFound')}</div>
 
   return (
     <div className="p-8 max-w-3xl">
       <Link to="/admin/tenants" className="text-sm text-indigo-600 hover:underline mb-4 block">
-        ← Back to Tenants
+        {t('tenant.backToTenants')}
       </Link>
 
       <div className="flex items-center gap-3 mb-5">
@@ -274,15 +281,15 @@ export function TenantDetailPage() {
         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
           tenant.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
         }`}>
-          {tenant.isActive ? 'Active' : 'Inactive'}
+          {tenant.isActive ? tc('status.active') : tc('status.inactive')}
         </span>
         <span className="text-xs text-gray-400 font-mono">{tenant.slug}</span>
       </div>
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200 mb-6">
-        <TabButton label="Details" active={tab === 'details'} onClick={() => setTab('details')} />
-        <TabButton label="Users" active={tab === 'users'} onClick={() => setTab('users')} />
+        <TabButton label={t('tenant.tab.details')} active={tab === 'details'} onClick={() => setTab('details')} />
+        <TabButton label={t('tenant.tab.users')} active={tab === 'users'} onClick={() => setTab('users')} />
       </div>
 
       {tab === 'details' && <DetailsTab id={id!} />}

@@ -1,7 +1,9 @@
 import { LoginForm } from '../components/LoginForm'
 import { Gem } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export function LoginPage() {
+  const { t } = useTranslation('auth')
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4">
       {/* Brand mark */}
@@ -10,8 +12,8 @@ export function LoginPage() {
           <Gem size={32} className="text-white" strokeWidth={1.5} />
         </div>
         <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">PearlDesk</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Dental Practice Management</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">{t('login.brand')}</h1>
+          <p className="text-sm text-gray-400 mt-0.5">{t('login.subtitle')}</p>
         </div>
       </div>
       <LoginForm />

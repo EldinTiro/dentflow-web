@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/shared/utils/apiError';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Drawer } from '@/shared/components/Drawer';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import {
   staffService,
   type StaffMemberResponse,
@@ -38,6 +39,9 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
       licenseNumber: staff.licenseNumber ?? '',
       licenseExpiry: staff.licenseExpiry ?? '',
       npiNumber: staff.npiNumber ?? '',
+      address: staff.address ?? '',
+      city: staff.city ?? '',
+      postalCode: staff.postalCode ?? '',
     },
   });
 
@@ -174,35 +178,38 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
           />
         </div>
 
-        {/* Delete confirmation inline */}
-        {canDelete && confirmDelete && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
-            <p className="text-sm font-medium text-red-800">
-              Are you sure you want to remove {staff.fullName}? This cannot be undone.
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => deleteMutation.mutate()}
-                disabled={deleteMutation.isPending}
-                className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
-              >
-                {deleteMutation.isPending ? 'Removing…' : 'Yes, remove'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(false)}
-                className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-            </div>
+        {/* Address */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+          <input
+            type="text"
+            {...register('address')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+            <input
+              type="text"
+              {...register('city')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
           </div>
-        )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+            <input
+              type="text"
+              {...register('postalCode')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
 
         {/* Actions */}
         <div className="flex items-center justify-between pt-2">
-          {canDelete && !confirmDelete ? (
+          {canDelete ? (
             <button
               type="button"
               onClick={() => setConfirmDelete(true)}
@@ -231,6 +238,16 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
           </div>
         </div>
       </form>
+
+      <ConfirmDialog
+        open={canDelete && confirmDelete}
+        title="Remove staff member?"
+        description={<>Remove <strong>{staff.fullName}</strong>? This action cannot be undone.</>}
+        confirmLabel="Remove"
+        isPending={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate()}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </Drawer>
   );
 }

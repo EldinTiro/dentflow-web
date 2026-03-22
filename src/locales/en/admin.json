@@ -1,0 +1,111 @@
+{
+  "layout": {
+    "brand": "DentFlow",
+    "badge": "Admin",
+    "nav": { "dashboard": "Dashboard", "tenants": "Tenants", "users": "Users" },
+    "signOut": "Sign out"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "loading": "Loading stats…",
+    "error": "Failed to load platform statistics.",
+    "totalTenants": "Total Tenants",
+    "activeTenants": "Active Tenants",
+    "inactiveTenants": "Inactive Tenants",
+    "totalUsers": "Total Users",
+    "usersByRole": "Users by Role",
+    "planDistribution": "Plan Distribution",
+    "noData": "No data"
+  },
+  "tenants": {
+    "title": "Tenants",
+    "button": { "newTenant": "New Tenant" },
+    "search": { "placeholder": "Search tenants…" },
+    "emptyState": "No tenants found.",
+    "expiryDays": "Exp. {{days}}d",
+    "table": {
+      "name": "Name",
+      "slug": "Slug",
+      "plan": "Plan",
+      "status": "Status",
+      "created": "Created"
+    },
+    "create": {
+      "title": "New Tenant",
+      "successTitle": "Tenant Created",
+      "successMessage": "Tenant <strong>{{name}}</strong> created successfully.",
+      "savePassword": "Save this temporary password",
+      "ownerEmail": "Owner email:",
+      "tempPassword": "Temporary password:",
+      "tempPasswordWarning": "This password will not be shown again.",
+      "slug": "Slug",
+      "practiceName": "Practice Name",
+      "plan": "Plan",
+      "ownerEmailLabel": "Owner Email",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "logo": "Clinic Logo (optional)",
+      "logoChange": "Change",
+      "logoUpload": "Upload image",
+      "logoRemove": "Remove",
+      "logoHint": "PNG, JPG or SVG — max 2 MB",
+      "logoTooBig": "Logo must be under 2 MB",
+      "error": "Failed to create tenant. Please try again.",
+      "creating": "Creating…",
+      "createButton": "Create Tenant"
+    }
+  },
+  "tenant": {
+    "backToTenants": "← Back to Tenants",
+    "notFound": "Tenant not found.",
+    "tab": { "details": "Details", "users": "Users" },
+    "detail": {
+      "practiceName": "Practice Name",
+      "saving": "Saving…",
+      "subscriptionPlan": "Subscription Plan",
+      "planFree": "Free",
+      "planPro": "Pro",
+      "planEnterprise": "Enterprise",
+      "updating": "Updating…",
+      "updatePlan": "Update Plan",
+      "expires": "Expires:",
+      "accountStatus": "Account Status",
+      "deactivateWarning": "Deactivating suspends access. Data is preserved and the tenant can be re-activated.",
+      "deactivateButton": "Deactivate Tenant",
+      "deactivating": "Deactivating…",
+      "activateButton": "Activate Tenant",
+      "activating": "Activating…"
+    },
+    "users": {
+      "addUser": "+ Add User",
+      "emptyState": "No users for this tenant.",
+      "resetPwd": {
+        "title": "Password Reset",
+        "label": "New temporary password",
+        "warning": "Share this with the user — it won't be shown again."
+      },
+      "resetPwdButton": "Reset pwd",
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status"
+      },
+      "addModal": {
+        "title": "Add User",
+        "successTitle": "User Created!",
+        "successMessage": "Account added to <strong>{{tenantName}}</strong>.",
+        "email": "Email",
+        "tempPassword": "Temporary Password",
+        "tempPasswordWarning": "This password will not be shown again.",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "emailLabel": "Email",
+        "roleLabel": "Role",
+        "error": "Failed to create user. The email may already be registered.",
+        "creating": "Creating…",
+        "addButton": "Add User"
+      }
+    }
+  }
+}

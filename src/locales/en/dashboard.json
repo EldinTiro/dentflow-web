@@ -1,0 +1,57 @@
+{
+  "title": "Dashboard",
+  "quickAction": {
+    "bookAppointment": "Book Appointment",
+    "registerPatient": "Register Patient"
+  },
+  "stat": {
+    "todaysAppointments": "Today's Appointments",
+    "pendingConfirmation": "Pending Confirmation",
+    "scheduledPlusConfirmed": "Scheduled + Confirmed",
+    "totalPatients": "Total Patients",
+    "activeRecords": "Active records",
+    "activeStaff": "Active Staff",
+    "providersAndAdmin": "Providers & admin",
+    "tomorrow": "Tomorrow",
+    "appointmentsBooked": "Appointments booked",
+    "revenueThisMonth": "Revenue This Month",
+    "thisMonth": "Collected this month",
+    "outstandingBalance": "Outstanding Balance",
+    "unpaidInvoices": "Unpaid invoices",
+    "newPatientsThisMonth": "New Patients",
+    "firstVisitThisMonth": "First visit this month",
+    "completedThisWeek": "Completed This Week",
+    "vsLastWeek": "vs last week",
+    "vsLastWeekSame": "Same as last week"
+  },
+  "recall": {
+    "title": "Recall Alerts",
+    "overdue": "Overdue recall",
+    "dueSoon": "Due within 30 days"
+  },
+  "schedule": {
+    "title": "Today's Schedule",
+    "completedOfTotal": "{{completed}} of {{total}} completed",
+    "viewAll": "View all →",
+    "emptyState": "No appointments scheduled for today.",
+    "bookNow": "Book one now →",
+    "moreCount": "+{{count}} more —",
+    "viewAllLink": "view all"
+  },
+  "provider": {
+    "title": "Today by Provider",
+    "emptyState": "No clinical providers found."
+  },
+  "slotChecker": {
+    "title": "Quick Slot Check",
+    "todayBadge": "Today",
+    "allProviders": "All providers",
+    "freeCount": "{{count}} free",
+    "bookedCount": "{{count}} booked",
+    "bookedTooltip": "Booked",
+    "freeTooltip": "Free – click to book",
+    "footer": "{{startHour}}:00 – {{endHour}}:00 · 30-min slots · Click a free slot to open the booking form",
+    "previousDay": "Previous day",
+    "nextDay": "Next day"
+  }
+}

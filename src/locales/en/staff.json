@@ -1,0 +1,39 @@
+{
+  "title": "Staff",
+  "memberCount": "{{count}} member(s)",
+  "button": { "addStaff": "+ Add Staff" },
+  "search": { "placeholder": "Search by name or email…" },
+  "emptyState": "No staff members found.",
+  "table": {
+    "name": "Name",
+    "type": "Type",
+    "email": "Email",
+    "phone": "Phone",
+    "specialty": "Specialty",
+    "color": "Color",
+    "status": "Status"
+  },
+  "backToStaff": "← Back to Staff",
+  "notFound": "Staff member not found.",
+  "tab": {
+    "overview": "Overview",
+    "absence": "Absence"
+  },
+  "section": {
+    "contact": "Contact",
+    "employment": "Employment",
+    "credentials": "Credentials",
+    "biography": "Biography"
+  },
+  "field": {
+    "email": "Email",
+    "phone": "Phone",
+    "staffType": "Staff type",
+    "specialty": "Specialty",
+    "hireDate": "Hire date",
+    "terminationDate": "Termination date",
+    "licenseNumber": "License number",
+    "licenseExpiry": "License expiry",
+    "npiNumber": "NPI number"
+  }
+}

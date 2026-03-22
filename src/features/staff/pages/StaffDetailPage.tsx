@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useParams, Link } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { staffService, STAFF_TYPE_LABELS } from '../services/staffService'
 import { EditStaffDrawer } from '../components/EditStaffDrawer'
-import { StaffAvailabilityTab } from '../components/StaffAvailabilityTab'
 import { StaffBlockedTimesTab } from '../components/StaffBlockedTimesTab'
 
-type Tab = 'overview' | 'availability' | 'blocked-times'
+type Tab = 'overview' | 'absence'
 
 function Field({ label, value }: { label: string; value: string | null | undefined }) {
   return (
@@ -32,8 +32,9 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export function StaffDetailPage() {
+  const { t } = useTranslation('staff')
+  const { t: tc } = useTranslation('common')
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   const [showEdit, setShowEdit] = useState(false)
   const [tab, setTab] = useState<Tab>('overview')
 
@@ -49,30 +50,29 @@ export function StaffDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 text-center text-sm text-gray-400">Loading…</div>
+      <div className="p-6 text-center text-sm text-gray-400">{tc('loading')}</div>
     )
   }
 
   if (error || !staff) {
     return (
       <div className="p-6">
-        <p className="text-sm text-red-500 mb-3">Staff member not found.</p>
-        <Link to="/staff" className="text-indigo-600 text-sm hover:underline">← Back to Staff</Link>
+        <p className="text-sm text-red-500 mb-3">{t('notFound')}</p>
+        <Link to="/staff" className="text-indigo-600 text-sm hover:underline">{t('backToStaff')}</Link>
       </div>
     )
   }
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'overview', label: 'Overview' },
-    { key: 'availability', label: 'Availability' },
-    { key: 'blocked-times', label: 'Blocked Times' },
+    { key: 'overview', label: t('tab.overview') },
+    { key: 'absence', label: t('tab.absence') },
   ]
 
   return (
     <div className="p-6 space-y-5 max-w-5xl">
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 dark:text-gray-400">
-        <Link to="/staff" className="hover:text-indigo-600 dark:hover:text-indigo-400">Staff</Link>
+        <Link to="/staff" className="hover:text-indigo-600 dark:hover:text-indigo-400">{t('title')}</Link>
         <span className="mx-2">/</span>
         <span className="text-gray-800 dark:text-gray-100">{staff.fullName}</span>
       </nav>
@@ -95,7 +95,7 @@ export function StaffDetailPage() {
                   staff.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                 }`}
               >
-                {staff.isActive ? 'Active' : 'Inactive'}
+                {staff.isActive ? tc('status.active') : tc('status.inactive')}
               </span>
             </div>
           </div>
@@ -105,7 +105,7 @@ export function StaffDetailPage() {
             onClick={() => setShowEdit(true)}
             className="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-600 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
           >
-            Edit
+            {tc('button.edit')}
           </button>
         )}
       </div>
@@ -130,38 +130,36 @@ export function StaffDetailPage() {
       {/* Tab content */}
       {tab === 'overview' && (
         <div className="space-y-4">
-          <Section title="Contact">
-            <Field label="Email" value={staff.email} />
-            <Field label="Phone" value={staff.phone} />
+          <Section title={t('section.contact')}>
+            <Field label={t('field.email')} value={staff.email} />
+            <Field label={t('field.phone')} value={staff.phone} />
           </Section>
 
-          <Section title="Employment">
-            <Field label="Staff type" value={STAFF_TYPE_LABELS[staff.staffType]} />
-            <Field label="Specialty" value={staff.specialty} />
-            <Field label="Hire date" value={staff.hireDate ?? undefined} />
-            <Field label="Termination date" value={staff.terminationDate ?? undefined} />
+          <Section title={t('section.employment')}>
+            <Field label={t('field.staffType')} value={STAFF_TYPE_LABELS[staff.staffType]} />
+            <Field label={t('field.specialty')} value={staff.specialty} />
+            <Field label={t('field.hireDate')} value={staff.hireDate ?? undefined} />
+            <Field label={t('field.terminationDate')} value={staff.terminationDate ?? undefined} />
           </Section>
 
           {(staff.licenseNumber || staff.npiNumber || staff.licenseExpiry) && (
-            <Section title="Credentials">
-              <Field label="License number" value={staff.licenseNumber} />
-              <Field label="License expiry" value={staff.licenseExpiry} />
-              <Field label="NPI number" value={staff.npiNumber} />
+            <Section title={t('section.credentials')}>
+              <Field label={t('field.licenseNumber')} value={staff.licenseNumber} />
+              <Field label={t('field.licenseExpiry')} value={staff.licenseExpiry} />
+              <Field label={t('field.npiNumber')} value={staff.npiNumber} />
             </Section>
           )}
 
           {staff.biography && (
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
-              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Biography</h2>
+              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">{t('section.biography')}</h2>
               <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{staff.biography}</p>
             </div>
           )}
         </div>
       )}
 
-      {tab === 'availability' && <StaffAvailabilityTab staffId={id!} />}
-
-      {tab === 'blocked-times' && <StaffBlockedTimesTab staffId={id!} />}
+      {tab === 'absence' && <StaffBlockedTimesTab staffId={id!} />}
 
       {showEdit && (
         <EditStaffDrawer staff={staff} onClose={() => setShowEdit(false)} />

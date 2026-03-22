@@ -1,0 +1,107 @@
+{
+  "nav": {
+    "dashboard": "Početna",
+    "patients": "Pacijenti",
+    "staff": "Osoblje",
+    "appointments": "Termini",
+    "billing": "Naplata",
+    "team": "Tim",
+    "appointmentTypes": "Vrste termina",
+    "adminPanel": "Admin panel",
+    "profileSettings": "Profil i postavke",
+    "signOut": "Odjavi se",
+    "appName": "DentFlow"
+  },
+  "button": {
+    "save": "Sačuvaj",
+    "cancel": "Otkaži",
+    "delete": "Obriši",
+    "edit": "Uredi",
+    "done": "Gotovo",
+    "confirm": "Potvrdi",
+    "prev": "Preth.",
+    "next": "Sljed.",
+    "previous": "Prethodna",
+    "activate": "Aktiviraj",
+    "deactivate": "Deaktiviraj",
+    "exportCsv": "Izvezi CSV"
+  },
+  "status": {
+    "active": "Aktivan",
+    "inactive": "Neaktivan",
+    "archived": "Arhiviran",
+    "transferred": "Premješten",
+    "allStatuses": "Svi statusi"
+  },
+  "appointmentStatus": {
+    "scheduled": "Zakazan",
+    "confirmed": "Potvrđen",
+    "checkedIn": "Prijavljen",
+    "inChair": "U stolici",
+    "completed": "Završen",
+    "cancelled": "Otkazan",
+    "noShow": "Nije došao",
+    "rescheduled": "Pomjeren"
+  },
+  "appointmentAction": {
+    "checkIn": "Prijavi",
+    "startTreatment": "Počni tretman",
+    "complete": "Završi"
+  },
+  "staffType": {
+    "dentist": "Stomatolog",
+    "dentalAssistant": "Asistent stomatologa",
+    "hygienist": "Higijeničar",
+    "receptionist": "Recepcioner",
+    "clinicAdmin": "Admin klinike",
+    "officeManager": "Upravitelj ordinacije",
+    "allTypes": "Sve vrste"
+  },
+  "gender": {
+    "male": "Muški",
+    "female": "Ženski",
+    "other": "Ostalo",
+    "preferNotToSay": "Ne želim reći",
+    "select": "Odaberi…"
+  },
+  "contactMethod": {
+    "email": "Email",
+    "phone": "Telefon",
+    "sms": "SMS"
+  },
+  "documentCategory": {
+    "xRay": "Rendgen",
+    "photo": "Fotografija",
+    "consentForm": "Pristanak",
+    "insurance": "Osiguranje",
+    "other": "Ostalo"
+  },
+  "day": {
+    "sunday": "Nedjelja",
+    "monday": "Ponedjeljak",
+    "tuesday": "Utorak",
+    "wednesday": "Srijeda",
+    "thursday": "Četvrtak",
+    "friday": "Petak",
+    "saturday": "Subota"
+  },
+  "loading": "Učitavanje…",
+  "total": "ukupno",
+  "unit": { "min": "min" },
+  "boolean": { "yes": "Da", "no": "Ne" },
+  "lastLogin": { "never": "Nikad" },
+  "expiry": { "expired": "Isteklo" },
+  "role": { "staff": "Osoblje" },
+  "pagination": {
+    "pageOfTotal": "Stranica {{page}} od {{totalPages}} ({{totalCount}} ukupno)",
+    "showingRange": "Prikaz {{from}}–{{to}} od {{total}}"
+  },
+  "aria": {
+    "closeSidebar": "Zatvori bočnu traku",
+    "openSidebar": "Otvori bočnu traku",
+    "toggleDarkMode": "Prebaci tamni režim",
+    "close": "Zatvori",
+    "hidePassword": "Sakrij lozinku",
+    "showPassword": "Prikaži lozinku"
+  }
+}

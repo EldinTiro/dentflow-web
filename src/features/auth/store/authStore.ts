@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 interface AuthUser {
+  userId: string
   email: string
   fullName: string
   roles: string[]

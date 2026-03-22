@@ -1,0 +1,57 @@
+{
+  "title": "Startseite",
+  "quickAction": {
+    "bookAppointment": "Termin buchen",
+    "registerPatient": "Patient registrieren"
+  },
+  "stat": {
+    "todaysAppointments": "Heutige Termine",
+    "pendingConfirmation": "Ausstehende Bestätigung",
+    "scheduledPlusConfirmed": "Geplant + Bestätigt",
+    "totalPatients": "Patienten gesamt",
+    "activeRecords": "Aktive Datensätze",
+    "activeStaff": "Aktives Personal",
+    "providersAndAdmin": "Ärzte & Verwaltung",
+    "tomorrow": "Morgen",
+    "appointmentsBooked": "Gebuchte Termine",
+    "revenueThisMonth": "Umsatz diesen Monat",
+    "thisMonth": "Diesen Monat eingenommen",
+    "outstandingBalance": "Offener Saldo",
+    "unpaidInvoices": "Unbezahlte Rechnungen",
+    "newPatientsThisMonth": "Neue Patienten",
+    "firstVisitThisMonth": "Erstbesuch diesen Monat",
+    "completedThisWeek": "Diese Woche abgeschlossen",
+    "vsLastWeek": "vs. letzte Woche",
+    "vsLastWeekSame": "Gleich wie letzte Woche"
+  },
+  "recall": {
+    "title": "Recall-Hinweise",
+    "overdue": "Überfälliger Recall",
+    "dueSoon": "Fällig in 30 Tagen"
+  },
+  "schedule": {
+    "title": "Heutiger Zeitplan",
+    "completedOfTotal": "{{completed}} von {{total}} abgeschlossen",
+    "viewAll": "Alle anzeigen →",
+    "emptyState": "Keine Termine für heute geplant.",
+    "bookNow": "Jetzt buchen →",
+    "moreCount": "+{{count}} weitere —",
+    "viewAllLink": "alle anzeigen"
+  },
+  "provider": {
+    "title": "Heute nach Arzt",
+    "emptyState": "Keine klinischen Ärzte gefunden."
+  },
+  "slotChecker": {
+    "title": "Schnelle Terminprüfung",
+    "todayBadge": "Heute",
+    "allProviders": "Alle Ärzte",
+    "freeCount": "{{count}} frei",
+    "bookedCount": "{{count}} gebucht",
+    "bookedTooltip": "Gebucht",
+    "freeTooltip": "Frei – klicken zum Buchen",
+    "footer": "{{startHour}}:00 – {{endHour}}:00 · 30-Min-Slots · Klicken Sie auf einen freien Slot zum Buchen",
+    "previousDay": "Vorheriger Tag",
+    "nextDay": "Nächster Tag"
+  }
+}

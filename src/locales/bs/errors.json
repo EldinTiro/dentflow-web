@@ -1,0 +1,13 @@
+{
+  "validation": {
+    "required": "Obavezno",
+    "invalidEmail": "Unesite ispravnu email adresu",
+    "passwordRequired": "Lozinka je obavezna",
+    "minLength12": "Najmanje 12 karaktera",
+    "mustContainUppercase": "Mora sadržavati veliko slovo",
+    "mustContainLowercase": "Mora sadržavati malo slovo",
+    "mustContainDigit": "Mora sadržavati cifru",
+    "mustContainSpecial": "Mora sadržavati specijalni karakter",
+    "passwordsMismatch": "Lozinke se ne podudaraju"
+  }
+}

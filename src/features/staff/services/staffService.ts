@@ -43,6 +43,9 @@ export interface StaffMemberResponse {
   isActive: boolean;
   hireDate: string | null; // ISO date string
   terminationDate: string | null;
+  address: string | null;
+  city: string | null;
+  postalCode: string | null;
   createdAt: string;
   updatedAt: string | null;
 }
@@ -84,6 +87,9 @@ export interface UpdateStaffRequest {
   licenseNumber?: string;
   licenseExpiry?: string;
   npiNumber?: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
 }
 
 export type DayOfWeek = 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
@@ -128,14 +134,14 @@ export interface StaffBlockedTimeResponse {
   staffMemberId: string;
   startAt: string; // ISO datetime
   endAt: string;
-  reason: string | null;
+  absenceType: string | null;
   notes: string | null;
 }
 
 export interface AddBlockedTimeRequest {
   startAt: string; // ISO datetime UTC
   endAt: string;
-  reason?: string;
+  absenceType: string;
   notes?: string;
 }
 

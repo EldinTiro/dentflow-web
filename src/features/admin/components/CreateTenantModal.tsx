@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { tenantService, type TenantCreatedResponse } from '../services/tenantService'
 
 const schema = z.object({
@@ -25,6 +26,8 @@ interface Props {
 }
 
 export function CreateTenantModal({ onClose }: Props) {
+  const { t } = useTranslation('admin')
+  const { t: tc } = useTranslation('common')
   const queryClient = useQueryClient()
   const [created, setCreated] = useState<TenantCreatedResponse | null>(null)
   const [logoBase64, setLogoBase64] = useState<string | undefined>(undefined)
@@ -33,7 +36,7 @@ export function CreateTenantModal({ onClose }: Props) {
     const file = e.target.files?.[0]
     if (!file) return
     if (file.size > 2 * 1024 * 1024) {
-      alert('Logo must be under 2 MB')
+      alert(t('tenants.create.logoTooBig'))
       e.target.value = ''
       return
     }
@@ -65,31 +68,29 @@ export function CreateTenantModal({ onClose }: Props) {
 
   if (created) {
     return (
-      <ModalShell title="Tenant Created" onClose={onClose}>
+      <ModalShell title={t('tenants.create.successTitle')} onClose={onClose}>
         <div className="space-y-3 text-sm">
-          <p className="text-gray-600">
-            Tenant <strong>{created.name}</strong> created successfully.
-          </p>
+          <p className="text-gray-600" dangerouslySetInnerHTML={{ __html: t('tenants.create.successMessage', { name: created.name }) }} />
           <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
-            <p className="font-semibold text-amber-800 mb-1">Save this temporary password</p>
+            <p className="font-semibold text-amber-800 mb-1">{t('tenants.create.savePassword')}</p>
             <p className="text-gray-700 text-xs mb-1">
-              Owner email: <span className="font-mono font-medium">{created.ownerEmail}</span>
+              {t('tenants.create.ownerEmail')} <span className="font-mono font-medium">{created.ownerEmail}</span>
             </p>
             <p className="text-gray-700 text-xs">
-              Temporary password:{' '}
+              {t('tenants.create.tempPassword')}{' '}
               <span className="font-mono font-medium bg-white px-1 rounded border border-amber-200">
                 {created.tempPassword}
               </span>
             </p>
             <p className="text-amber-700 text-xs mt-2">
-              This password will not be shown again.
+              {t('tenants.create.tempPasswordWarning')}
             </p>
           </div>
           <button
             onClick={onClose}
             className="w-full mt-2 bg-indigo-600 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-indigo-700"
           >
-            Done
+            {tc('button.done')}
           </button>
         </div>
       </ModalShell>
@@ -97,61 +98,61 @@ export function CreateTenantModal({ onClose }: Props) {
   }
 
   return (
-    <ModalShell title="New Tenant" onClose={onClose}>
+    <ModalShell title={t('tenants.create.title')} onClose={onClose}>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 text-sm"
       >
-        <Field label="Slug" error={errors.slug?.message}>
+        <Field label={t('tenants.create.slug')} error={errors.slug?.message}>
           <input
             {...register('slug')}
             placeholder="my-clinic"
             className="input"
           />
         </Field>
-        <Field label="Practice Name" error={errors.name?.message}>
+        <Field label={t('tenants.create.practiceName')} error={errors.name?.message}>
           <input {...register('name')} placeholder="Bright Smile Dental" className="input" />
         </Field>
-        <Field label="Plan" error={errors.plan?.message}>
+        <Field label={t('tenants.create.plan')} error={errors.plan?.message}>
           <select {...register('plan')} className="input">
             <option>Free</option>
             <option>Pro</option>
             <option>Enterprise</option>
           </select>
         </Field>
-        <Field label="Owner Email" error={errors.ownerEmail?.message}>
+        <Field label={t('tenants.create.ownerEmailLabel')} error={errors.ownerEmail?.message}>
           <input {...register('ownerEmail')} type="email" className="input" />
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="First Name" error={errors.ownerFirstName?.message}>
+          <Field label={t('tenants.create.firstName')} error={errors.ownerFirstName?.message}>
             <input {...register('ownerFirstName')} className="input" />
           </Field>
-          <Field label="Last Name" error={errors.ownerLastName?.message}>
+          <Field label={t('tenants.create.lastName')} error={errors.ownerLastName?.message}>
             <input {...register('ownerLastName')} className="input" />
           </Field>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Clinic Logo (optional)</label>
+          <label className="block text-xs font-medium text-gray-700 mb-1">{t('tenants.create.logo')}</label>
           <div className="flex items-center gap-3">
             {logoBase64 && (
               <img src={logoBase64} alt="Logo preview" className="h-12 w-12 object-contain rounded border border-gray-200 bg-gray-50" />
             )}
             <label className="cursor-pointer inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-xs text-gray-600 hover:bg-gray-50">
-              {logoBase64 ? 'Change' : 'Upload image'}
+              {logoBase64 ? t('tenants.create.logoChange') : t('tenants.create.logoUpload')}
               <input type="file" accept="image/*" className="sr-only" onChange={handleLogoChange} />
             </label>
             {logoBase64 && (
               <button type="button" onClick={() => setLogoBase64(undefined)} className="text-xs text-red-500 hover:text-red-700">
-                Remove
+                {t('tenants.create.logoRemove')}
               </button>
             )}
           </div>
-          <p className="text-xs text-gray-400 mt-1">PNG, JPG or SVG — max 2 MB</p>
+          <p className="text-xs text-gray-400 mt-1">{t('tenants.create.logoHint')}</p>
         </div>
 
         {mutation.isError && (
-          <p className="text-red-500 text-xs">Failed to create tenant. Please try again.</p>
+          <p className="text-red-500 text-xs">{t('tenants.create.error')}</p>
         )}
 
         <div className="flex justify-end gap-3 pt-2">
@@ -160,14 +161,14 @@ export function CreateTenantModal({ onClose }: Props) {
             onClick={onClose}
             className="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm"
           >
-            Cancel
+            {tc('button.cancel')}
           </button>
           <button
             type="submit"
             disabled={mutation.isPending}
             className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
           >
-            {mutation.isPending ? 'Creating…' : 'Create Tenant'}
+            {mutation.isPending ? t('tenants.create.creating') : t('tenants.create.createButton')}
           </button>
         </div>
       </form>

@@ -1,0 +1,74 @@
+{
+  "title": "Termini",
+  "totalCount": "{{count}} termin(a)",
+  "filteredOf": "{{filtered}} od",
+  "button": { "bookAppointment": "+ Zakaži termin" },
+  "tab": { "list": "Lista", "calendar": "Kalendar" },
+  "search": { "placeholder": "Pretraži pacijenta ili razlog…" },
+  "filter": {
+    "allStatuses": "Svi statusi",
+    "allProviders": "Svi doktori",
+    "showPast": "Prikaži prošle"
+  },
+  "preset": {
+    "today": "Danas",
+    "thisWeek": "Ova sedmica",
+    "thisMonth": "Ovaj mjesec"
+  },
+  "table": {
+    "start": "Početak",
+    "patient": "Pacijent",
+    "provider": "Doktor",
+    "duration": "Trajanje",
+    "status": "Status",
+    "chiefComplaint": "Razlog posjete"
+  },
+  "statuses": {
+    "Scheduled": "Zakazan",
+    "CheckedIn": "Prijavljen",
+    "InProgress": "U toku",
+    "Completed": "Završen",
+    "Cancelled": "Otkazan",
+    "NoShow": "Nije se pojavio"
+  },
+  "actions": {
+    "checkIn": "Prijavi",
+    "startTreatment": "Pokreni tretman",
+    "complete": "Završi termin",
+    "noShow": "Nije se pojavio",
+    "cancel": "Otkaži",
+    "reschedule": "Premjesti",
+    "rebook": "Ponovo zakaži"
+  },
+  "emptyState": "Nema pronađenih termina.",
+  "calendar": {
+    "prev": "← Preth.",
+    "next": "Sljed. →",
+    "today": "Danas"
+  },
+  "types": {
+    "title": "Vrste termina",
+    "subtitle": "Upravljajte vrstama termina dostupnim za zakazivanje.",
+    "button": { "newType": "Nova vrsta" },
+    "emptyState": "Nema vrsta termina.",
+    "table": {
+      "name": "Naziv",
+      "duration": "Trajanje",
+      "defaultFee": "Osnovna cijena",
+      "colour": "Boja",
+      "online": "Online"
+    },
+    "editTooltip": "Uredi",
+    "deleteTooltip": "Obriši",
+    "confirm": {
+      "removeTitle": "Ukloniti vrstu termina?",
+      "removeDescription": "Ukloniti {{name}}? Biće sakrivena iz forme za zakazivanje.",
+      "removeGeneric": "Ova vrsta termina će biti uklonjena.",
+      "removeButton": "Ukloni"
+    },
+    "toast": {
+      "removed": "Vrsta termina uklonjena.",
+      "removeFailed": "Uklanjanje vrste termina nije uspjelo."
+    }
+  }
+}

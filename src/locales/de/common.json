@@ -1,0 +1,107 @@
+{
+  "nav": {
+    "dashboard": "Startseite",
+    "patients": "Patienten",
+    "staff": "Personal",
+    "appointments": "Termine",
+    "billing": "Abrechnung",
+    "team": "Team",
+    "appointmentTypes": "Terminarten",
+    "adminPanel": "Admin-Bereich",
+    "profileSettings": "Profil & Einstellungen",
+    "signOut": "Abmelden",
+    "appName": "DentFlow"
+  },
+  "button": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "done": "Fertig",
+    "confirm": "Bestätigen",
+    "prev": "Zurück",
+    "next": "Weiter",
+    "previous": "Vorherige",
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren",
+    "exportCsv": "CSV exportieren"
+  },
+  "status": {
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "archived": "Archiviert",
+    "transferred": "Versetzt",
+    "allStatuses": "Alle Status"
+  },
+  "appointmentStatus": {
+    "scheduled": "Geplant",
+    "confirmed": "Bestätigt",
+    "checkedIn": "Eingecheckt",
+    "inChair": "Auf dem Stuhl",
+    "completed": "Abgeschlossen",
+    "cancelled": "Storniert",
+    "noShow": "Nicht erschienen",
+    "rescheduled": "Verschoben"
+  },
+  "appointmentAction": {
+    "checkIn": "Einchecken",
+    "startTreatment": "Behandlung starten",
+    "complete": "Abschließen"
+  },
+  "staffType": {
+    "dentist": "Zahnarzt",
+    "dentalAssistant": "Zahnarztassistent/in",
+    "hygienist": "Dentalhygieniker/in",
+    "receptionist": "Rezeptionist/in",
+    "clinicAdmin": "Klinikadministrator",
+    "officeManager": "Praxismanager/in",
+    "allTypes": "Alle Arten"
+  },
+  "gender": {
+    "male": "Männlich",
+    "female": "Weiblich",
+    "other": "Sonstiges",
+    "preferNotToSay": "Keine Angabe",
+    "select": "Auswählen…"
+  },
+  "contactMethod": {
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "sms": "SMS"
+  },
+  "documentCategory": {
+    "xRay": "Röntgen",
+    "photo": "Foto",
+    "consentForm": "Einwilligung",
+    "insurance": "Versicherung",
+    "other": "Sonstiges"
+  },
+  "day": {
+    "sunday": "Sonntag",
+    "monday": "Montag",
+    "tuesday": "Dienstag",
+    "wednesday": "Mittwoch",
+    "thursday": "Donnerstag",
+    "friday": "Freitag",
+    "saturday": "Samstag"
+  },
+  "loading": "Laden…",
+  "total": "gesamt",
+  "unit": { "min": "Min" },
+  "boolean": { "yes": "Ja", "no": "Nein" },
+  "lastLogin": { "never": "Nie" },
+  "expiry": { "expired": "Abgelaufen" },
+  "role": { "staff": "Personal" },
+  "pagination": {
+    "pageOfTotal": "Seite {{page}} von {{totalPages}} ({{totalCount}} gesamt)",
+    "showingRange": "Zeige {{from}}–{{to}} von {{total}}"
+  },
+  "aria": {
+    "closeSidebar": "Seitenleiste schließen",
+    "openSidebar": "Seitenleiste öffnen",
+    "toggleDarkMode": "Dunkelmodus umschalten",
+    "close": "Schließen",
+    "hidePassword": "Passwort ausblenden",
+    "showPassword": "Passwort anzeigen"
+  }
+}

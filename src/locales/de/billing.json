@@ -1,0 +1,105 @@
+{
+  "title": "Rechnungen",
+  "totalCount": "{{count}} gesamt",
+  "button": {
+    "newInvoice": "+ Neue Rechnung",
+    "addLineItem": "+ Position hinzufügen",
+    "recordPayment": "Zahlung erfassen",
+    "void": "Rechnung stornieren"
+  },
+  "emptyState": "Keine Rechnungen gefunden.",
+  "filter": {
+    "allStatuses": "Alle Status",
+    "fromDate": "Von Datum",
+    "toDate": "Bis Datum"
+  },
+  "status": {
+    "Draft": "Entwurf",
+    "Sent": "Gesendet",
+    "PartiallyPaid": "Teilweise bezahlt",
+    "Paid": "Bezahlt",
+    "Void": "Storniert"
+  },
+  "paymentMethod": {
+    "Cash": "Bargeld",
+    "Card": "Karte",
+    "Insurance": "Versicherung",
+    "BankTransfer": "Überweisung",
+    "Other": "Sonstige"
+  },
+  "table": {
+    "invoiceNumber": "Rechnungs-Nr.",
+    "status": "Status",
+    "issuedAt": "Ausgestellt",
+    "dueDate": "Fälligkeitsdatum",
+    "subTotal": "Betrag",
+    "paid": "Bezahlt",
+    "balance": "Restbetrag",
+    "items": "Positionen"
+  },
+  "detail": {
+    "backToInvoices": "← Zurück zu Rechnungen",
+    "issuedAt": "Ausgestellt",
+    "dueDate": "Fällig",
+    "notes": "Notizen",
+    "subTotal": "Gesamt",
+    "paidAmount": "Bezahlt",
+    "balanceDue": "Restbetrag",
+    "lineItems": "Positionen",
+    "payments": "Zahlungen",
+    "noLineItems": "Noch keine Positionen.",
+    "noPayments": "Keine Zahlungen erfasst."
+  },
+  "lineItem": {
+    "description": "Beschreibung",
+    "cdtCode": "CDT-Code",
+    "tooth": "Zahn-Nr.",
+    "qty": "Menge",
+    "unitFee": "Einzelpreis",
+    "total": "Gesamt",
+    "actions": "Aktionen"
+  },
+  "payment": {
+    "amount": "Betrag",
+    "method": "Methode",
+    "paidAt": "Bezahlt am",
+    "reference": "Referenz",
+    "notes": "Notizen"
+  },
+  "create": {
+    "title": "Neue Rechnung",
+    "patientId": "Patienten-ID",
+    "dueDate": "Fälligkeitsdatum (optional)",
+    "notes": "Notizen (optional)",
+    "lineItems": "Positionen",
+    "addItem": "+ Zeile hinzufügen",
+    "subTotal": "Gesamt"
+  },
+  "recordPayment": {
+    "title": "Zahlung erfassen",
+    "amount": "Betrag",
+    "method": "Zahlungsmethode",
+    "paidAt": "Zahlungsdatum",
+    "reference": "Referenz (optional)",
+    "notes": "Notizen (optional)"
+  },
+  "addLineItem": {
+    "titleAdd": "Position hinzufügen",
+    "titleEdit": "Position bearbeiten",
+    "description": "Beschreibung",
+    "cdtCode": "CDT-Code (optional)",
+    "toothNumber": "Zahnnummer (optional)",
+    "quantity": "Menge",
+    "unitFee": "Einzelpreis"
+  },
+  "confirm": {
+    "voidTitle": "Rechnung stornieren",
+    "voidDescription": "Möchten Sie die Rechnung {{number}} wirklich stornieren? Dies kann nicht rückgängig gemacht werden.",
+    "deleteLineItemTitle": "Position entfernen",
+    "deleteLineItemDescription": "Möchten Sie diese Position wirklich entfernen?"
+  },
+  "patientTab": {
+    "emptyState": "Keine Rechnungen für diesen Patienten.",
+    "newInvoice": "+ Neue Rechnung"
+  }
+}

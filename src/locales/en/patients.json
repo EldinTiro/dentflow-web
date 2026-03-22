@@ -1,0 +1,124 @@
+{
+  "title": "Patients",
+  "totalCount": "{{count}} total",
+  "button": { "newPatient": "+ New Patient" },
+  "search": { "placeholder": "Search by name, email, phone…" },
+  "emptyState": "No patients found.",
+  "table": {
+    "patientNumber": "Patient #",
+    "name": "Name",
+    "dateOfBirth": "Date of Birth",
+    "mobile": "Mobile",
+    "email": "Email",
+    "status": "Status"
+  },
+  "backToPatients": "← Back to Patients",
+  "notFound": "Patient not found.",
+  "goesBy": "Goes by \"{{name}}\"",
+  "parentGuardian": "Parent/Guardian:",
+  "tab": {
+    "overview": "Overview",
+    "appointments": "Appointments",
+    "treatments": "Treatments",
+    "files": "Files",
+    "billing": "Billing"
+  },
+  "section": {
+    "demographics": "Demographics",
+    "contactInfo": "Contact Information",
+    "address": "Address",
+    "notes": "Notes"
+  },
+  "field": {
+    "dateOfBirth": "Date of Birth",
+    "gender": "Gender",
+    "preferredContact": "Preferred Contact",
+    "firstVisit": "First Visit",
+    "lastVisit": "Last Visit",
+    "recallDue": "Recall Due",
+    "mobile": "Mobile",
+    "home": "Home",
+    "work": "Work",
+    "smsOptIn": "SMS Opt-in",
+    "emailOptIn": "Email Opt-in",
+    "addressLine1": "Address Line 1",
+    "addressLine2": "Address Line 2",
+    "city": "City",
+    "stateProvince": "State/Province",
+    "postalCode": "Postal Code",
+    "country": "Country",
+    "countryCode": "Country Code"
+  },
+  "meta": {
+    "created": "Created:",
+    "updated": "Updated:"
+  },
+  "appointments": {
+    "emptyState": "No appointments found for this patient.",
+    "totalCount": "{{count}} appointment(s) total"
+  },
+  "confirm": {
+    "deleteTitle": "Delete Patient?",
+    "deleteDescription": "{{name}} will be soft-deleted. This can be undone by an admin.",
+    "deleteFile": "Delete \"{{fileName}}\"?"
+  },
+  "drawer": {
+    "createTitle": "New Patient",
+    "patientNumber": "Patient Number",
+    "autoGenerate": "(leave blank to auto-generate)",
+    "patientNumberPlaceholder": "e.g. P-000123",
+    "firstName": "First Name *",
+    "lastName": "Last Name *",
+    "preferredName": "Preferred Name",
+    "nicknamePlaceholder": "Optional nickname",
+    "parentName": "Parent / Guardian Name",
+    "parentNamePlaceholder": "e.g. Marko Tiro",
+    "dateOfBirth": "Date of Birth",
+    "email": "Email",
+    "emailPlaceholder": "jane@example.com",
+    "mobilePhone": "Mobile Phone",
+    "phonePlaceholder": "61 123 456",
+    "smsOptIn": "SMS opt-in",
+    "emailOptIn": "Email opt-in",
+    "notesPlaceholder": "Optional notes…",
+    "creating": "Creating…",
+    "createButton": "Create Patient",
+    "editTitle": "Edit — {{name}}",
+    "pronouns": "Pronouns",
+    "pronounsPlaceholder": "e.g. she/her",
+    "sectionContact": "Contact",
+    "sectionAddress": "Address",
+    "sectionOther": "Other",
+    "occupation": "Occupation",
+    "countryCodePlaceholder": "e.g. US",
+    "saving": "Saving…",
+    "saveChanges": "Save Changes"
+  },
+  "validation": { "required": "Required" },
+  "error": {
+    "createFailed": "Failed to create patient. Please try again.",
+    "updateFailed": "Failed to save changes. Please try again."
+  },
+  "files": {
+    "uploadTitle": "Upload Files",
+    "chooseFiles": "Choose files…",
+    "supportedFormats": "Images, PDF, Word. Select multiple files at once.",
+    "category": "Category",
+    "notesOptional": "Notes (optional)",
+    "notesPlaceholder": "e.g. Upper right quadrant",
+    "uploading": "Uploading…",
+    "uploadButton": "Upload {{count}} file(s)",
+    "imagesHeading": "Images",
+    "documentsHeading": "Documents",
+    "emptyState": "No files uploaded yet",
+    "couldNotLoadImage": "Could not load image",
+    "deleteTooltip": "Delete"
+  },
+  "toast": {
+    "filesUploaded": "{{count}} file(s) uploaded",
+    "filesUploadFailed": "{{count}} file(s) failed to upload",
+    "fileDeleted": "File deleted",
+    "deleteFailed": "Delete failed",
+    "couldNotOpenFile": "Could not open file"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "title": "Fakture",
+  "totalCount": "{{count}} ukupno",
+  "button": {
+    "newInvoice": "+ Nova faktura",
+    "addLineItem": "+ Dodaj stavku",
+    "recordPayment": "Unesi plaćanje",
+    "void": "Poništi fakturu"
+  },
+  "emptyState": "Nema pronađenih faktura.",
+  "filter": {
+    "allStatuses": "Svi statusi",
+    "fromDate": "Od datuma",
+    "toDate": "Do datuma"
+  },
+  "status": {
+    "Draft": "Nacrt",
+    "Sent": "Poslano",
+    "PartiallyPaid": "Djelimično plaćeno",
+    "Paid": "Plaćeno",
+    "Void": "Poništeno"
+  },
+  "paymentMethod": {
+    "Cash": "Gotovina",
+    "Card": "Kartica",
+    "Insurance": "Osiguranje",
+    "BankTransfer": "Bankovni transfer",
+    "Other": "Ostalo"
+  },
+  "table": {
+    "invoiceNumber": "Br. fakture",
+    "status": "Status",
+    "issuedAt": "Datum",
+    "dueDate": "Rok plaćanja",
+    "subTotal": "Iznos",
+    "paid": "Plaćeno",
+    "balance": "Ostatak",
+    "items": "Stavke"
+  },
+  "detail": {
+    "backToInvoices": "← Nazad na fakture",
+    "issuedAt": "Izdano",
+    "dueDate": "Rok",
+    "notes": "Napomene",
+    "subTotal": "Ukupno",
+    "paidAmount": "Plaćeno",
+    "balanceDue": "Preostalo",
+    "lineItems": "Stavke",
+    "payments": "Plaćanja",
+    "noLineItems": "Nema stavki.",
+    "noPayments": "Nema evidentiranih plaćanja."
+  },
+  "lineItem": {
+    "description": "Opis",
+    "cdtCode": "CDT kod",
+    "tooth": "Zub br.",
+    "qty": "Kol.",
+    "unitFee": "Cijena",
+    "total": "Ukupno",
+    "actions": "Akcije"
+  },
+  "payment": {
+    "amount": "Iznos",
+    "method": "Metoda",
+    "paidAt": "Datum plaćanja",
+    "reference": "Referenca",
+    "notes": "Napomene"
+  },
+  "create": {
+    "title": "Nova faktura",
+    "patientId": "ID pacijenta",
+    "dueDate": "Rok plaćanja (opciono)",
+    "notes": "Napomene (opciono)",
+    "lineItems": "Stavke",
+    "addItem": "+ Dodaj red",
+    "subTotal": "Ukupno"
+  },
+  "recordPayment": {
+    "title": "Unos plaćanja",
+    "amount": "Iznos",
+    "method": "Metoda plaćanja",
+    "paidAt": "Datum plaćanja",
+    "reference": "Referenca (opciono)",
+    "notes": "Napomene (opciono)"
+  },
+  "addLineItem": {
+    "titleAdd": "Dodaj stavku",
+    "titleEdit": "Uredi stavku",
+    "description": "Opis",
+    "cdtCode": "CDT kod (opciono)",
+    "toothNumber": "Broj zuba (opciono)",
+    "quantity": "Količina",
+    "unitFee": "Cijena"
+  },
+  "confirm": {
+    "voidTitle": "Poništi fakturu",
+    "voidDescription": "Da li ste sigurni da želite poništiti fakturu {{number}}? Ovo se ne može poništiti.",
+    "deleteLineItemTitle": "Ukloni stavku",
+    "deleteLineItemDescription": "Da li ste sigurni da želite ukloniti ovu stavku?"
+  },
+  "patientTab": {
+    "emptyState": "Nema faktura za ovog pacijenta.",
+    "newInvoice": "+ Nova faktura"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "title": "Appointments",
+  "totalCount": "{{count}} appointment(s)",
+  "filteredOf": "{{filtered}} of",
+  "button": { "bookAppointment": "+ Book Appointment" },
+  "tab": { "list": "List", "calendar": "Calendar" },
+  "search": { "placeholder": "Search patient or chief complaint…" },
+  "filter": {
+    "allStatuses": "All statuses",
+    "allProviders": "All providers",
+    "showPast": "Show past"
+  },
+  "preset": {
+    "today": "Today",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month"
+  },
+  "table": {
+    "start": "Start",
+    "patient": "Patient",
+    "provider": "Provider",
+    "duration": "Duration",
+    "status": "Status",
+    "chiefComplaint": "Chief Complaint"
+  },
+  "statuses": {
+    "Scheduled": "Scheduled",
+    "CheckedIn": "Checked In",
+    "InProgress": "In Progress",
+    "Completed": "Completed",
+    "Cancelled": "Cancelled",
+    "NoShow": "No Show"
+  },
+  "actions": {
+    "checkIn": "Check In",
+    "startTreatment": "Start Treatment",
+    "complete": "Complete Appointment",
+    "noShow": "No Show",
+    "cancel": "Cancel",
+    "reschedule": "Reschedule",
+    "rebook": "Rebook"
+  },
+  "emptyState": "No appointments found.",
+  "calendar": {
+    "prev": "← Prev",
+    "next": "Next →",
+    "today": "Today"
+  },
+  "types": {
+    "title": "Appointment Types",
+    "subtitle": "Manage the types of appointments available for booking.",
+    "button": { "newType": "New Type" },
+    "emptyState": "No appointment types found.",
+    "table": {
+      "name": "Name",
+      "duration": "Duration",
+      "defaultFee": "Default Fee",
+      "colour": "Colour",
+      "online": "Online"
+    },
+    "editTooltip": "Edit",
+    "deleteTooltip": "Delete",
+    "confirm": {
+      "removeTitle": "Remove appointment type?",
+      "removeDescription": "Remove {{name}}? It will be hidden from the booking form.",
+      "removeGeneric": "This appointment type will be removed.",
+      "removeButton": "Remove"
+    },
+    "toast": {
+      "removed": "Appointment type removed.",
+      "removeFailed": "Failed to remove appointment type."
+    }
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "title": "Invoices",
+  "totalCount": "{{count}} total",
+  "button": {
+    "newInvoice": "+ New Invoice",
+    "addLineItem": "+ Add Line Item",
+    "recordPayment": "Record Payment",
+    "void": "Void Invoice"
+  },
+  "emptyState": "No invoices found.",
+  "filter": {
+    "allStatuses": "All statuses",
+    "fromDate": "From date",
+    "toDate": "To date"
+  },
+  "status": {
+    "Draft": "Draft",
+    "Sent": "Sent",
+    "PartiallyPaid": "Partially Paid",
+    "Paid": "Paid",
+    "Void": "Void"
+  },
+  "paymentMethod": {
+    "Cash": "Cash",
+    "Card": "Card",
+    "Insurance": "Insurance",
+    "BankTransfer": "Bank Transfer",
+    "Other": "Other"
+  },
+  "table": {
+    "invoiceNumber": "Invoice #",
+    "status": "Status",
+    "issuedAt": "Issued",
+    "dueDate": "Due Date",
+    "subTotal": "Sub-Total",
+    "paid": "Paid",
+    "balance": "Balance",
+    "items": "Items"
+  },
+  "detail": {
+    "backToInvoices": "← Back to Invoices",
+    "issuedAt": "Issued",
+    "dueDate": "Due",
+    "notes": "Notes",
+    "subTotal": "Sub-Total",
+    "paidAmount": "Paid",
+    "balanceDue": "Balance Due",
+    "lineItems": "Line Items",
+    "payments": "Payments",
+    "noLineItems": "No line items yet.",
+    "noPayments": "No payments recorded."
+  },
+  "lineItem": {
+    "description": "Description",
+    "cdtCode": "CDT Code",
+    "tooth": "Tooth #",
+    "qty": "Qty",
+    "unitFee": "Unit Fee",
+    "total": "Total",
+    "actions": "Actions"
+  },
+  "payment": {
+    "amount": "Amount",
+    "method": "Method",
+    "paidAt": "Paid At",
+    "reference": "Reference",
+    "notes": "Notes"
+  },
+  "create": {
+    "title": "New Invoice",
+    "patientId": "Patient ID",
+    "dueDate": "Due Date (optional)",
+    "notes": "Notes (optional)",
+    "lineItems": "Line Items",
+    "addItem": "+ Add Row",
+    "subTotal": "Sub-Total"
+  },
+  "recordPayment": {
+    "title": "Record Payment",
+    "amount": "Amount",
+    "method": "Payment Method",
+    "paidAt": "Payment Date",
+    "reference": "Reference (optional)",
+    "notes": "Notes (optional)"
+  },
+  "addLineItem": {
+    "titleAdd": "Add Line Item",
+    "titleEdit": "Edit Line Item",
+    "description": "Description",
+    "cdtCode": "CDT Code (optional)",
+    "toothNumber": "Tooth Number (optional)",
+    "quantity": "Quantity",
+    "unitFee": "Unit Fee"
+  },
+  "confirm": {
+    "voidTitle": "Void Invoice",
+    "voidDescription": "Are you sure you want to void invoice {{number}}? This cannot be undone.",
+    "deleteLineItemTitle": "Remove Line Item",
+    "deleteLineItemDescription": "Are you sure you want to remove this line item?"
+  },
+  "patientTab": {
+    "emptyState": "No invoices for this patient.",
+    "newInvoice": "+ New Invoice"
+  }
+}

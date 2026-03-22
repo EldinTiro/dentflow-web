@@ -1,0 +1,13 @@
+{
+  "validation": {
+    "required": "Pflichtfeld",
+    "invalidEmail": "Geben Sie eine gültige E-Mail-Adresse ein",
+    "passwordRequired": "Passwort ist erforderlich",
+    "minLength12": "Mindestens 12 Zeichen",
+    "mustContainUppercase": "Muss Großbuchstaben enthalten",
+    "mustContainLowercase": "Muss Kleinbuchstaben enthalten",
+    "mustContainDigit": "Muss eine Ziffer enthalten",
+    "mustContainSpecial": "Muss ein Sonderzeichen enthalten",
+    "passwordsMismatch": "Passwörter stimmen nicht überein"
+  }
+}

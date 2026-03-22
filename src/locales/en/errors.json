@@ -1,0 +1,13 @@
+{
+  "validation": {
+    "required": "Required",
+    "invalidEmail": "Enter a valid email address",
+    "passwordRequired": "Password is required",
+    "minLength12": "At least 12 characters",
+    "mustContainUppercase": "Must contain uppercase",
+    "mustContainLowercase": "Must contain lowercase",
+    "mustContainDigit": "Must contain a digit",
+    "mustContainSpecial": "Must contain a special character",
+    "passwordsMismatch": "Passwords do not match"
+  }
+}

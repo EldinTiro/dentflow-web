@@ -2,45 +2,37 @@ import apiClient from '@/shared/api/client';
 
 export type AppointmentStatus =
   | 'Scheduled'
-  | 'Confirmed'
   | 'CheckedIn'
-  | 'InChair'
+  | 'InProgress'
   | 'Completed'
   | 'Cancelled'
-  | 'NoShow'
-  | 'Rescheduled';
+  | 'NoShow';
 
 export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
-  Scheduled: 'Scheduled',
-  Confirmed: 'Confirmed',
-  CheckedIn: 'Checked In',
-  InChair: 'In Chair',
-  Completed: 'Completed',
-  Cancelled: 'Cancelled',
-  NoShow: 'No Show',
-  Rescheduled: 'Rescheduled',
+  Scheduled:  'Scheduled',
+  CheckedIn:  'Checked In',
+  InProgress: 'In Progress',
+  Completed:  'Completed',
+  Cancelled:  'Cancelled',
+  NoShow:     'No Show',
 };
 
 export const STATUS_COLORS: Record<AppointmentStatus, string> = {
-  Scheduled: 'bg-blue-100 text-blue-700',
-  Confirmed: 'bg-green-100 text-green-700',
-  CheckedIn: 'bg-yellow-100 text-yellow-700',
-  InChair: 'bg-orange-100 text-orange-700',
-  Completed: 'bg-gray-100 text-gray-600',
-  Cancelled: 'bg-red-100 text-red-600',
-  NoShow: 'bg-red-50 text-red-400',
-  Rescheduled: 'bg-purple-100 text-purple-700',
+  Scheduled:  'bg-blue-100 text-blue-700',
+  CheckedIn:  'bg-yellow-100 text-yellow-700',
+  InProgress: 'bg-orange-100 text-orange-700',
+  Completed:  'bg-gray-100 text-gray-600',
+  Cancelled:  'bg-red-100 text-red-600',
+  NoShow:     'bg-red-50 text-red-400',
 };
 
 export const ALL_STATUSES: AppointmentStatus[] = [
   'Scheduled',
-  'Confirmed',
   'CheckedIn',
-  'InChair',
+  'InProgress',
   'Completed',
   'Cancelled',
   'NoShow',
-  'Rescheduled',
 ];
 
 export interface AppointmentResponse {
@@ -60,11 +52,23 @@ export interface AppointmentResponse {
   cancelledAt: string | null;
   confirmedAt: string | null;
   checkedInAt: string | null;
+  startedAt: string | null;
   completedAt: string | null;
   source: string;
   colorHex: string | null;
   createdAt: string;
   updatedAt: string | null;
+}
+
+export interface AppointmentStatusHistoryResponse {
+  id: string;
+  appointmentId: string;
+  fromStatus: string | null;
+  toStatus: string;
+  changedByUserId: string | null;
+  reason: string | null;
+  isOverride: boolean;
+  changedAt: string;
 }
 
 export interface AppointmentTypeResponse {
@@ -76,6 +80,7 @@ export interface AppointmentTypeResponse {
   isBookableOnline: boolean;
   requiresNewPatientForm: boolean;
   sortOrder: number;
+  defaultFee: number | null;
 }
 
 export interface PagedResult<T> {
@@ -152,9 +157,45 @@ export const appointmentService = {
       .then((r) => r.data);
   },
 
+  overrideStatus(id: string, newStatus: AppointmentStatus, reason?: string) {
+    return apiClient
+      .post<AppointmentResponse>(`${BASE}/${id}/override-status`, { newStatus, reason })
+      .then((r) => r.data);
+  },
+
+  updateNotes(id: string, notes: string | null) {
+    return apiClient
+      .patch<AppointmentResponse>(`${BASE}/${id}/notes`, { notes })
+      .then((r) => r.data);
+  },
+
+  getHistory(id: string) {
+    return apiClient
+      .get<AppointmentStatusHistoryResponse[]>(`${BASE}/${id}/history`)
+      .then((r) => r.data);
+  },
+
   listTypes() {
     return apiClient
       .get<AppointmentTypeResponse[]>('/api/v1/appointment-types')
+      .then((r) => r.data);
+  },
+
+  createType(body: { name: string; defaultDurationMinutes: number; description?: string; colorHex?: string; isBookableOnline?: boolean; defaultFee?: number | null }) {
+    return apiClient
+      .post<AppointmentTypeResponse>('/api/v1/appointment-types', body)
+      .then((r) => r.data);
+  },
+
+  updateType(id: string, body: { name: string; defaultDurationMinutes: number; description?: string; colorHex?: string; isBookableOnline?: boolean; defaultFee?: number | null }) {
+    return apiClient
+      .put<AppointmentTypeResponse>(`/api/v1/appointment-types/${id}`, body)
+      .then((r) => r.data);
+  },
+
+  deleteType(id: string) {
+    return apiClient
+      .delete(`/api/v1/appointment-types/${id}`)
       .then((r) => r.data);
   },
 };

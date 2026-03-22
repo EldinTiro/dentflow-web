@@ -2,7 +2,7 @@ import apiClient from '@/shared/api/client'
 
 export type Gender = 'Male' | 'Female' | 'Other' | 'PreferNotToSay'
 export type ContactMethod = 'Email' | 'Phone' | 'Sms'
-export type PatientStatus = 'Active' | 'Inactive' | 'Archived' | 'Deceased'
+export type PatientStatus = 'Active' | 'Inactive' | 'Transferred'
 
 export interface PatientResponse {
   id: string
@@ -10,6 +10,7 @@ export interface PatientResponse {
   firstName: string
   lastName: string
   preferredName: string | null
+  parentName: string | null
   fullName: string
   displayName: string
   dateOfBirth: string | null
@@ -48,9 +49,11 @@ export interface PagedResult<T> {
 }
 
 export interface CreatePatientRequest {
+  patientNumber?: string | null
   firstName: string
   lastName: string
   preferredName?: string | null
+  parentName?: string | null
   dateOfBirth?: string | null
   gender?: Gender | null
   email?: string | null
@@ -76,6 +79,7 @@ export interface UpdatePatientRequest {
   firstName: string
   lastName: string
   preferredName?: string | null
+  parentName?: string | null
   dateOfBirth?: string | null
   gender?: Gender | null
   pronouns?: string | null

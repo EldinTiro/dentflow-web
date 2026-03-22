@@ -1,0 +1,39 @@
+{
+  "title": "Osoblje",
+  "memberCount": "{{count}} član(ova)",
+  "button": { "addStaff": "+ Dodaj osoblje" },
+  "search": { "placeholder": "Pretraži po imenu ili emailu…" },
+  "emptyState": "Nema pronađenog osoblja.",
+  "table": {
+    "name": "Ime",
+    "type": "Vrsta",
+    "email": "Email",
+    "phone": "Telefon",
+    "specialty": "Specijalnost",
+    "color": "Boja",
+    "status": "Status"
+  },
+  "backToStaff": "← Nazad na osoblje",
+  "notFound": "Član osoblja nije pronađen.",
+  "tab": {
+    "overview": "Pregled",
+    "absence": "Odsutnost"
+  },
+  "section": {
+    "contact": "Kontakt",
+    "employment": "Zaposlenje",
+    "credentials": "Akreditacije",
+    "biography": "Biografija"
+  },
+  "field": {
+    "email": "Email",
+    "phone": "Telefon",
+    "staffType": "Vrsta osoblja",
+    "specialty": "Specijalnost",
+    "hireDate": "Datum zaposlenja",
+    "terminationDate": "Datum prestanka rada",
+    "licenseNumber": "Broj licence",
+    "licenseExpiry": "Istek licence",
+    "npiNumber": "NPI broj"
+  }
+}

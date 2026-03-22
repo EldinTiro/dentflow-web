@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
 import {
   staffService,
   DAYS_OF_WEEK,
-  DAY_OF_WEEK_LABELS,
   DAY_OF_WEEK_VALUE,
-  DAY_OF_WEEK_FROM_VALUE,
   type DayOfWeek,
   type StaffAvailabilityResponse,
 } from '../services/staffService'
@@ -196,30 +195,15 @@ export function StaffAvailabilityTab({ staffId }: Props) {
         })}
       </div>
 
-      {/* Delete confirmation */}
-      {deletingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Remove availability slot?</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">This slot will be removed from the weekly schedule.</p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setDeletingId(null)}
-                className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900"
-              >
-                Cancel
-              </button>
-              <button
-                disabled={deleteMutation.isPending}
-                onClick={() => deleteMutation.mutate(deletingId)}
-                className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
-              >
-                {deleteMutation.isPending ? 'Removing…' : 'Remove'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={!!deletingId}
+        title="Remove availability slot?"
+        description="This slot will be removed from the weekly schedule."
+        confirmLabel="Remove"
+        isPending={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate(deletingId!)}
+        onCancel={() => setDeletingId(null)}
+      />
     </div>
   )
 }

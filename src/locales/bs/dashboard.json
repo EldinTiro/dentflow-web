@@ -1,0 +1,57 @@
+{
+  "title": "Početna",
+  "quickAction": {
+    "bookAppointment": "Zakaži termin",
+    "registerPatient": "Registruj pacijenta"
+  },
+  "stat": {
+    "todaysAppointments": "Današnji termini",
+    "pendingConfirmation": "Čekaju potvrdu",
+    "scheduledPlusConfirmed": "Zakazani + Potvrđeni",
+    "totalPatients": "Ukupno pacijenata",
+    "activeRecords": "Aktivni kartoni",
+    "activeStaff": "Aktivno osoblje",
+    "providersAndAdmin": "Doktori i administracija",
+    "tomorrow": "Sutra",
+    "appointmentsBooked": "Zakazanih termina",
+    "revenueThisMonth": "Prihod ovog mjeseca",
+    "thisMonth": "Naplaćeno ovog mjeseca",
+    "outstandingBalance": "Neplaćeni iznos",
+    "unpaidInvoices": "Neplaćeni računi",
+    "newPatientsThisMonth": "Novi pacijenti",
+    "firstVisitThisMonth": "Prva posjeta ovog mjeseca",
+    "completedThisWeek": "Završeno ovaj tjedan",
+    "vsLastWeek": "u odnosu na prošli tjedan",
+    "vsLastWeekSame": "Isto kao prošle sedmice"
+  },
+  "recall": {
+    "title": "Upozorenja za kontrole",
+    "overdue": "Prošla kontrola",
+    "dueSoon": "Kontrola u 30 dana"
+  },
+  "schedule": {
+    "title": "Današnji raspored",
+    "completedOfTotal": "{{completed}} od {{total}} završeno",
+    "viewAll": "Pogledaj sve →",
+    "emptyState": "Nema zakazanih termina za danas.",
+    "bookNow": "Zakaži sada →",
+    "moreCount": "+{{count}} više —",
+    "viewAllLink": "pogledaj sve"
+  },
+  "provider": {
+    "title": "Danas po doktoru",
+    "emptyState": "Nema kliničkih doktora."
+  },
+  "slotChecker": {
+    "title": "Brza provjera slobodnih termina",
+    "todayBadge": "Danas",
+    "allProviders": "Svi doktori",
+    "freeCount": "{{count}} slobodno",
+    "bookedCount": "{{count}} zauzeto",
+    "bookedTooltip": "Zauzeto",
+    "freeTooltip": "Slobodno – klikni za zakazivanje",
+    "footer": "{{startHour}}:00 – {{endHour}}:00 · Termini od 30 min · Klikni slobodan termin za zakazivanje",
+    "previousDay": "Prethodni dan",
+    "nextDay": "Sljedeći dan"
+  }
+}

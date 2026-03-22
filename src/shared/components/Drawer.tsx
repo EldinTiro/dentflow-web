@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 interface DrawerProps {
   title: string
@@ -8,6 +8,12 @@ interface DrawerProps {
 }
 
 export function Drawer({ title, onClose, children, width = 'w-[460px]' }: DrawerProps) {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    requestAnimationFrame(() => setVisible(true))
+  }, [])
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -17,9 +23,9 @@ export function Drawer({ title, onClose, children, width = 'w-[460px]' }: Drawer
   }, [onClose])
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className={`relative z-50 ${width} bg-white dark:bg-gray-900 shadow-xl flex flex-col h-full`}>
+    <div className="fixed inset-0 z-60 flex justify-end">
+      <div className={`absolute inset-0 bg-black/40 transition-opacity duration-200 ${visible ? 'opacity-100' : 'opacity-0'}`} onClick={onClose} />
+      <div className={`relative z-60 ${width} bg-white dark:bg-gray-900 shadow-xl flex flex-col h-full transition-transform duration-200 ease-out ${visible ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-5 py-4">
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
           <button

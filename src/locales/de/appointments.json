@@ -1,0 +1,73 @@
+{
+  "title": "Termine",
+  "totalCount": "{{count}} Termin(e)",
+  "filteredOf": "{{filtered}} von",
+  "button": { "bookAppointment": "+ Termin buchen" },
+  "tab": { "list": "Liste", "calendar": "Kalender" },
+  "search": { "placeholder": "Patient oder Beschwerden suchen…" },
+  "filter": {
+    "allStatuses": "Alle Status",
+    "allProviders": "Alle Ärzte",
+    "showPast": "Vergangene anzeigen"
+  },
+  "preset": {
+    "today": "Heute",
+    "thisWeek": "Diese Woche",
+    "thisMonth": "Dieser Monat"
+  },
+  "table": {
+    "start": "Beginn",
+    "patient": "Patient",
+    "provider": "Arzt",
+    "duration": "Dauer",
+    "status": "Status",
+    "chiefComplaint": "Hauptbeschwerde"
+  },
+  "statuses": {
+    "Scheduled": "Geplant",
+    "CheckedIn": "Eingecheckt",
+    "InProgress": "In Bearbeitung",
+    "Completed": "Abgeschlossen",
+    "Cancelled": "Abgesagt",
+    "NoShow": "Nicht erschienen"
+  },
+  "actions": {
+    "checkIn": "Einchecken",
+    "startTreatment": "Behandlung starten",
+    "complete": "Termin abschließen",
+    "noShow": "Nicht erschienen",
+    "cancel": "Absagen",
+    "reschedule": "Verschieben",
+    "rebook": "Neu buchen"
+  },
+  "emptyState": "Keine Termine gefunden.",
+  "calendar": {
+    "prev": "← Zurück",
+    "next": "Weiter →",
+    "today": "Heute"
+  },
+  "types": {
+    "title": "Terminarten",
+    "subtitle": "Verwalten Sie die verfügbaren Terminarten für die Buchung.",
+    "button": { "newType": "Neue Art" },
+    "emptyState": "Keine Terminarten gefunden.",
+    "table": {
+      "name": "Name",
+      "duration": "Dauer",
+      "colour": "Farbe",
+      "online": "Online"
+    },
+    "editTooltip": "Bearbeiten",
+    "deleteTooltip": "Löschen",
+    "confirm": {
+      "removeTitle": "Terminart entfernen?",
+      "removeDescription": "{{name}} entfernen? Sie wird aus dem Buchungsformular ausgeblendet.",
+      "removeGeneric": "Diese Terminart wird entfernt.",
+      "removeButton": "Entfernen"
+    },
+    "toast": {
+      "removed": "Terminart entfernt.",
+      "removeFailed": "Terminart konnte nicht entfernt werden."
+    }
+  }
+}

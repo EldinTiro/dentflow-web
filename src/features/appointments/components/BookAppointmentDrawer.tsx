@@ -1,4 +1,6 @@
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import { useState, useRef, useEffect } from 'react';
+import { Search, X } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Drawer } from '@/shared/components/Drawer';
 import { appointmentService, type BookAppointmentRequest } from '../services/appointmentService';
@@ -38,6 +40,8 @@ export function BookAppointmentDrawer({ onClose }: Props) {
   const { data: patientsData } = useQuery({
     queryKey: ['patients', '', '', 1],
     queryFn: () => patientService.list({ pageSize: 100 }),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const defaultStartAt = (() => {
@@ -48,9 +52,24 @@ export function BookAppointmentDrawer({ onClose }: Props) {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   })();
 
+  const [patientSearch, setPatientSearch] = useState('');
+  const [patientOpen, setPatientOpen] = useState(false);
+  const patientRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleOutsideClick(e: MouseEvent) {
+      if (patientRef.current && !patientRef.current.contains(e.target as Node)) {
+        setPatientOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
@@ -90,7 +109,7 @@ export function BookAppointmentDrawer({ onClose }: Props) {
 
   const providers = (staffData?.items ?? []).filter(
     (s: StaffMemberResponse): s is StaffMemberResponse =>
-      ['Dentist', 'Hygienist'].includes(s.staffType),
+      s.staffType === 'Dentist',
   );
 
   const patients = patientsData?.items ?? [];
@@ -100,22 +119,92 @@ export function BookAppointmentDrawer({ onClose }: Props) {
     <Drawer title="Book Appointment" onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-6">
 
-        {/* Patient */}
+        {/* Patient — searchable combobox */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Patient <span className="text-red-500">*</span>
           </label>
-          <select
-            {...register('patientId', { required: 'Patient is required' })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">Select patient…</option>
-            {patients.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.firstName} {p.lastName}
-              </option>
-            ))}
-          </select>
+          <Controller
+            name="patientId"
+            control={control}
+            rules={{ required: 'Patient is required' }}
+            render={({ field }) => {
+              const selectedPatient = patients.find((p) => p.id === field.value);
+              const filtered = patients.filter((p) =>
+                `${p.firstName} ${p.lastName}`.toLowerCase().includes(patientSearch.toLowerCase())
+              );
+              return (
+                <div ref={patientRef} className="relative">
+                  {/* Trigger row */}
+                  <div
+                    className={`flex items-center gap-1 w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 cursor-text ${
+                      errors.patientId ? 'border-red-400' : 'border-gray-300 dark:border-gray-600'
+                    } focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500`}
+                    onClick={() => setPatientOpen(true)}
+                  >
+                    <Search size={14} className="shrink-0 text-gray-400" />
+                    {selectedPatient && !patientOpen ? (
+                      <span className="flex-1 truncate text-gray-900 dark:text-gray-100">
+                        {selectedPatient.firstName} {selectedPatient.lastName}
+                      </span>
+                    ) : (
+                      <input
+                        autoComplete="off"
+                        placeholder={selectedPatient ? `${selectedPatient.firstName} ${selectedPatient.lastName}` : 'Search patient…'}
+                        value={patientSearch}
+                        onChange={(e) => {
+                          setPatientSearch(e.target.value);
+                          setPatientOpen(true);
+                        }}
+                        onFocus={() => setPatientOpen(true)}
+                        className="flex-1 outline-none bg-transparent placeholder-gray-400 dark:text-gray-100 min-w-0"
+                      />
+                    )}
+                    {field.value && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          field.onChange('');
+                          setPatientSearch('');
+                          setPatientOpen(false);
+                        }}
+                        className="shrink-0 text-gray-400 hover:text-gray-600"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Dropdown */}
+                  {patientOpen && (
+                    <ul className="absolute z-50 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg text-sm">
+                      {filtered.length === 0 ? (
+                        <li className="px-3 py-2 text-gray-400">No patients found</li>
+                      ) : (
+                        filtered.map((p) => (
+                          <li
+                            key={p.id}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => {
+                              field.onChange(p.id);
+                              setPatientSearch('');
+                              setPatientOpen(false);
+                            }}
+                            className={`px-3 py-2 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/40 hover:text-indigo-700 dark:hover:text-indigo-300 ${
+                              p.id === field.value ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-medium' : 'text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            {p.firstName} {p.lastName}
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  )}
+                </div>
+              );
+            }}
+          />
           {errors.patientId && (
             <p className="mt-1 text-xs text-red-600">{errors.patientId.message}</p>
           )}
@@ -123,12 +212,12 @@ export function BookAppointmentDrawer({ onClose }: Props) {
 
         {/* Provider */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Provider <span className="text-red-500">*</span>
           </label>
           <select
             {...register('providerId', { required: 'Provider is required' })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">Select provider…</option>
             {providers.map((s) => (
@@ -144,12 +233,12 @@ export function BookAppointmentDrawer({ onClose }: Props) {
 
         {/* Appointment Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Appointment Type <span className="text-red-500">*</span>
           </label>
           <select
             {...register('appointmentTypeId', { required: 'Appointment type is required' })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">Select type…</option>
             {apptTypes.map((t) => (
@@ -166,53 +255,53 @@ export function BookAppointmentDrawer({ onClose }: Props) {
         {/* Date/Time + Duration */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Start <span className="text-red-500">*</span>
             </label>
             <input
               type="datetime-local"
               {...register('startAt', { required: 'Start time is required' })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             {errors.startAt && (
               <p className="mt-1 text-xs text-red-600">{errors.startAt.message}</p>
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Duration (min)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (min)</label>
             <input
               type="number"
               min={5}
               step={5}
               {...register('durationMinutes', { required: true, min: 5, valueAsNumber: true })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </div>
 
         {/* Chief Complaint */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Chief Complaint</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chief Complaint</label>
           <input
             type="text"
             {...register('chiefComplaint')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="e.g. Tooth pain, routine checkup"
           />
         </div>
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
           <textarea
             {...register('notes')}
             rows={2}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
           />
         </div>
 
         {/* New patient flag */}
-        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
           <input type="checkbox" {...register('isNewPatient')} className="rounded" />
           New patient appointment
         </label>
@@ -222,7 +311,7 @@ export function BookAppointmentDrawer({ onClose }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
           >
             Cancel
           </button>

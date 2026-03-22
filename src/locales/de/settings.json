@@ -1,0 +1,51 @@
+{
+  "team": {
+    "title": "Team",
+    "memberCount": "{{count}} Mitglieder",
+    "button": { "invite": "+ Mitglied einladen" },
+    "search": { "placeholder": "Nach Name oder E-Mail suchen…" },
+    "emptyState": "Keine Teammitglieder gefunden.",
+    "table": {
+      "name": "Name",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "status": "Status",
+      "lastLogin": "Letzte Anmeldung"
+    },
+    "resetPwd": { "title": "Temporäres Passwort" }
+  },
+  "invite": {
+    "title": "Teammitglied einladen",
+    "successTitle": "Benutzer eingeladen",
+    "successMessage": "Konto erfolgreich erstellt. Teilen Sie die Anmeldedaten mit dem neuen Teammitglied.",
+    "email": "E-Mail",
+    "tempPassword": "Temporäres Passwort",
+    "tempPasswordWarning": "Dieses Passwort wird nicht erneut angezeigt.",
+    "firstName": "Vorname *",
+    "lastName": "Nachname *",
+    "emailLabel": "E-Mail *",
+    "roleLabel": "Rolle *",
+    "sendButton": "Einladung senden",
+    "sending": "Wird eingeladen…",
+    "error": "Benutzer konnte nicht eingeladen werden. Möglicherweise existiert bereits ein Konto."
+  },
+  "adminUsers": {
+    "title": "Benutzer",
+    "search": { "placeholder": "Benutzer suchen…" },
+    "filter": { "allRoles": "Alle Rollen", "allTenants": "Alle Mandanten" },
+    "emptyState": "Keine Benutzer gefunden.",
+    "table": {
+      "name": "Name",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "status": "Status",
+      "actions": "Aktionen"
+    },
+    "resetPassword": "Passwort zurücksetzen",
+    "resetPwd": {
+      "title": "Passwort zurückgesetzt",
+      "label": "Neues temporäres Passwort",
+      "warning": "Teilen Sie dies mit dem Benutzer. Es wird nicht erneut angezeigt."
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   appointmentService,
   APPOINTMENT_STATUS_LABELS,
@@ -42,11 +43,10 @@ function formatDate(isoStr: string) {
   });
 }
 
-const NEXT_STATUS_MAP: Partial<Record<AppointmentStatus, { label: string; next: AppointmentStatus }>> = {
-  Scheduled: { label: 'Confirm', next: 'Confirmed' },
-  Confirmed: { label: 'Check In', next: 'CheckedIn' },
-  CheckedIn: { label: 'Seat', next: 'InChair' },
-  InChair: { label: 'Complete', next: 'Completed' },
+const NEXT_STATUS_MAP: Partial<Record<AppointmentStatus, { labelKey: string; next: AppointmentStatus }>> = {
+  Scheduled:  { labelKey: 'appointmentAction.checkIn',        next: 'CheckedIn'  },
+  CheckedIn:  { labelKey: 'appointmentAction.startTreatment', next: 'InProgress' },
+  InProgress: { labelKey: 'appointmentAction.complete',       next: 'Completed'  },
 };
 
 function SortBtn({ label, col, sort, onClick }: {
@@ -70,6 +70,8 @@ function SortBtn({ label, col, sort, onClick }: {
 }
 
 export function AppointmentsPage() {
+  const { t } = useTranslation('appointments')
+  const { t: tc } = useTranslation('common')
   const roles = useAuthStore((s) => s.user?.roles ?? []);
   const canManage =
     roles.includes('ClinicOwner') ||
@@ -228,6 +230,10 @@ export function AppointmentsPage() {
       );
     }
     result.sort((a, b) => {
+      const terminalStatuses = new Set(['Completed', 'Cancelled', 'NoShow']);
+      const aTerminal = terminalStatuses.has(a.status) ? 1 : 0;
+      const bTerminal = terminalStatuses.has(b.status) ? 1 : 0;
+      if (aTerminal !== bTerminal) return aTerminal - bTerminal;
       let cmp = 0;
       if (sort.col === 'startAt') cmp = new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
       else if (sort.col === 'duration') cmp = a.durationMinutes - b.durationMinutes;
@@ -253,32 +259,32 @@ export function AppointmentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between px-6 pt-6 pb-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Appointments</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t('title')}</h1>
           {tab === 'list' && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {searchTerm && appointments.length !== total
-                ? `${appointments.length} of `
-                : ''}{total} appointment{total !== 1 ? 's' : ''}
+                ? t('filteredOf', { filtered: appointments.length }) + ' '
+                : ''}{t('totalCount', { count: total })}
             </p>
           )}
         </div>
         <div className="flex items-center gap-3">
           {/* Tab switcher */}
           <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-0.5">
-            {(['list', 'calendar'] as Tab[]).map((t) => (
+            {(['list', 'calendar'] as Tab[]).map((tabKey) => (
               <button
-                key={t}
+                key={tabKey}
                 onClick={() => {
-                  setTab(t);
-                  if (t === 'calendar') refetchCal();
+                  setTab(tabKey);
+                  if (tabKey === 'calendar') refetchCal();
                 }}
                 className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  tab === t
+                  tab === tabKey
                     ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }`}
               >
-                {t === 'list' ? 'List' : 'Calendar'}
+                {tabKey === 'list' ? t('tab.list') : t('tab.calendar')}
               </button>
             ))}
           </div>
@@ -287,7 +293,7 @@ export function AppointmentsPage() {
               onClick={() => setShowBook(true)}
               className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
             >
-              + Book Appointment
+              {t('button.bookAppointment')}
             </button>
           )}
         </div>
@@ -303,7 +309,7 @@ export function AppointmentsPage() {
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 <input
                   type="text"
-                  placeholder="Search patient or chief complaint…"
+                  placeholder={t('search.placeholder')}
                   value={searchTerm}
                   onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-8 pr-8 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -322,7 +328,7 @@ export function AppointmentsPage() {
                 className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
               >
                 <Download size={14} />
-                Export CSV
+                {tc('button.exportCsv')}
               </button>
             </div>
 
@@ -337,9 +343,9 @@ export function AppointmentsPage() {
                 const fom = new Date(now.getFullYear(), now.getMonth(), 1);
                 const lom = new Date(now.getFullYear(), now.getMonth() + 1, 0);
                 return ([
-                  { label: 'Today', from: todayS, to: todayS },
-                  { label: 'This Week', from: toLocalDateStr(mon), to: toLocalDateStr(sun) },
-                  { label: 'This Month', from: toLocalDateStr(fom), to: toLocalDateStr(lom) },
+                  { label: t('preset.today'), from: todayS, to: todayS },
+                  { label: t('preset.thisWeek'), from: toLocalDateStr(mon), to: toLocalDateStr(sun) },
+                  { label: t('preset.thisMonth'), from: toLocalDateStr(fom), to: toLocalDateStr(lom) },
                 ] as const).map((p) => (
                   <button
                     key={p.label}
@@ -378,7 +384,7 @@ export function AppointmentsPage() {
                 onChange={(e) => { setStatusFilter(e.target.value as AppointmentStatus | ''); setPage(1); }}
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="">All statuses</option>
+                <option value="">{t('filter.allStatuses')}</option>
                 {ALL_STATUSES.map((s) => (
                   <option key={s} value={s}>{APPOINTMENT_STATUS_LABELS[s]}</option>
                 ))}
@@ -389,7 +395,7 @@ export function AppointmentsPage() {
                 onChange={(e) => { setProviderFilter(e.target.value); setPage(1); }}
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="">All providers</option>
+                <option value="">{t('filter.allProviders')}</option>
                 {(staffData?.items ?? []).map((s) => (
                   <option key={s.id} value={s.id}>{s.fullName}</option>
                 ))}
@@ -402,32 +408,32 @@ export function AppointmentsPage() {
                   onChange={(e) => { setShowPast(e.target.checked); setPage(1); }}
                   className="rounded border-gray-300"
                 />
-                Show past
+                {t('filter.showPast')}
               </label>
             </div>
           </div>
 
           {/* Table */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-4 py-3"><SortBtn label="Start" col="startAt" sort={sort} onClick={() => toggleSort('startAt')} /></th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Patient</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Provider</th>
-                  <th className="text-left px-4 py-3"><SortBtn label="Duration" col="duration" sort={sort} onClick={() => toggleSort('duration')} /></th>
-                  <th className="text-left px-4 py-3"><SortBtn label="Status" col="status" sort={sort} onClick={() => toggleSort('status')} /></th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">Chief Complaint</th>
+                  <th className="text-left px-4 py-3"><SortBtn label={t('table.start')} col="startAt" sort={sort} onClick={() => toggleSort('startAt')} /></th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.patient')}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.provider')}</th>
+                  <th className="text-left px-4 py-3"><SortBtn label={t('table.duration')} col="duration" sort={sort} onClick={() => toggleSort('duration')} /></th>
+                  <th className="text-left px-4 py-3"><SortBtn label={t('table.status')} col="status" sort={sort} onClick={() => toggleSort('status')} /></th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.chiefComplaint')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {listLoading ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-10 text-gray-400">Loading…</td>
+                    <td colSpan={6} className="text-center py-10 text-gray-400">{tc('loading')}</td>
                   </tr>
                 ) : appointments.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-10 text-gray-400">No appointments found.</td>
+                    <td colSpan={6} className="text-center py-10 text-gray-400">{t('emptyState')}</td>
                   </tr>
                 ) : (
                   appointments.map((a: AppointmentResponse) => {
@@ -436,7 +442,12 @@ export function AppointmentsPage() {
                     return (
                       <tr
                         key={a.id}
-                        className="group hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
+                        className={`group cursor-pointer ${
+                          a.status === 'Completed' ? 'bg-gray-50/70 dark:bg-gray-800/40 opacity-75' :
+                          a.status === 'Cancelled' ? 'bg-red-50/50 dark:bg-red-950/20' :
+                          a.status === 'NoShow'    ? 'bg-red-50/30 dark:bg-red-950/10' :
+                          'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                        }`}
                         style={color ? { borderLeft: `3px solid ${color}` } : undefined}
                         onClick={() => setSelected(a)}
                       >
@@ -450,11 +461,11 @@ export function AppointmentsPage() {
                             {providerNames[a.providerId] ?? '—'}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{a.durationMinutes} min</td>
+                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{a.durationMinutes} {tc('unit.min')}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              className={`dot-badge inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                                 STATUS_COLORS[a.status as AppointmentStatus] ?? 'bg-gray-100 text-gray-600'
                               }`}
                             >
@@ -465,7 +476,7 @@ export function AppointmentsPage() {
                                 onClick={(e) => { e.stopPropagation(); quickStatusMutation.mutate({ id: a.id, next: nextAction.next }); }}
                                 className="invisible group-hover:visible inline-flex items-center px-1.5 py-0.5 text-xs text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-full hover:bg-indigo-50 dark:hover:bg-indigo-900/40 transition-colors whitespace-nowrap"
                               >
-                                → {nextAction.label}
+                                → {tc(nextAction.labelKey)}
                               </button>
                             )}
                           </div>
@@ -484,12 +495,12 @@ export function AppointmentsPage() {
           {/* Pagination */}
           {!searchTerm && totalPages > 1 && (
             <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-              <span>Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}</span>
+              <span>{tc('pagination.showingRange', { from: (page - 1) * pageSize + 1, to: Math.min(page * pageSize, total), total })}</span>
               <div className="flex gap-2">
                 <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}
-                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700">Prev</button>
+                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700">{tc('button.prev')}</button>
                 <button disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}
-                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700">Next</button>
+                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700">{tc('button.next')}</button>
               </div>
             </div>
           )}
@@ -499,18 +510,18 @@ export function AppointmentsPage() {
         <div className="flex-1 overflow-hidden flex flex-col px-6 pb-6">
           {/* Week nav */}
           <div className="flex items-center gap-4 py-2">
-            <button onClick={prevWeek} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">← Prev</button>
+            <button onClick={prevWeek} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.prev')}</button>
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {weekStart.toLocaleDateString([], { month: 'long', day: 'numeric' })}
               {' — '}
               {weekEnd.toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })}
             </span>
-            <button onClick={nextWeek} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">Next →</button>
+            <button onClick={nextWeek} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.next')}</button>
             <button
               onClick={() => setWeekStart(getMondayOfWeek(new Date()))}
               className="px-3 py-1 text-sm text-indigo-600 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-700 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
             >
-              Today
+              {t('calendar.today')}
             </button>
           </div>
 

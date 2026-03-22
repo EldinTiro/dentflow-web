@@ -1,0 +1,111 @@
+{
+  "layout": {
+    "brand": "DentFlow",
+    "badge": "Admin",
+    "nav": { "dashboard": "Početna", "tenants": "Klijenti", "users": "Korisnici" },
+    "signOut": "Odjavi se"
+  },
+  "dashboard": {
+    "title": "Početna",
+    "loading": "Učitavanje statistike…",
+    "error": "Učitavanje statistike platforme nije uspjelo.",
+    "totalTenants": "Ukupno klijenata",
+    "activeTenants": "Aktivni klijenti",
+    "inactiveTenants": "Neaktivni klijenti",
+    "totalUsers": "Ukupno korisnika",
+    "usersByRole": "Korisnici po ulozi",
+    "planDistribution": "Distribucija planova",
+    "noData": "Nema podataka"
+  },
+  "tenants": {
+    "title": "Klijenti",
+    "button": { "newTenant": "Novi klijent" },
+    "search": { "placeholder": "Pretraži klijente…" },
+    "emptyState": "Nema pronađenih klijenata.",
+    "expiryDays": "Ist. {{days}}d",
+    "table": {
+      "name": "Naziv",
+      "slug": "Slug",
+      "plan": "Plan",
+      "status": "Status",
+      "created": "Kreirano"
+    },
+    "create": {
+      "title": "Novi klijent",
+      "successTitle": "Klijent kreiran",
+      "successMessage": "Klijent <strong>{{name}}</strong> uspješno kreiran.",
+      "savePassword": "Sačuvajte ovu privremenu lozinku",
+      "ownerEmail": "Email vlasnika:",
+      "tempPassword": "Privremena lozinka:",
+      "tempPasswordWarning": "Ova lozinka neće biti ponovo prikazana.",
+      "slug": "Slug",
+      "practiceName": "Naziv prakse",
+      "plan": "Plan",
+      "ownerEmailLabel": "Email vlasnika",
+      "firstName": "Ime",
+      "lastName": "Prezime",
+      "logo": "Logo klinike (opcionalno)",
+      "logoChange": "Promijeni",
+      "logoUpload": "Učitaj sliku",
+      "logoRemove": "Ukloni",
+      "logoHint": "PNG, JPG ili SVG — max 2 MB",
+      "logoTooBig": "Logo mora biti manji od 2 MB",
+      "error": "Kreiranje klijenta nije uspjelo. Pokušajte ponovo.",
+      "creating": "Kreiranje…",
+      "createButton": "Kreiraj klijenta"
+    }
+  },
+  "tenant": {
+    "backToTenants": "← Nazad na klijente",
+    "notFound": "Klijent nije pronađen.",
+    "tab": { "details": "Detalji", "users": "Korisnici" },
+    "detail": {
+      "practiceName": "Naziv prakse",
+      "saving": "Čuvanje…",
+      "subscriptionPlan": "Pretplatnički plan",
+      "planFree": "Besplatni",
+      "planPro": "Pro",
+      "planEnterprise": "Enterprise",
+      "updating": "Ažuriranje…",
+      "updatePlan": "Ažuriraj plan",
+      "expires": "Ističe:",
+      "accountStatus": "Status računa",
+      "deactivateWarning": "Deaktiviranje suspenduje pristup. Podaci su sačuvani i klijent se može ponovo aktivirati.",
+      "deactivateButton": "Deaktiviraj klijenta",
+      "deactivating": "Deaktiviranje…",
+      "activateButton": "Aktiviraj klijenta",
+      "activating": "Aktiviranje…"
+    },
+    "users": {
+      "addUser": "+ Dodaj korisnika",
+      "emptyState": "Nema korisnika za ovog klijenta.",
+      "resetPwd": {
+        "title": "Reset lozinke",
+        "label": "Nova privremena lozinka",
+        "warning": "Podijelite ovo sa korisnikom — neće biti ponovo prikazano."
+      },
+      "resetPwdButton": "Reset lozinke",
+      "table": {
+        "name": "Ime",
+        "email": "Email",
+        "role": "Uloga",
+        "status": "Status"
+      },
+      "addModal": {
+        "title": "Dodaj korisnika",
+        "successTitle": "Korisnik kreiran!",
+        "successMessage": "Račun dodan u <strong>{{tenantName}}</strong>.",
+        "email": "Email",
+        "tempPassword": "Privremena lozinka",
+        "tempPasswordWarning": "Ova lozinka neće biti ponovo prikazana.",
+        "firstName": "Ime",
+        "lastName": "Prezime",
+        "emailLabel": "Email",
+        "roleLabel": "Uloga",
+        "error": "Kreiranje korisnika nije uspjelo. Email je možda već registrovan.",
+        "creating": "Kreiranje…",
+        "addButton": "Dodaj korisnika"
+      }
+    }
+  }
+}

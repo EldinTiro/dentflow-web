@@ -1,0 +1,124 @@
+{
+  "title": "Patienten",
+  "totalCount": "{{count}} gesamt",
+  "button": { "newPatient": "+ Neuer Patient" },
+  "search": { "placeholder": "Nach Name, E-Mail, Telefon suchen…" },
+  "emptyState": "Keine Patienten gefunden.",
+  "table": {
+    "patientNumber": "Pat.-Nr.",
+    "name": "Name",
+    "dateOfBirth": "Geburtsdatum",
+    "mobile": "Mobil",
+    "email": "E-Mail",
+    "status": "Status"
+  },
+  "backToPatients": "← Zurück zu Patienten",
+  "notFound": "Patient nicht gefunden.",
+  "goesBy": "Bekannt als \"{{name}}\"",
+  "parentGuardian": "Elternteil/Vormund:",
+  "tab": {
+    "billing": "Abrechnung",
+    "overview": "Übersicht",
+    "appointments": "Termine",
+    "treatments": "Behandlungen",
+    "files": "Dateien"
+  },
+  "section": {
+    "demographics": "Demografische Daten",
+    "contactInfo": "Kontaktinformationen",
+    "address": "Adresse",
+    "notes": "Notizen"
+  },
+  "field": {
+    "dateOfBirth": "Geburtsdatum",
+    "gender": "Geschlecht",
+    "preferredContact": "Bevorzugter Kontakt",
+    "firstVisit": "Erstbesuch",
+    "lastVisit": "Letzter Besuch",
+    "recallDue": "Recall fällig",
+    "mobile": "Mobil",
+    "home": "Privat",
+    "work": "Geschäftlich",
+    "smsOptIn": "SMS-Einwilligung",
+    "emailOptIn": "E-Mail-Einwilligung",
+    "addressLine1": "Adresszeile 1",
+    "addressLine2": "Adresszeile 2",
+    "city": "Stadt",
+    "stateProvince": "Bundesland",
+    "postalCode": "Postleitzahl",
+    "country": "Land",
+    "countryCode": "Ländercode"
+  },
+  "meta": {
+    "created": "Erstellt:",
+    "updated": "Aktualisiert:"
+  },
+  "appointments": {
+    "emptyState": "Keine Termine für diesen Patienten gefunden.",
+    "totalCount": "{{count}} Termin(e) gesamt"
+  },
+  "confirm": {
+    "deleteTitle": "Patient löschen?",
+    "deleteDescription": "{{name}} wird vorläufig gelöscht. Ein Admin kann dies rückgängig machen.",
+    "deleteFile": "\"{{fileName}}\" löschen?"
+  },
+  "drawer": {
+    "createTitle": "Neuer Patient",
+    "patientNumber": "Patientennummer",
+    "autoGenerate": "(leer lassen für automatische Generierung)",
+    "patientNumberPlaceholder": "z.B. P-000123",
+    "firstName": "Vorname *",
+    "lastName": "Nachname *",
+    "preferredName": "Rufname",
+    "nicknamePlaceholder": "Optionaler Rufname",
+    "parentName": "Elternteil / Vormund",
+    "parentNamePlaceholder": "z.B. Marko Tiro",
+    "dateOfBirth": "Geburtsdatum",
+    "email": "E-Mail",
+    "emailPlaceholder": "max@beispiel.de",
+    "mobilePhone": "Mobiltelefon",
+    "phonePlaceholder": "171 123 456",
+    "smsOptIn": "SMS-Einwilligung",
+    "emailOptIn": "E-Mail-Einwilligung",
+    "notesPlaceholder": "Optionale Notizen…",
+    "creating": "Wird erstellt…",
+    "createButton": "Patient erstellen",
+    "editTitle": "Bearbeiten — {{name}}",
+    "pronouns": "Pronomen",
+    "pronounsPlaceholder": "z.B. sie/ihr",
+    "sectionContact": "Kontakt",
+    "sectionAddress": "Adresse",
+    "sectionOther": "Sonstiges",
+    "occupation": "Beruf",
+    "countryCodePlaceholder": "z.B. DE",
+    "saving": "Wird gespeichert…",
+    "saveChanges": "Änderungen speichern"
+  },
+  "validation": { "required": "Pflichtfeld" },
+  "error": {
+    "createFailed": "Patient konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+    "updateFailed": "Änderungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut."
+  },
+  "files": {
+    "uploadTitle": "Dateien hochladen",
+    "chooseFiles": "Dateien auswählen…",
+    "supportedFormats": "Bilder, PDF, Word. Wählen Sie mehrere Dateien gleichzeitig.",
+    "category": "Kategorie",
+    "notesOptional": "Notizen (optional)",
+    "notesPlaceholder": "z.B. Oberer rechter Quadrant",
+    "uploading": "Wird hochgeladen…",
+    "uploadButton": "{{count}} Datei(en) hochladen",
+    "imagesHeading": "Bilder",
+    "documentsHeading": "Dokumente",
+    "emptyState": "Noch keine Dateien hochgeladen",
+    "couldNotLoadImage": "Bild konnte nicht geladen werden",
+    "deleteTooltip": "Löschen"
+  },
+  "toast": {
+    "filesUploaded": "{{count}} Datei(en) hochgeladen",
+    "filesUploadFailed": "{{count}} Datei(en) fehlgeschlagen",
+    "fileDeleted": "Datei gelöscht",
+    "deleteFailed": "Löschen fehlgeschlagen",
+    "couldNotOpenFile": "Datei konnte nicht geöffnet werden"
+  }
+}
