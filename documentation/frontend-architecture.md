@@ -1,4 +1,4 @@
-# PearlDesk — Frontend Architecture
+ï»¿# DentFlow ï¿½ Frontend Architecture
 
 > Frontend-specific technical reference for the `frontend` repository.  
 > Last updated: 2026-03-14
@@ -41,30 +41,30 @@
 ## Project Structure
 
 ```
-pearldesk-web/
+DentFlow-web/
 +-- documentation/               ? This folder (FE-specific docs)
 +-- src/
-¦   +-- features/                ? Feature-sliced modules
-¦   ¦   +-- patients/
-¦   ¦   +-- appointments/
-¦   ¦   +-- treatments/
-¦   ¦   +-- billing/
-¦   ¦   +-- staff/
-¦   ¦   +-- identity/
-¦   ¦   +-- ...
-¦   +-- components/              ? Shared UI components
-¦   ¦   +-- ui/                  ? Shadcn/ui primitives
-¦   ¦   +-- layout/              ? Shell, sidebar, header
-¦   +-- lib/
-¦   ¦   +-- api.ts               ? Axios/fetch API client
-¦   ¦   +-- auth.ts              ? Token store, refresh logic
-¦   ¦   +-- utils.ts             ? Shared utilities
-¦   +-- routes/                  ? React Router route definitions
-¦   ¦   +-- index.tsx
-¦   ¦   +-- _protected.tsx       ? Auth guard wrapper
-¦   ¦   +-- _public.tsx
-¦   +-- hooks/                   ? Shared custom hooks
-¦   +-- types/                   ? Shared TypeScript types/interfaces
+ï¿½   +-- features/                ? Feature-sliced modules
+ï¿½   ï¿½   +-- patients/
+ï¿½   ï¿½   +-- appointments/
+ï¿½   ï¿½   +-- treatments/
+ï¿½   ï¿½   +-- billing/
+ï¿½   ï¿½   +-- staff/
+ï¿½   ï¿½   +-- identity/
+ï¿½   ï¿½   +-- ...
+ï¿½   +-- components/              ? Shared UI components
+ï¿½   ï¿½   +-- ui/                  ? Shadcn/ui primitives
+ï¿½   ï¿½   +-- layout/              ? Shell, sidebar, header
+ï¿½   +-- lib/
+ï¿½   ï¿½   +-- api.ts               ? Axios/fetch API client
+ï¿½   ï¿½   +-- auth.ts              ? Token store, refresh logic
+ï¿½   ï¿½   +-- utils.ts             ? Shared utilities
+ï¿½   +-- routes/                  ? React Router route definitions
+ï¿½   ï¿½   +-- index.tsx
+ï¿½   ï¿½   +-- _protected.tsx       ? Auth guard wrapper
+ï¿½   ï¿½   +-- _public.tsx
+ï¿½   +-- hooks/                   ? Shared custom hooks
+ï¿½   +-- types/                   ? Shared TypeScript types/interfaces
 +-- public/
 +-- index.html
 +-- vite.config.ts
@@ -78,15 +78,15 @@ Each feature under `src/features/{feature}/` follows:
 ```
 features/patients/
 +-- components/          ? Feature-specific UI components
-¦   +-- PatientCard.tsx
-¦   +-- PatientTable.tsx
+ï¿½   +-- PatientCard.tsx
+ï¿½   +-- PatientTable.tsx
 +-- hooks/               ? Feature-specific custom hooks
-¦   +-- usePatientList.ts
-¦   +-- useCreatePatient.ts
+ï¿½   +-- usePatientList.ts
+ï¿½   +-- useCreatePatient.ts
 +-- api/                 ? API query/mutation functions
-¦   +-- patients.api.ts
+ï¿½   +-- patients.api.ts
 +-- schemas/             ? Zod validation schemas
-¦   +-- patient.schema.ts
+ï¿½   +-- patient.schema.ts
 +-- types/               ? Feature-specific TypeScript types
     +-- patient.types.ts
 ```
@@ -95,11 +95,11 @@ features/patients/
 
 ## Architecture Principles
 
-- **TypeScript always** — never plain JS
-- **Feature-sliced** — feature code lives in its feature folder; only truly shared code goes in `components/` or `lib/`
-- **Server state via TanStack Query** — never `useState` + `useEffect` for API data
-- **All routes lazy-loaded** — no eager imports of feature components in the router
-- **No business logic in components** — extract to hooks or API functions
+- **TypeScript always** ï¿½ never plain JS
+- **Feature-sliced** ï¿½ feature code lives in its feature folder; only truly shared code goes in `components/` or `lib/`
+- **Server state via TanStack Query** ï¿½ never `useState` + `useEffect` for API data
+- **All routes lazy-loaded** ï¿½ no eager imports of feature components in the router
+- **No business logic in components** ï¿½ extract to hooks or API functions
 
 ---
 
@@ -139,7 +139,7 @@ All authenticated routes are wrapped in a role-based route guard that checks the
 
 | Type | Tool | Rule |
 |---|---|---|
-| Server state | TanStack Query | All API data — queries + mutations |
+| Server state | TanStack Query | All API data ï¿½ queries + mutations |
 | Form state | React Hook Form | All form inputs |
 | Global UI state | React Context (minimal) | Auth context, theme |
 | Local UI state | `useState` | Modals, toggles, local UI only |
@@ -151,10 +151,10 @@ All authenticated routes are wrapped in a role-based route guard that checks the
 ## Authentication
 
 ### Token Strategy
-- **Access token** — stored in **memory only** (React context / module-level variable)
+- **Access token** ï¿½ stored in **memory only** (React context / module-level variable)
   - Never `localStorage`, never `sessionStorage`
   - Lifetime: 15 minutes
-- **Refresh token** — HttpOnly cookie, never accessible from JS
+- **Refresh token** ï¿½ HttpOnly cookie, never accessible from JS
   - Handled automatically by the browser on every refresh call
 
 ### Silent Refresh Flow
@@ -168,7 +168,7 @@ Access token expires
 ```
 
 ### HIPAA Idle Timeout
-- Inactivity timer: **15–30 minutes** (configurable)
+- Inactivity timer: **15ï¿½30 minutes** (configurable)
 - On timeout: clear in-memory token, redirect to `/login`
 - Timer resets on any user interaction (mouse, keyboard, touch)
 
@@ -207,7 +207,7 @@ const form = useForm<CreatePatientInput>({
 
 Rules:
 - Every form has a Zod schema in `schemas/`
-- Types are inferred from schemas — never manually duplicated
+- Types are inferred from schemas ï¿½ never manually duplicated
 - Never use uncontrolled forms or manual validation
 - Always show field-level error messages using Shadcn/ui `FormMessage`
 
@@ -216,7 +216,7 @@ Rules:
 ## UI Components
 
 - **Shadcn/ui** for all base components (Button, Input, Dialog, Table, etc.)
-- Extend with Tailwind CSS utility classes — never write custom CSS
+- Extend with Tailwind CSS utility classes ï¿½ never write custom CSS
 - Shared components (used across features) live in `components/`
 - Feature-specific components stay inside their feature folder
 
@@ -270,8 +270,8 @@ api.interceptors.response.use(null, async error => {
 
 ## Multi-Tenancy
 
-- Tenant detected from subdomain on app bootstrap: `{slug}.pearldesk.com`
-- Slug stored in React context — passed to all API calls via base URL or header
+- Tenant detected from subdomain on app bootstrap: `{slug}.DentFlow.com`
+- Slug stored in React context ï¿½ passed to all API calls via base URL or header
 - If tenant not found ? redirect to marketing/login page
 
 ---
@@ -294,8 +294,8 @@ api.interceptors.response.use(null, async error => {
 
 | Layer | Tool | Target |
 |---|---|---|
-| Unit — hooks | Vitest + React Testing Library | Custom hooks, API functions |
-| Unit — components | Vitest + React Testing Library | Isolated component rendering |
+| Unit ï¿½ hooks | Vitest + React Testing Library | Custom hooks, API functions |
+| Unit ï¿½ components | Vitest + React Testing Library | Isolated component rendering |
 | E2E | Playwright | Critical user flows (login, book appointment) |
 
 ---
@@ -304,19 +304,19 @@ api.interceptors.response.use(null, async error => {
 
 ### Prerequisites
 - Node.js 22+
-- pnpm (preferred) or npm
+- npm 10+
 
 ### Start Dev Server
 ```bash
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 App available at `http://localhost:5173`
 
 ### Environment Variables
 Create `.env.local`:
 ```
-VITE_API_BASE_URL=http://localhost:5000
-VITE_TENANT_SLUG=demo
+VITE_API_URL=http://localhost:5199
+VITE_DEV_TENANT_SLUG=demo
 ```
 
