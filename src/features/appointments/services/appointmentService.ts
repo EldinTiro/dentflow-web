@@ -120,7 +120,18 @@ export interface RescheduleRequest {
 
 const BASE = '/api/v1/appointments';
 
+export interface TimeSlot {
+  startAt: string;
+  endAt: string;
+}
+
 export const appointmentService = {
+  getAvailableSlots(providerId: string, date: string, duration: number) {
+    return apiClient
+      .get<TimeSlot[]>(`/api/v1/staff/${providerId}/slots`, { params: { date, duration } })
+      .then((r) => r.data);
+  },
+
   list(params?: ListAppointmentsParams) {
     return apiClient
       .get<PagedResult<AppointmentResponse>>(BASE, { params })

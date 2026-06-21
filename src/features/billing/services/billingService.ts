@@ -160,4 +160,9 @@ export const billingService = {
     apiClient
       .post<InvoiceResponse>(`/api/v1/invoices/${id}/payments`, body)
       .then((r) => r.data),
+
+  createFromTreatmentPlan: (treatmentPlanId: string) =>
+    apiClient
+      .post<InvoiceResponse>(`/api/v1/treatment-plans/${treatmentPlanId}/invoice`)
+      .then((r) => r.data),
 }

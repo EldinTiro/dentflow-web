@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { patientService, type PatientResponse, type PatientStatus } from '../services/patientService'
 import { CreatePatientDrawer } from '../components/CreatePatientDrawer'
@@ -34,10 +34,19 @@ function StatusBadge({ status }: { status: PatientStatus }) {
 export function PatientsPage() {
   const { t } = useTranslation('patients')
   const tc = useTranslation('common').t
-  const [search, setSearch] = useState('')
-  const [status, setStatus] = useState<PatientStatus | ''>('')
-  const [page, setPage] = useState(1)
+  const [searchParams, setSearchParams] = useSearchParams()
   const [showCreate, setShowCreate] = useState(false)
+
+  const search = searchParams.get('search') ?? ''
+  const status = (searchParams.get('status') ?? '') as PatientStatus | ''
+  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
+
+  const setSearch = (v: string) =>
+    setSearchParams((p) => { const n = new URLSearchParams(p); v ? n.set('search', v) : n.delete('search'); n.set('page', '1'); return n }, { replace: true })
+  const setStatus = (v: PatientStatus | '') =>
+    setSearchParams((p) => { const n = new URLSearchParams(p); v ? n.set('status', v) : n.delete('status'); n.set('page', '1'); return n }, { replace: true })
+  const setPage = (v: number) =>
+    setSearchParams((p) => { const n = new URLSearchParams(p); n.set('page', String(v)); return n }, { replace: true })
 
   const { data, isLoading } = useQuery({
     queryKey: ['patients', search, status, page],
@@ -138,14 +147,14 @@ export function PatientsPage() {
             <div className="flex gap-2">
               <button
                 disabled={!data.hasPreviousPage}
-                onClick={() => setPage((p) => p - 1)}
+                onClick={() => setPage(page - 1)}
                 className="px-2 py-1 rounded border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
               >
                 {tc('button.prev')}
               </button>
               <button
                 disabled={!data.hasNextPage}
-                onClick={() => setPage((p) => p + 1)}
+                onClick={() => setPage(page + 1)}
                 className="px-2 py-1 rounded border border-gray-200 dark:border-gray-600 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
               >
                 {tc('button.next')}

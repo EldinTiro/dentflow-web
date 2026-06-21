@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   appointmentService,
@@ -81,17 +82,35 @@ export function AppointmentsPage() {
     roles.includes('Hygienist') ||
     roles.includes('SuperAdmin');
 
-  const [tab, setTab] = useState<Tab>('list');
-  const [statusFilter, setStatusFilter] = useState<AppointmentStatus | ''>('');
-  const [dateFrom, setDateFrom] = useState(() => toLocalDateStr(new Date()));
-  const [dateTo, setDateTo] = useState(() => toLocalDateStr(new Date()));
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = (searchParams.get('tab') ?? 'list') as Tab;
+  const statusFilter = (searchParams.get('status') ?? '') as AppointmentStatus | '';
+  const dateFrom = searchParams.get('from') ?? toLocalDateStr(new Date());
+  const dateTo = searchParams.get('to') ?? toLocalDateStr(new Date());
+  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
+  const providerFilter = searchParams.get('provider') ?? '';
+  const showPast = searchParams.get('past') === '1';
+
+  const updateParam = (key: string, value: string | null, resetPage = true) =>
+    setSearchParams((p) => {
+      const n = new URLSearchParams(p);
+      value ? n.set(key, value) : n.delete(key);
+      if (resetPage) n.set('page', '1');
+      return n;
+    }, { replace: true });
+
+  const setTab = (v: Tab) => updateParam('tab', v === 'list' ? null : v, false);
+  const setStatusFilter = (v: AppointmentStatus | '') => updateParam('status', v || null);
+  const setDateFrom = (v: string) => updateParam('from', v || null);
+  const setDateTo = (v: string) => updateParam('to', v || null);
+  const setPage = (v: number) => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('page', String(v)); return n }, { replace: true });
+  const setProviderFilter = (v: string) => updateParam('provider', v || null);
+  const setShowPast = (v: boolean) => updateParam('past', v ? '1' : null);
+
   const [showBook, setShowBook] = useState(false);
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null);
   const [selected, setSelected] = useState<AppointmentResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [providerFilter, setProviderFilter] = useState('');
-  const [showPast, setShowPast] = useState(false);
   const [sort, setSort] = useState<{ col: 'startAt' | 'duration' | 'status'; dir: 'asc' | 'desc' }>({ col: 'startAt', dir: 'asc' });
 
   // Week calendar state
@@ -497,9 +516,9 @@ export function AppointmentsPage() {
             <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
               <span>{tc('pagination.showingRange', { from: (page - 1) * pageSize + 1, to: Math.min(page * pageSize, total), total })}</span>
               <div className="flex gap-2">
-                <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}
+                <button disabled={page === 1} onClick={() => setPage(page - 1)}
                   className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700">{tc('button.prev')}</button>
-                <button disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}
+                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}
                   className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700">{tc('button.next')}</button>
               </div>
             </div>

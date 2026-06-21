@@ -101,7 +101,20 @@ export interface UpdatePatientRequest {
   notes?: string | null
 }
 
+export interface PatientSearchResult {
+  id: string
+  patientNumber: string
+  fullName: string
+  phoneMobile: string | null
+  email: string | null
+}
+
 export const patientService = {
+  search: (q: string, limit = 20) =>
+    apiClient
+      .get<PatientSearchResult[]>('/api/v1/patients/search', { params: { q, limit } })
+      .then((r) => r.data),
+
   list: (params?: {
     search?: string
     status?: PatientStatus

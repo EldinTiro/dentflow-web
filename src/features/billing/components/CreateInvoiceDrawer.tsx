@@ -184,7 +184,7 @@ export function CreateInvoiceDrawer({ patientId, appointmentTypeId, onClose }: P
                               {tp.name}{tp.defaultFee != null ? ` — ${Number(tp.defaultFee).toFixed(2)} KM` : ''}
                             </option>
                           ))}
-                          <option value="__other__">Other (custom)</option>
+                          <option value="__other__">Ostalo (ručni unos)</option>
                         </select>
                         {(lineItems[idx]?.source === 'other' || lineItems[idx]?.appointmentTypeId === '') && (
                           <input

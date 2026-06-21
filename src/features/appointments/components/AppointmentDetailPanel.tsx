@@ -72,11 +72,10 @@ export function AppointmentDetailPanel({
   onReschedule,
   onRebook,
   canManage,
-  isAdmin = false,
 }: Props) {
   const queryClient = useQueryClient()
   const [confirmCancel, setConfirmCancel] = useState(false)
-  const [showHistory, setShowHistory] = useState(false)
+  const [showHistory, setShowHistory] = useState(true)
   const [showBilling, setShowBilling] = useState(false)
   const [editingNotes, setEditingNotes] = useState(false)
   const [notesDraft, setNotesDraft] = useState(a.notes ?? '')
@@ -326,7 +325,7 @@ export function AppointmentDetailPanel({
                           {inv.status}
                         </span>
                         <span className="text-xs font-semibold text-gray-700">
-                          ${inv.balanceDue.toFixed(2)} due
+                          {inv.balanceDue.toFixed(2)} KM due
                         </span>
                       </div>
                     </a>
@@ -387,19 +386,28 @@ export function AppointmentDetailPanel({
           <div className="border-t border-gray-200 px-5 py-4 space-y-2">
             {/* Primary lifecycle action */}
             {a.status === 'Scheduled' && (
-              <button
-                onClick={() => statusMutation.mutate('CheckedIn')}
-                disabled={statusMutation.isPending}
-                className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-              >
-                {statusMutation.isPending ? 'Updating…' : 'Check In'}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => statusMutation.mutate('CheckedIn')}
+                  disabled={statusMutation.isPending}
+                  className="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                >
+                  Check In
+                </button>
+                <button
+                  onClick={() => statusMutation.mutate('InProgress')}
+                  disabled={statusMutation.isPending}
+                  className="flex-1 bg-orange-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-orange-600 disabled:opacity-50 transition-colors"
+                >
+                  Start Treatment
+                </button>
+              </div>
             )}
             {a.status === 'CheckedIn' && (
               <button
                 onClick={() => statusMutation.mutate('InProgress')}
                 disabled={statusMutation.isPending}
-                className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                className="w-full bg-orange-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-orange-600 disabled:opacity-50 transition-colors"
               >
                 {statusMutation.isPending ? 'Updating…' : 'Start Treatment'}
               </button>
@@ -416,7 +424,6 @@ export function AppointmentDetailPanel({
 
             {/* Secondary row */}
             <div className="flex gap-2">
-              {/* No-show (Scheduled only) */}
               {a.status === 'Scheduled' && (
                 <button
                   onClick={() => statusMutation.mutate('NoShow')}
@@ -426,8 +433,6 @@ export function AppointmentDetailPanel({
                   No Show
                 </button>
               )}
-
-              {/* Reschedule (non-terminal only) */}
               {!isTerminal && (
                 <button
                   onClick={() => onReschedule(a)}
@@ -436,8 +441,6 @@ export function AppointmentDetailPanel({
                   Reschedule
                 </button>
               )}
-
-              {/* Cancel (non-terminal only) */}
               {!isTerminal && (
                 <button
                   onClick={() => setConfirmCancel(true)}
@@ -446,8 +449,6 @@ export function AppointmentDetailPanel({
                   Cancel
                 </button>
               )}
-
-              {/* Rebook (terminal states) */}
               {isTerminal && onRebook && (
                 <button
                   onClick={() => onRebook(a)}
@@ -458,21 +459,14 @@ export function AppointmentDetailPanel({
               )}
             </div>
 
-            {/* Bill patient (completed only) */}
-            {a.status === 'Completed' && (
+            {/* Bill patient — available for any non-void/non-cancelled status */}
+            {a.status !== 'Cancelled' && a.status !== 'NoShow' && (
               <button
                 onClick={() => setShowCreateInvoice(true)}
                 className="w-full bg-emerald-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"
               >
-                Bill Patient
+                {a.status === 'Completed' ? 'Bill Patient' : 'Kreiraj fakturu'}
               </button>
-            )}
-
-            {/* Admin override (admin only, for non-terminal stuck states) */}
-            {isAdmin && !isTerminal && (
-              <p className="text-xs text-center text-gray-400">
-                Admin: use the API to override status if needed.
-              </p>
             )}
           </div>
         )}

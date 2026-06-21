@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, ChevronRight, Plus, Trash2, Pencil, Check } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, Trash2, Pencil, Check, FileText } from 'lucide-react'
+import { useNavigate } from 'react-router'
+import { toast } from 'sonner'
 import {
   treatmentService,
   PLAN_STATUS_COLORS,
@@ -14,6 +16,7 @@ import {
   type TreatmentPlanStatus,
   type TreatmentPlanItemStatus,
 } from '../services/treatmentService'
+import { billingService } from '@/features/billing/services/billingService'
 
 // ─── Create Plan Form ────────────────────────────────────────────────────────
 
@@ -163,7 +166,7 @@ function ItemForm({
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-0.5">Fee ($)</label>
+          <label className="block text-xs text-gray-500 mb-0.5">Fee (KM)</label>
           <input
             type="number"
             min={0}
@@ -233,6 +236,18 @@ function PlanCard({
   const [editStatus, setEditStatus] = useState<TreatmentPlanStatus>(plan.status)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const qc = useQueryClient()
+  const navigate = useNavigate()
+
+  const createInvoiceMutation = useMutation({
+    mutationFn: () => billingService.createFromTreatmentPlan(plan.id),
+    onSuccess: (invoice) => {
+      qc.invalidateQueries({ queryKey: ['invoices'] })
+      qc.invalidateQueries({ queryKey: ['patient-invoices'] })
+      toast.success('Faktura kreirana')
+      navigate(`/invoices/${invoice.id}`)
+    },
+    onError: () => toast.error('Greška pri kreiranju fakture'),
+  })
 
   const updatePlan = useMutation({
     mutationFn: () =>
@@ -328,7 +343,7 @@ function PlanCard({
               {PLAN_STATUS_LABELS[plan.status]}
             </span>
             <span className="text-xs text-gray-500 shrink-0 font-mono">
-              ${plan.totalFee.toFixed(2)}
+              {plan.totalFee.toFixed(2)} KM
             </span>
             <span className="text-xs text-gray-400 shrink-0">
               {plan.items.length} item{plan.items.length !== 1 ? 's' : ''}
@@ -400,8 +415,8 @@ function PlanCard({
                 >
                   {ITEM_STATUS_LABELS[item.status]}
                 </span>
-                <span className="text-sm font-mono text-gray-700 shrink-0 w-16 text-right">
-                  ${item.fee.toFixed(2)}
+                <span className="text-sm font-mono text-gray-700 shrink-0 w-20 text-right">
+                  {item.fee.toFixed(2)} KM
                 </span>
                 {canManage && (
                   <div className="invisible group-hover:visible flex items-center gap-1 shrink-0">
@@ -439,11 +454,23 @@ function PlanCard({
               >
                 <Plus size={13} /> Add item
               </button>
-              {plan.items.length > 0 && (
-                <span className="text-xs text-gray-500 font-mono">
-                  Total: ${plan.totalFee.toFixed(2)}
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {plan.items.length > 0 && (
+                  <span className="text-xs text-gray-500 font-mono">
+                    Total: {plan.totalFee.toFixed(2)} KM
+                  </span>
+                )}
+                {plan.items.length > 0 && (
+                  <button
+                    onClick={() => createInvoiceMutation.mutate()}
+                    disabled={createInvoiceMutation.isPending}
+                    className="flex items-center gap-1 text-xs bg-emerald-600 text-white px-2.5 py-1 rounded-md hover:bg-emerald-700 disabled:opacity-50 font-medium"
+                  >
+                    <FileText size={11} />
+                    {createInvoiceMutation.isPending ? 'Kreiranje…' : 'Kreiraj fakturu'}
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
