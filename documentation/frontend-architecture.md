@@ -270,7 +270,7 @@ api.interceptors.response.use(null, async error => {
 
 ## Multi-Tenancy
 
-- Tenant detected from subdomain on app bootstrap: `{slug}.DentFlow.com`
+- Tenant detected from subdomain on app bootstrap: `{slug}.mydentflow.com`
 - Slug stored in React context � passed to all API calls via base URL or header
 - If tenant not found ? redirect to marketing/login page
 
