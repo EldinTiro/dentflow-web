@@ -8,6 +8,7 @@ import { patientService, type PatientSearchResult } from '@/features/patients/se
 import { toast } from 'sonner';
 import { staffService, type StaffMemberResponse } from '@/features/staff/services/staffService';
 import { getApiErrorMessage } from '@/shared/utils/apiError';
+import { useUserPreferences } from '@/features/auth/hooks/useUserPreferences';
 
 interface Props {
   onClose: () => void;
@@ -40,6 +41,8 @@ function toDateOnly(d: Date): string {
 
 export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, initialStartAt, initialProviderId }: Props) {
   const queryClient = useQueryClient();
+  const { data: preferences } = useUserPreferences();
+  const use24h = preferences?.timeFormat !== '12h';
 
   const defaultStartAt = (() => {
     if (initialStartAt) return initialStartAt;
@@ -86,7 +89,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
 
   const slotDate = watchedStartAt ? toDateOnly(new Date(watchedStartAt)) : '';
 
-  const { data: staffData } = useQuery({
+  const { data: staffData, isLoading: isStaffLoading } = useQuery({
     queryKey: ['staff', { pageSize: 100, isActive: true }],
     queryFn: () => staffService.list({ pageSize: 100, isActive: true }),
   });
@@ -245,9 +248,10 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
           </label>
           <select
             {...register('providerId', { required: 'Provider is required' })}
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            disabled={isStaffLoading}
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:cursor-wait"
           >
-            <option value="">Odaberi doktora…</option>
+            <option value="">{isStaffLoading ? 'Učitavanje…' : 'Odaberi doktora…'}</option>
             {providers.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.fullName} — {s.staffType}
@@ -311,13 +315,50 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
           </div>
 
           {!showSlotPicker ? (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 items-end">
               <div>
-                <input
-                  type="datetime-local"
-                  {...register('startAt', { required: 'Start time is required' })}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                {/* Hidden input keeps RHF registration + validation */}
+                <input type="hidden" {...register('startAt', { required: 'Start time is required' })} />
+                <div className="flex gap-1.5">
+                  {/* Date */}
+                  <input
+                    type="date"
+                    value={slotDate}
+                    onChange={(e) => {
+                      const time = watchedStartAt?.split('T')[1] ?? '09:00';
+                      setValue('startAt', `${e.target.value}T${time}`, { shouldValidate: true });
+                    }}
+                    className="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  {/* 24h time — hour : minute selects */}
+                  <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shrink-0 overflow-hidden">
+                    <select
+                      value={watchedStartAt?.split('T')[1]?.slice(0, 2) ?? '09'}
+                      onChange={(e) => {
+                        const min = watchedStartAt?.split('T')[1]?.slice(3, 5) ?? '00';
+                        setValue('startAt', `${slotDate}T${e.target.value}:${min}`, { shouldValidate: true });
+                      }}
+                      className="text-sm bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none px-1 py-2 border-0 w-10 text-center cursor-pointer"
+                    >
+                      {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map((h) => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
+                    <span className="text-gray-400 dark:text-gray-500 select-none font-semibold text-xs">:</span>
+                    <select
+                      value={watchedStartAt?.split('T')[1]?.slice(3, 5) ?? '00'}
+                      onChange={(e) => {
+                        const hour = watchedStartAt?.split('T')[1]?.slice(0, 2) ?? '09';
+                        setValue('startAt', `${slotDate}T${hour}:${e.target.value}`, { shouldValidate: true });
+                      }}
+                      className="text-sm bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none px-1 py-2 border-0 w-10 text-center cursor-pointer"
+                    >
+                      {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
+                        <option key={m} value={String(m).padStart(2, '0')}>{String(m).padStart(2, '0')}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
                 {errors.startAt && <p className="mt-1 text-xs text-red-600">{errors.startAt.message}</p>}
               </div>
               <div>
@@ -354,7 +395,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                     const slotStart = new Date(slot.startAt);
                     const localValue = toLocalDatetimeValue(slotStart);
                     const isSelected = watchedStartAt === localValue;
-                    const timeStr = slotStart.toLocaleTimeString('bs-BA', { hour: '2-digit', minute: '2-digit' });
+                    const timeStr = slotStart.toLocaleTimeString('bs-BA', { hour: '2-digit', minute: '2-digit', hour12: !use24h });
                     return (
                       <button
                         key={slot.startAt}

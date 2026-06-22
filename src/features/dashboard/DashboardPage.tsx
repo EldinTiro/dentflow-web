@@ -50,21 +50,29 @@ interface RecentApptRowProps {
   complaint: string | null
   duration: number
   apptStatus: string
+  patientName?: string
+  providerName?: string
 }
 
-function RecentApptRow({ time, status, statusColor, complaint, duration, apptStatus }: RecentApptRowProps) {
+function RecentApptRow({ time, status, statusColor, complaint, duration, apptStatus, patientName, providerName }: RecentApptRowProps) {
   const rowBg =
     apptStatus === 'Completed' ? 'bg-gray-50/80 dark:bg-gray-800/50 opacity-70' :
     apptStatus === 'Cancelled' ? 'bg-red-50/60 dark:bg-red-950/20' :
     apptStatus === 'NoShow'    ? 'bg-red-50/40 dark:bg-red-950/10' : ''
   return (
     <div className={`flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0 ${rowBg}`}>
-      <div className="flex items-center gap-3">
-        <div className="text-sm font-medium text-gray-800 dark:text-gray-200">{time}</div>
-        <span className={`dot-badge inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${statusColor}`}>{status}</span>
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="text-sm font-medium text-gray-800 dark:text-gray-200 shrink-0">{time}</div>
+        <span className={`dot-badge inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full shrink-0 ${statusColor}`}>{status}</span>
+        {patientName && (
+          <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{patientName}</span>
+        )}
+        {providerName && (
+          <span className="text-xs text-gray-400 dark:text-gray-500 truncate hidden sm:block">· {providerName}</span>
+        )}
       </div>
-      <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
-        <span>{complaint ?? '—'}</span>
+      <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500 shrink-0">
+        {complaint && <span className="truncate max-w-[120px] hidden md:block">{complaint}</span>}
         <span>{duration} min</span>
       </div>
     </div>
@@ -89,8 +97,10 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export function DashboardPage() {
-  const { t } = useTranslation('dashboard')
+  const { t, i18n } = useTranslation('dashboard')
   const tc = useTranslation('common').t
+  const localeMap: Record<string, string> = { bs: 'hr', en: 'en', de: 'de' }
+  const displayLocale = localeMap[i18n.language] ?? i18n.language
   const today = toLocalDateStr(new Date())
   const tomorrow = toLocalDateStr(new Date(Date.now() + 86400000))
 
@@ -124,6 +134,11 @@ export function DashboardPage() {
     queryFn: () => staffService.list({ isActive: true, pageSize: 50 }),
   })
 
+  const { data: allPatients } = useQuery({
+    queryKey: ['patients-all'],
+    queryFn: () => patientService.list({ pageSize: 500 }),
+  })
+
   const { data: kpi } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: () => dashboardService.getStats(),
@@ -153,6 +168,18 @@ export function DashboardPage() {
     ['Completed', 'NoShow', 'Cancelled'].includes(a.status)
   ).length ?? 0
 
+  const providerNames = useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const s of allStaff?.items ?? []) map[s.id] = s.fullName
+    return map
+  }, [allStaff])
+
+  const patientNames = useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const p of allPatients?.items ?? []) map[p.id] = p.fullName
+    return map
+  }, [allPatients])
+
   const byProvider = useMemo(() => {
     const countMap = new Map<string, number>()
     for (const a of todayAppts?.items ?? []) {
@@ -175,7 +202,7 @@ export function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-          {new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+          {new Date().toLocaleDateString(displayLocale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
         </p>
       </div>
 
@@ -207,7 +234,7 @@ export function DashboardPage() {
           icon={CalendarDays}
           iconBg="bg-indigo-50"
           iconColor="text-indigo-600"
-          sub={`${new Date().toLocaleDateString([], { month: 'short', day: 'numeric' })}`}
+          sub={`${new Date().toLocaleDateString(displayLocale, { month: 'short', day: 'numeric' })}`}
           to="/appointments"
         />
         <StatCard
@@ -373,6 +400,8 @@ export function DashboardPage() {
                 complaint={a.chiefComplaint}
                 duration={a.durationMinutes}
                 apptStatus={a.status}
+                patientName={patientNames[a.patientId]}
+                providerName={providerNames[a.providerId]}
               />
             ))}
             {todayCount > 8 && (

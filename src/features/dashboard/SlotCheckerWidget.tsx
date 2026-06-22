@@ -47,7 +47,7 @@ function shiftDate(dateStr: string, days: number): string {
 }
 
 export function SlotCheckerWidget() {
-  const { t } = useTranslation('dashboard')
+  const { t, i18n } = useTranslation('dashboard')
   const [date, setDate] = useState(() => toLocalDate(new Date()))
   const [providerId, setProviderId] = useState<string>('all')
 
@@ -134,7 +134,13 @@ export function SlotCheckerWidget() {
             className="text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition"
           />
           <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 pl-1 whitespace-nowrap">
-            {new Date(date + 'T00:00:00').toLocaleDateString([], { weekday: 'long' })}
+            {(() => {
+              // 'bs' is poorly supported in Intl — map to 'hr' (Croatian shares identical day names)
+              const localeMap: Record<string, string> = { bs: 'hr', en: 'en', de: 'de' }
+              const locale = localeMap[i18n.language] ?? i18n.language
+              const name = new Date(date + 'T00:00:00').toLocaleDateString(locale, { weekday: 'long' })
+              return name.charAt(0).toUpperCase() + name.slice(1)
+            })()}
           </span>
           <button
             onClick={() => setDate(d => shiftDate(d, 1))}

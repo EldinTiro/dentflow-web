@@ -12,7 +12,6 @@ import {
   Users,
   UserCog,
   CalendarDays,
-  UsersRound,
   Settings2,
   LogOut,
   Moon,
@@ -99,21 +98,6 @@ export function AppShell() {
 
       {canManageTeam && (
         <div className="px-3 pb-2 space-y-1">
-          <NavLink
-            to="/settings/users"
-            onClick={() => setSidebarOpen(false)}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
-              )
-            }
-          >
-            <UsersRound size={16} className="shrink-0" />
-            {t('nav.team')}
-          </NavLink>
           <NavLink
             to="/settings/appointment-types"
             onClick={() => setSidebarOpen(false)}

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { appointmentService, type AppointmentTypeResponse } from '../services/appointmentService'
@@ -16,6 +16,7 @@ export function AppointmentTypesPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [editing, setEditing] = useState<AppointmentTypeResponse | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
 
   const canManage = useAuthStore((s) =>
     s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'SuperAdmin'].includes(r)) ?? false
@@ -41,6 +42,14 @@ export function AppointmentTypesPage() {
 
   const deletingType = types.find((tp) => tp.id === deletingId)
 
+  const filtered = (search.trim()
+    ? types.filter((tp) => {
+        const q = search.toLowerCase()
+        return tp.name.toLowerCase().includes(q) || tp.description?.toLowerCase().includes(q)
+      })
+    : [...types]
+  ).sort((a, b) => (a.defaultFee ?? Infinity) - (b.defaultFee ?? Infinity))
+
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -61,11 +70,28 @@ export function AppointmentTypesPage() {
         )}
       </div>
 
+      {/* Search */}
+      <div className="relative mb-4 max-w-xs">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t('types.searchPlaceholder')}
+          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-8 pr-8 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        {search && (
+          <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
       {isLoading ? (
         <div className="text-sm text-gray-400 py-10 text-center">{tc('loading')}</div>
-      ) : types.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-10 text-center">
-          <p className="text-sm text-gray-400">{t('types.emptyState')}</p>
+          <p className="text-sm text-gray-400">{search ? t('types.noResults') : t('types.emptyState')}</p>
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -75,13 +101,11 @@ export function AppointmentTypesPage() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('types.table.name')}</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('types.table.duration')}</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('types.table.defaultFee')}</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('types.table.colour')}</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('types.table.online')}</th>
                 {canManage && <th className="px-4 py-3" />}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {types.map((tp) => (
+              {filtered.map((tp) => (
                 <tr key={tp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-900 dark:text-white">{tp.name}</p>
@@ -91,25 +115,6 @@ export function AppointmentTypesPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{tp.defaultDurationMinutes} {tc('unit.min')}</td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{tp.defaultFee != null ? `${Number(tp.defaultFee).toFixed(2)} KM` : '—'}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium text-white"
-                      style={{ backgroundColor: tp.colorHex ?? '#6B7280' }}
-                    >
-                      {tp.colorHex ?? '#6B7280'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                        tp.isBookableOnline
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-500'
-                      }`}
-                    >
-                      {tp.isBookableOnline ? tc('boolean.yes') : tc('boolean.no')}
-                    </span>
-                  </td>
                   {canManage && (
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">

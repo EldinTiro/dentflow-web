@@ -47,10 +47,12 @@
     "today": "Today"
   },
   "types": {
-    "title": "Appointment Types",
-    "subtitle": "Manage the types of appointments available for booking.",
+    "title": "Types of Services",
+    "subtitle": "Manage the types of services available for booking.",
     "button": { "newType": "New Type" },
-    "emptyState": "No appointment types found.",
+    "emptyState": "No service types found.",
+    "searchPlaceholder": "Search services…",
+    "noResults": "No services match your search.",
     "table": {
       "name": "Name",
       "duration": "Duration",

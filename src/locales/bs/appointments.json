@@ -47,10 +47,12 @@
     "today": "Danas"
   },
   "types": {
-    "title": "Vrste termina",
-    "subtitle": "Upravljajte vrstama termina dostupnim za zakazivanje.",
+    "title": "Vrste usluga",
+    "subtitle": "Upravljajte vrstama usluga dostupnim za zakazivanje.",
     "button": { "newType": "Nova vrsta" },
-    "emptyState": "Nema vrsta termina.",
+    "emptyState": "Nema vrsta usluga.",
+    "searchPlaceholder": "Pretraži usluge…",
+    "noResults": "Nema usluga koje odgovaraju pretrazi.",
     "table": {
       "name": "Naziv",
       "duration": "Trajanje",

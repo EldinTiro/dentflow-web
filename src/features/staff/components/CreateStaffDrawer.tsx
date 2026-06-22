@@ -32,6 +32,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
     mutationFn: staffService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
+      queryClient.invalidateQueries({ queryKey: ['staff-all-active'] });
       onClose();
     },
     onError: (err: unknown) => {

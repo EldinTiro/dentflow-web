@@ -47,10 +47,12 @@
     "today": "Heute"
   },
   "types": {
-    "title": "Terminarten",
-    "subtitle": "Verwalten Sie die verfügbaren Terminarten für die Buchung.",
+    "title": "Leistungsarten",
+    "subtitle": "Verwalten Sie die verfügbaren Leistungsarten für die Buchung.",
     "button": { "newType": "Neue Art" },
-    "emptyState": "Keine Terminarten gefunden.",
+    "emptyState": "Keine Leistungsarten gefunden.",
+    "searchPlaceholder": "Leistungen suchen…",
+    "noResults": "Keine Leistungen entsprechen der Suche.",
     "table": {
       "name": "Name",
       "duration": "Dauer",
