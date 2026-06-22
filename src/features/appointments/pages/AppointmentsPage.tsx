@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router';
+import { useSearchParams, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   appointmentService,
@@ -117,10 +117,26 @@ export function AppointmentsPage() {
     }, { replace: true });
 
   const [showBook, setShowBook] = useState(false);
+  const [bookingInitial, setBookingInitial] = useState<{ startAt?: string; providerId?: string } | null>(null);
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null);
   const [selected, setSelected] = useState<AppointmentResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sort, setSort] = useState<{ col: 'startAt' | 'duration' | 'status'; dir: 'asc' | 'desc' }>({ col: 'startAt', dir: 'asc' });
+
+  const location = useLocation();
+  const handledStateRef = useRef(false);
+  useEffect(() => {
+    if (handledStateRef.current) return;
+    const state = location.state as { openCreate?: boolean; date?: string; startTime?: string; providerId?: string } | null;
+    if (state?.openCreate) {
+      handledStateRef.current = true;
+      const initial: { startAt?: string; providerId?: string } = {};
+      if (state.date && state.startTime) initial.startAt = `${state.date}T${state.startTime}`;
+      if (state.providerId) initial.providerId = state.providerId;
+      setBookingInitial(initial);
+      setShowBook(true);
+    }
+  }, []);
 
   // Week calendar state
   const [weekStart, setWeekStart] = useState<Date>(() => getMondayOfWeek(new Date()));
@@ -591,7 +607,13 @@ export function AppointmentsPage() {
         />
       )}
 
-      {showBook && <BookAppointmentDrawer onClose={() => setShowBook(false)} />}
+      {showBook && (
+        <BookAppointmentDrawer
+          onClose={() => { setShowBook(false); setBookingInitial(null); }}
+          initialStartAt={bookingInitial?.startAt}
+          initialProviderId={bookingInitial?.providerId}
+        />
+      )}
       {rescheduling && (
         <RescheduleModal
           appointment={rescheduling}

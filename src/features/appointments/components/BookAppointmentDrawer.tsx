@@ -13,6 +13,8 @@ interface Props {
   onClose: () => void;
   initialPatientId?: string;
   initialDate?: string;
+  initialStartAt?: string;    // "YYYY-MM-DDTHH:mm" — takes priority over initialDate
+  initialProviderId?: string;
 }
 
 interface FormData {
@@ -36,10 +38,11 @@ function toDateOnly(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate }: Props) {
+export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, initialStartAt, initialProviderId }: Props) {
   const queryClient = useQueryClient();
 
   const defaultStartAt = (() => {
+    if (initialStartAt) return initialStartAt;
     const d = new Date();
     d.setMinutes(Math.ceil(d.getMinutes() / 15) * 15, 0, 0);
     return initialDate ? `${initialDate}T09:00` : toLocalDatetimeValue(d);
@@ -70,6 +73,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate }
   } = useForm<FormData>({
     defaultValues: {
       patientId: initialPatientId ?? '',
+      providerId: initialProviderId ?? '',
       startAt: defaultStartAt,
       durationMinutes: 30,
       isNewPatient: false,
