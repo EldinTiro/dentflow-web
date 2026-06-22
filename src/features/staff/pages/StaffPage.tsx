@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   staffService,
   STAFF_TYPE_LABELS,
@@ -11,6 +13,7 @@ import {
 } from '../services/staffService';
 import { CreateStaffDrawer } from '../components/CreateStaffDrawer';
 import { EditStaffDrawer } from '../components/EditStaffDrawer';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useAuthStore } from '@/features/auth/store/authStore';
 
 export function StaffPage() {
@@ -24,8 +27,10 @@ export function StaffPage() {
   const [search, setSearch] = useState('');
   const [staffTypeFilter, setStaffTypeFilter] = useState<StaffType | ''>('');
   const [page, setPage] = useState(1);
+  const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [editing, setEditing] = useState<StaffMemberResponse | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['staff', search, staffTypeFilter, page],
@@ -39,10 +44,23 @@ export function StaffPage() {
     placeholderData: (prev) => prev,
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => staffService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff'] })
+      toast.success(t('toast.deleted'))
+      setDeletingId(null)
+    },
+    onError: () => {
+      toast.error(t('toast.deleteFailed'))
+    },
+  });
+
   const members = data?.items ?? [];
   const total = data?.totalCount ?? 0;
   const pageSize = 20;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const deletingMember = deletingId ? members.find((m) => m.id === deletingId) : null;
 
   return (
     <div className="p-6 space-y-5">
@@ -138,12 +156,22 @@ export function StaffPage() {
                   </td>
                   {canManage && (
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setEditing(m); }}
-                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium"
-                      >
-                        {tc('button.edit')}
-                      </button>
+                      <div className="flex justify-end gap-1">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditing(m); }}
+                          className="p-1.5 text-gray-400 hover:text-indigo-600 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                          title={tc('button.edit')}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setDeletingId(m.id); }}
+                          className="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          title={tc('button.delete')}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </td>
                   )}
                 </tr>
@@ -182,6 +210,17 @@ export function StaffPage() {
       {editing && (
         <EditStaffDrawer staff={editing} onClose={() => setEditing(null)} />
       )}
+
+      <ConfirmDialog
+        open={!!deletingId}
+        title={t('confirm.deleteTitle')}
+        description={t('confirm.deleteDescription', { name: deletingMember?.fullName ?? '' })}
+        confirmLabel={tc('button.delete')}
+        cancelLabel={tc('button.cancel')}
+        isPending={deleteMutation.isPending}
+        onConfirm={() => deletingId && deleteMutation.mutate(deletingId)}
+        onCancel={() => setDeletingId(null)}
+      />
     </div>
   );
 }

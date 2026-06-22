@@ -83,4 +83,13 @@ export const tenantService = {
 
   getCurrent: () =>
     apiClient.get<TenantResponse>('/api/v1/tenant/current').then((r) => r.data),
+
+  getFeatures: () =>
+    apiClient.get<TenantFeaturesResponse>('/api/v1/tenant/features').then((r) => r.data),
+}
+
+export interface TenantFeaturesResponse {
+  plan: string
+  flags: string[]
+  quotas: Record<string, number>
 }

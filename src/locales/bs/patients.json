@@ -119,6 +119,7 @@
     "filesUploadFailed": "{{count}} datoteka/e nije učitano",
     "fileDeleted": "Datoteka obrisana",
     "deleteFailed": "Brisanje nije uspjelo",
-    "couldNotOpenFile": "Nije moguće otvoriti datoteku"
+    "couldNotOpenFile": "Nije moguće otvoriti datoteku",
+    "deleted": "Pacijent obrisan"
   }
 }

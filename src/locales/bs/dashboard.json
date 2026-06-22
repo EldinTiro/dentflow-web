@@ -50,7 +50,7 @@
     "bookedCount": "{{count}} zauzeto",
     "bookedTooltip": "Zauzeto",
     "freeTooltip": "Slobodno – klikni za zakazivanje",
-    "footer": "{{startHour}}:00 – {{endHour}}:00 · Termini od 30 min · Klikni slobodan termin za zakazivanje",
+    "footer": "{{startHour}}:00 – {{endHour}} · Termini od 30 min · Klikni slobodan termin za zakazivanje",
     "previousDay": "Prethodni dan",
     "nextDay": "Sljedeći dan"
   }

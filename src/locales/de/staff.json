@@ -35,5 +35,13 @@
     "licenseNumber": "Lizenznummer",
     "licenseExpiry": "Lizenzablauf",
     "npiNumber": "NPI-Nummer"
+  },
+  "confirm": {
+    "deleteTitle": "Mitarbeiter entfernen?",
+    "deleteDescription": "{{name}} wird entfernt. Ein Admin kann dies rückgängig machen."
+  },
+  "toast": {
+    "deleted": "Mitarbeiter entfernt",
+    "deleteFailed": "Entfernen fehlgeschlagen"
   }
 }

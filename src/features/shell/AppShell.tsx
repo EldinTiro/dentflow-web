@@ -7,6 +7,7 @@ import { logout } from '@/features/auth/services/authService'
 import { tenantService } from '@/features/admin/services/tenantService'
 import { cn } from '@/shared/lib/utils'
 import { useTheme } from '@/shared/context/ThemeContext'
+import { FeatureProvider } from '@/shared/context/FeatureContext'
 import {
   LayoutDashboard,
   Users,
@@ -194,9 +195,6 @@ export function AppShell() {
             >
               <Menu size={18} />
             </button>
-            <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              {user?.roles?.[0] ?? t('role.staff')}
-            </h1>
           </div>
           <div className="flex items-center gap-1">
             {/* Language switcher */}
@@ -241,7 +239,9 @@ export function AppShell() {
         </header>
 
         <main className="flex-1 overflow-y-auto">
-          <Outlet />
+          <FeatureProvider>
+            <Outlet />
+          </FeatureProvider>
         </main>
       </div>
     </div>

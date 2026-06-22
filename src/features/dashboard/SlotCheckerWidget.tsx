@@ -8,7 +8,7 @@ import { staffService } from '@/features/staff/services/staffService'
 
 // Clinic working hours and slot granularity
 const CLINIC_START_HOUR = 8   // 08:00
-const CLINIC_END_HOUR   = 18  // 18:00 (exclusive)
+const CLINIC_END_HOUR   = 23  // 23:00 (exclusive) — last slot is 22:30
 const SLOT_MINUTES      = 30
 
 interface TimeSlot {
@@ -31,7 +31,7 @@ function buildSlots(): TimeSlot[] {
   return slots
 }
 
-const ALL_SLOTS = buildSlots() // 20 slots: 08:00 … 17:30
+const ALL_SLOTS = buildSlots() // 30 slots: 08:00 … 22:30
 
 // Statuses that count as "occupying" a slot
 const ACTIVE_STATUSES = new Set(['Scheduled', 'CheckedIn', 'InProgress'])
@@ -206,7 +206,7 @@ export function SlotCheckerWidget() {
       </div>
 
       <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
-        {t('slotChecker.footer', { startHour: CLINIC_START_HOUR, endHour: CLINIC_END_HOUR })}
+        {t('slotChecker.footer', { startHour: CLINIC_START_HOUR, endHour: ALL_SLOTS[ALL_SLOTS.length - 1].label })}
       </p>
     </div>
   )

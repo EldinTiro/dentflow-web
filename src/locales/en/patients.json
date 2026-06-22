@@ -119,6 +119,7 @@
     "filesUploadFailed": "{{count}} file(s) failed to upload",
     "fileDeleted": "File deleted",
     "deleteFailed": "Delete failed",
-    "couldNotOpenFile": "Could not open file"
+    "couldNotOpenFile": "Could not open file",
+    "deleted": "Patient deleted"
   }
 }

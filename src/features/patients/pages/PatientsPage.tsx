@@ -1,9 +1,14 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Link, useSearchParams } from 'react-router'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { Pencil, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { patientService, type PatientResponse, type PatientStatus } from '../services/patientService'
 import { CreatePatientDrawer } from '../components/CreatePatientDrawer'
+import { EditPatientDrawer } from '../components/EditPatientDrawer'
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
+import { useAuthStore } from '@/features/auth/store/authStore'
 
 const STATUS_KEYS: { value: PatientStatus | ''; labelKey: string }[] = [
   { value: '', labelKey: 'status.allStatuses' },
@@ -34,8 +39,17 @@ function StatusBadge({ status }: { status: PatientStatus }) {
 export function PatientsPage() {
   const { t } = useTranslation('patients')
   const tc = useTranslation('common').t
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
   const [showCreate, setShowCreate] = useState(false)
+  const [editing, setEditing] = useState<PatientResponse | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const roles = useAuthStore((s) => s.user?.roles ?? [])
+  const canManage = roles.some((r) =>
+    ['ClinicOwner', 'ClinicAdmin', 'Receptionist', 'SuperAdmin'].includes(r)
+  )
 
   const search = searchParams.get('search') ?? ''
   const status = (searchParams.get('status') ?? '') as PatientStatus | ''
@@ -59,6 +73,21 @@ export function PatientsPage() {
       }),
     placeholderData: (prev) => prev,
   })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => patientService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] })
+      toast.success(t('toast.deleted'))
+      setDeletingId(null)
+    },
+    onError: () => {
+      toast.error(t('toast.deleteFailed'))
+    },
+  })
+
+  const deletingPatient = deletingId ? data?.items.find((p) => p.id === deletingId) : null
+  const colCount = canManage ? 7 : 6
 
   return (
     <div className="p-6">
@@ -105,27 +134,28 @@ export function PatientsPage() {
               <th className="px-4 py-3 text-left">{t('table.mobile')}</th>
               <th className="px-4 py-3 text-left">{t('table.email')}</th>
               <th className="px-4 py-3 text-left">{t('table.status')}</th>
+              {canManage && <th className="px-4 py-3" />}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {isLoading && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-400">{tc('loading')}</td>
+                <td colSpan={colCount} className="px-4 py-8 text-center text-gray-400">{tc('loading')}</td>
               </tr>
             )}
             {!isLoading && data?.items.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t('emptyState')}</td>
+                <td colSpan={colCount} className="px-4 py-8 text-center text-gray-400">{t('emptyState')}</td>
               </tr>
             )}
             {data?.items.map((p: PatientResponse) => (
-              <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+              <tr
+                key={p.id}
+                className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
+                onClick={() => navigate(`/patients/${p.id}`)}
+              >
                 <td className="px-4 py-3 font-mono text-xs text-gray-400 dark:text-gray-500">{p.patientNumber}</td>
-                <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
-                  <Link to={`/patients/${p.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400">
-                    {p.fullName}
-                  </Link>
-                </td>
+                <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{p.fullName}</td>
                 <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
                   {p.dateOfBirth
                     ? new Date(p.dateOfBirth + 'T00:00:00').toLocaleDateString()
@@ -136,6 +166,26 @@ export function PatientsPage() {
                 <td className="px-4 py-3">
                   <StatusBadge status={p.status} />
                 </td>
+                {canManage && (
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-1">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setEditing(p) }}
+                        className="p-1.5 text-gray-400 hover:text-indigo-600 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                        title={tc('button.edit')}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setDeletingId(p.id) }}
+                        className="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        title={t('table.deleteTooltip')}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -165,6 +215,18 @@ export function PatientsPage() {
       </div>
 
       {showCreate && <CreatePatientDrawer onClose={() => setShowCreate(false)} />}
+      {editing && <EditPatientDrawer patient={editing} onClose={() => setEditing(null)} />}
+
+      <ConfirmDialog
+        open={!!deletingId}
+        title={t('confirm.deleteTitle')}
+        description={t('confirm.deleteDescription', { name: deletingPatient?.fullName ?? '' })}
+        confirmLabel={tc('button.delete')}
+        cancelLabel={tc('button.cancel')}
+        isPending={deleteMutation.isPending}
+        onConfirm={() => deletingId && deleteMutation.mutate(deletingId)}
+        onCancel={() => setDeletingId(null)}
+      />
     </div>
   )
 }

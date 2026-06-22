@@ -35,5 +35,13 @@
     "licenseNumber": "License number",
     "licenseExpiry": "License expiry",
     "npiNumber": "NPI number"
+  },
+  "confirm": {
+    "deleteTitle": "Remove Staff Member?",
+    "deleteDescription": "{{name}} will be removed. This action can be undone by an admin."
+  },
+  "toast": {
+    "deleted": "Staff member removed",
+    "deleteFailed": "Failed to remove staff member"
   }
 }

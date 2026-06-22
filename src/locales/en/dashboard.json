@@ -50,7 +50,7 @@
     "bookedCount": "{{count}} booked",
     "bookedTooltip": "Booked",
     "freeTooltip": "Free – click to book",
-    "footer": "{{startHour}}:00 – {{endHour}}:00 · 30-min slots · Click a free slot to open the booking form",
+    "footer": "{{startHour}}:00 – {{endHour}} · 30-min slots · Click a free slot to open the booking form",
     "previousDay": "Previous day",
     "nextDay": "Next day"
   }

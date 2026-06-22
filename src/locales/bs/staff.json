@@ -35,5 +35,13 @@
     "licenseNumber": "Broj licence",
     "licenseExpiry": "Istek licence",
     "npiNumber": "NPI broj"
+  },
+  "confirm": {
+    "deleteTitle": "Ukloniti člana osoblja?",
+    "deleteDescription": "{{name}} će biti uklonjen/a. Admin može poništiti ovu akciju."
+  },
+  "toast": {
+    "deleted": "Član osoblja uklonjen",
+    "deleteFailed": "Uklanjanje nije uspjelo"
   }
 }

@@ -50,7 +50,7 @@
     "bookedCount": "{{count}} gebucht",
     "bookedTooltip": "Gebucht",
     "freeTooltip": "Frei – klicken zum Buchen",
-    "footer": "{{startHour}}:00 – {{endHour}}:00 · 30-Min-Slots · Klicken Sie auf einen freien Slot zum Buchen",
+    "footer": "{{startHour}}:00 – {{endHour}} · 30-Min-Slots · Klicken Sie auf einen freien Slot zum Buchen",
     "previousDay": "Vorheriger Tag",
     "nextDay": "Nächster Tag"
   }

@@ -119,6 +119,7 @@
     "filesUploadFailed": "{{count}} Datei(en) fehlgeschlagen",
     "fileDeleted": "Datei gelöscht",
     "deleteFailed": "Löschen fehlgeschlagen",
-    "couldNotOpenFile": "Datei konnte nicht geöffnet werden"
+    "couldNotOpenFile": "Datei konnte nicht geöffnet werden",
+    "deleted": "Patient gelöscht"
   }
 }
