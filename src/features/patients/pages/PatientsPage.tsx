@@ -80,13 +80,13 @@ export function PatientsPage() {
       <div className="flex gap-3 mb-4">
         <input
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder={t('search.placeholder')}
           className="w-72 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <select
           value={status}
-          onChange={(e) => { setStatus(e.target.value as PatientStatus | ''); setPage(1) }}
+          onChange={(e) => setStatus(e.target.value as PatientStatus | '')}
           className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
           {STATUS_KEYS.map((o) => (

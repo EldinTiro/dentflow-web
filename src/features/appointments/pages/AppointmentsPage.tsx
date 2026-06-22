@@ -106,6 +106,15 @@ export function AppointmentsPage() {
   const setPage = (v: number) => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('page', String(v)); return n }, { replace: true });
   const setProviderFilter = (v: string) => updateParam('provider', v || null);
   const setShowPast = (v: boolean) => updateParam('past', v ? '1' : null);
+  const setDateRange = (from: string, to: string) =>
+    setSearchParams((p) => {
+      const n = new URLSearchParams(p);
+      n.set('from', from);
+      n.set('to', to);
+      n.delete('past');
+      n.set('page', '1');
+      return n;
+    }, { replace: true });
 
   const [showBook, setShowBook] = useState(false);
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null);
@@ -368,7 +377,7 @@ export function AppointmentsPage() {
                 ] as const).map((p) => (
                   <button
                     key={p.label}
-                    onClick={() => { setDateFrom(p.from); setDateTo(p.to); setShowPast(false); setPage(1); }}
+                    onClick={() => setDateRange(p.from, p.to)}
                     className={`px-2.5 py-1 text-xs rounded-md border transition-colors ${
                       dateFrom === p.from && dateTo === p.to
                         ? 'bg-indigo-600 text-white border-indigo-600'
@@ -385,14 +394,14 @@ export function AppointmentsPage() {
               <input
                 type="date"
                 value={dateFrom}
-                onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+                onChange={(e) => setDateFrom(e.target.value)}
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               <span className="text-gray-400 dark:text-gray-500 text-xs">→</span>
               <input
                 type="date"
                 value={dateTo}
-                onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+                onChange={(e) => setDateTo(e.target.value)}
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
 
@@ -400,7 +409,7 @@ export function AppointmentsPage() {
 
               <select
                 value={statusFilter}
-                onChange={(e) => { setStatusFilter(e.target.value as AppointmentStatus | ''); setPage(1); }}
+                onChange={(e) => setStatusFilter(e.target.value as AppointmentStatus | '')}
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">{t('filter.allStatuses')}</option>
@@ -411,7 +420,7 @@ export function AppointmentsPage() {
 
               <select
                 value={providerFilter}
-                onChange={(e) => { setProviderFilter(e.target.value); setPage(1); }}
+                onChange={(e) => setProviderFilter(e.target.value)}
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">{t('filter.allProviders')}</option>
@@ -424,7 +433,7 @@ export function AppointmentsPage() {
                 <input
                   type="checkbox"
                   checked={showPast}
-                  onChange={(e) => { setShowPast(e.target.checked); setPage(1); }}
+                  onChange={(e) => setShowPast(e.target.checked)}
                   className="rounded border-gray-300"
                 />
                 {t('filter.showPast')}
