@@ -4,7 +4,25 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
 import { tenantService, type TenantCreatedResponse } from '../services/tenantService'
+
+function extractApiError(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data
+    // FastEndpoints UseProblemDetails() format: errors: [{ name, reason }]
+    if (Array.isArray(data?.errors) && data.errors.length > 0) {
+      return data.errors
+        .map((e: { reason?: string; description?: string; message?: string }) =>
+          e.reason ?? e.description ?? e.message ?? String(e)
+        )
+        .join(' ')
+    }
+    if (data?.detail) return data.detail as string
+    if (data?.message) return data.message as string
+  }
+  return 'Failed to create tenant. Please try again.'
+}
 
 const schema = z.object({
   slug: z
@@ -152,7 +170,7 @@ export function CreateTenantModal({ onClose }: Props) {
         </div>
 
         {mutation.isError && (
-          <p className="text-red-500 text-xs">{t('tenants.create.error')}</p>
+          <p className="text-red-500 text-xs">{extractApiError(mutation.error)}</p>
         )}
 
         <div className="flex justify-end gap-3 pt-2">
