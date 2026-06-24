@@ -86,10 +86,31 @@ export const tenantService = {
 
   getFeatures: () =>
     apiClient.get<TenantFeaturesResponse>('/api/v1/tenant/features').then((r) => r.data),
+
+  getSettings: () =>
+    apiClient.get<ClinicSettings>('/api/v1/tenant/settings').then((r) => r.data),
+
+  updateSettings: (body: { slotDurationMinutes: number; weeklyScheduleJson: string | null }) =>
+    apiClient.put<ClinicSettings>('/api/v1/tenant/settings', body).then((r) => r.data),
 }
 
 export interface TenantFeaturesResponse {
   plan: string
   flags: string[]
   quotas: Record<string, number>
+}
+
+export interface DaySchedule {
+  isOpen: boolean
+  start: string   // "08:00"
+  end: string     // "17:00"
+}
+
+export type WeeklySchedule = Record<string, DaySchedule>  // key: "monday"..."sunday"
+
+export interface ClinicSettings {
+  workdayStart: string        // legacy fallback "08:00"
+  workdayEnd: string          // legacy fallback "22:30"
+  slotDurationMinutes: number
+  weeklyScheduleJson: string | null
 }

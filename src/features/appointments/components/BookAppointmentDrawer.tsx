@@ -1,6 +1,6 @@
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { useState, useRef, useEffect } from 'react';
-import { Search, X, Clock } from 'lucide-react';
+import { Search, X, Clock, UserPlus } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Drawer } from '@/shared/components/Drawer';
 import { appointmentService, type BookAppointmentRequest } from '../services/appointmentService';
@@ -14,7 +14,7 @@ interface Props {
   onClose: () => void;
   initialPatientId?: string;
   initialDate?: string;
-  initialStartAt?: string;    // "YYYY-MM-DDTHH:mm" — takes priority over initialDate
+  initialStartAt?: string;
   initialProviderId?: string;
 }
 
@@ -27,6 +27,9 @@ interface FormData {
   chiefComplaint: string;
   notes: string;
   isNewPatient: boolean;
+  newFirstName: string;
+  newLastName: string;
+  newPhone: string;
 }
 
 function toLocalDatetimeValue(d: Date): string {
@@ -80,9 +83,13 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
       startAt: defaultStartAt,
       durationMinutes: 30,
       isNewPatient: false,
+      newFirstName: '',
+      newLastName: '',
+      newPhone: '',
     },
   });
 
+  const isNewPatient = useWatch({ control, name: 'isNewPatient' });
   const watchedProviderId = useWatch({ control, name: 'providerId' });
   const watchedStartAt = useWatch({ control, name: 'startAt' });
   const watchedDuration = useWatch({ control, name: 'durationMinutes' });
@@ -102,7 +109,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
   const { data: searchResults, isFetching: isSearching } = useQuery({
     queryKey: ['patients-search', patientSearch],
     queryFn: () => patientService.search(patientSearch, 20),
-    enabled: patientSearch.length >= 1,
+    enabled: patientSearch.length >= 1 && !isNewPatient,
     staleTime: 30_000,
   });
 
@@ -113,10 +120,16 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
     staleTime: 60_000,
   });
 
-  const mutation = useMutation({
+  const createPatientMutation = useMutation({
+    mutationFn: (data: { firstName: string; lastName: string; phoneMobile?: string }) =>
+      patientService.create({ firstName: data.firstName, lastName: data.lastName, phoneMobile: data.phoneMobile || null, smsOptIn: false, emailOptIn: false }),
+  });
+
+  const bookMutation = useMutation({
     mutationFn: (data: BookAppointmentRequest) => appointmentService.book(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
       onClose();
     },
     onError: (err: unknown) => {
@@ -124,11 +137,29 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
     },
   });
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     const start = new Date(data.startAt);
     const end = new Date(start.getTime() + data.durationMinutes * 60_000);
-    mutation.mutate({
-      patientId: data.patientId,
+
+    let patientId = data.patientId;
+
+    if (isNewPatient) {
+      try {
+        const newPatient = await createPatientMutation.mutateAsync({
+          firstName: data.newFirstName,
+          lastName: data.newLastName,
+          phoneMobile: data.newPhone || undefined,
+        });
+        patientId = newPatient.id;
+        toast.success(`Pacijent ${newPatient.fullName} kreiran`);
+      } catch (err) {
+        toast.error(getApiErrorMessage(err, 'Greška pri kreiranju pacijenta'));
+        return;
+      }
+    }
+
+    bookMutation.mutate({
+      patientId,
       providerId: data.providerId,
       appointmentTypeId: data.appointmentTypeId,
       startAt: start.toISOString(),
@@ -144,99 +175,175 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
     (s: StaffMemberResponse) => s.staffType === 'Dentist' || s.staffType === 'Hygienist',
   );
   const apptTypes = typesData ?? [];
-
   const displayResults = patientSearch.length >= 1 ? (searchResults ?? []) : [];
+  const isPending = createPatientMutation.isPending || bookMutation.isPending;
 
   return (
     <Drawer title="Book Appointment" onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-6">
 
-        {/* Patient — API autocomplete */}
+        {/* Patient field */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Patient <span className="text-red-500">*</span>
+            Pacijent <span className="text-red-500">*</span>
           </label>
-          <Controller
-            name="patientId"
-            control={control}
-            rules={{ required: 'Patient is required' }}
-            render={({ field }) => (
-              <div ref={patientRef} className="relative">
-                <div
-                  className={`flex items-center gap-1 w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 ${
-                    errors.patientId ? 'border-red-400' : 'border-gray-300 dark:border-gray-600'
-                  } focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500`}
-                >
-                  <Search size={14} className="shrink-0 text-gray-400" />
-                  {selectedPatient && !patientOpen ? (
-                    <span className="flex-1 truncate text-gray-900 dark:text-gray-100">
-                      {selectedPatient.fullName}
-                      <span className="ml-1 text-gray-400 text-xs">{selectedPatient.patientNumber}</span>
-                    </span>
-                  ) : (
-                    <input
-                      autoComplete="off"
-                      placeholder={selectedPatient ? selectedPatient.fullName : 'Ime, telefon ili broj kartona…'}
-                      value={patientSearch}
-                      onChange={(e) => {
-                        setPatientSearch(e.target.value);
-                        setPatientOpen(true);
-                      }}
-                      onFocus={() => setPatientOpen(true)}
-                      className="flex-1 outline-none bg-transparent placeholder-gray-400 dark:text-gray-100 min-w-0"
-                    />
-                  )}
-                  {isSearching && <span className="text-xs text-gray-400">...</span>}
-                  {field.value && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        field.onChange('');
-                        setSelectedPatient(null);
-                        setPatientSearch('');
-                        setPatientOpen(false);
-                      }}
-                      className="shrink-0 text-gray-400 hover:text-gray-600"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
 
-                {patientOpen && patientSearch.length >= 1 && (
-                  <ul className="absolute z-50 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg text-sm">
-                    {displayResults.length === 0 ? (
-                      <li className="px-3 py-2 text-gray-400">
-                        {isSearching ? 'Pretraživanje…' : 'Nema rezultata'}
-                      </li>
+          {isNewPatient ? (
+            /* ── Inline new-patient mini-form ── */
+            <div className="rounded-lg border border-indigo-200 dark:border-indigo-700 bg-indigo-50/40 dark:bg-indigo-900/10 p-3 space-y-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                  <UserPlus size={13} /> Novi pacijent
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue('isNewPatient', false);
+                    setValue('newFirstName', '');
+                    setValue('newLastName', '');
+                    setValue('newPhone', '');
+                    setPatientSearch('');
+                  }}
+                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 underline"
+                >
+                  ← Traži postojećeg
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Ime <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    {...register('newFirstName', { required: isNewPatient ? 'Obavezno' : false })}
+                    placeholder="npr. Amra"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  {errors.newFirstName && <p className="mt-1 text-xs text-red-600">{errors.newFirstName.message}</p>}
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Prezime <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    {...register('newLastName', { required: isNewPatient ? 'Obavezno' : false })}
+                    placeholder="npr. Begić"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  {errors.newLastName && <p className="mt-1 text-xs text-red-600">{errors.newLastName.message}</p>}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Telefon</label>
+                <input
+                  {...register('newPhone')}
+                  placeholder="+387 61 123 456"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <p className="text-xs text-gray-400 dark:text-gray-500">
+                Karton će biti otvoren pri rezervaciji termina.
+              </p>
+            </div>
+          ) : (
+            /* ── Existing patient search ── */
+            <Controller
+              name="patientId"
+              control={control}
+              rules={{ required: !isNewPatient ? 'Pacijent je obavezan' : false }}
+              render={({ field }) => (
+                <div ref={patientRef} className="relative">
+                  <div
+                    className={`flex items-center gap-1 w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 ${
+                      errors.patientId ? 'border-red-400' : 'border-gray-300 dark:border-gray-600'
+                    } focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500`}
+                  >
+                    <Search size={14} className="shrink-0 text-gray-400" />
+                    {selectedPatient && !patientOpen ? (
+                      <span className="flex-1 truncate text-gray-900 dark:text-gray-100">
+                        {selectedPatient.fullName}
+                        <span className="ml-1 text-gray-400 text-xs">{selectedPatient.patientNumber}</span>
+                      </span>
                     ) : (
-                      displayResults.map((p) => (
+                      <input
+                        autoComplete="off"
+                        placeholder="Ime, telefon ili broj kartona…"
+                        value={patientSearch}
+                        onChange={(e) => { setPatientSearch(e.target.value); setPatientOpen(true); }}
+                        onFocus={() => setPatientOpen(true)}
+                        className="flex-1 outline-none bg-transparent placeholder-gray-400 dark:text-gray-100 min-w-0"
+                      />
+                    )}
+                    {isSearching && <span className="text-xs text-gray-400">...</span>}
+                    {field.value && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          field.onChange('');
+                          setSelectedPatient(null);
+                          setPatientSearch('');
+                          setPatientOpen(false);
+                        }}
+                        className="shrink-0 text-gray-400 hover:text-gray-600"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+
+                  {patientOpen && patientSearch.length >= 1 && (
+                    <ul className="absolute z-50 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg text-sm">
+                      {isSearching ? (
+                        <li className="px-3 py-2 text-gray-400">Pretraživanje…</li>
+                      ) : displayResults.length > 0 ? (
+                        <>
+                          {displayResults.map((p) => (
+                            <li
+                              key={p.id}
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => {
+                                field.onChange(p.id);
+                                setSelectedPatient(p);
+                                setPatientSearch('');
+                                setPatientOpen(false);
+                              }}
+                              className={`px-3 py-2 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/40 ${
+                                p.id === field.value ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-700 dark:text-gray-300'
+                              }`}
+                            >
+                              <span className="font-medium">{p.fullName}</span>
+                              <span className="ml-2 text-xs text-gray-400">{p.patientNumber}</span>
+                              {p.phoneMobile && <span className="ml-2 text-xs text-gray-400">{p.phoneMobile}</span>}
+                            </li>
+                          ))}
+                        </>
+                      ) : (
+                        /* No results — offer to create */
                         <li
-                          key={p.id}
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => {
-                            field.onChange(p.id);
-                            setSelectedPatient(p);
-                            setPatientSearch('');
+                            const parts = patientSearch.trim().split(/\s+/);
+                            const firstName = parts[0] ?? '';
+                            const lastName = parts.slice(1).join(' ');
+                            setValue('isNewPatient', true);
+                            setValue('newFirstName', firstName);
+                            setValue('newLastName', lastName);
                             setPatientOpen(false);
                           }}
-                          className={`px-3 py-2 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/40 ${
-                            p.id === field.value ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-700 dark:text-gray-300'
-                          }`}
+                          className="px-3 py-2.5 cursor-pointer flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium"
                         >
-                          <span className="font-medium">{p.fullName}</span>
-                          <span className="ml-2 text-xs text-gray-400">{p.patientNumber}</span>
-                          {p.phoneMobile && <span className="ml-2 text-xs text-gray-400">{p.phoneMobile}</span>}
+                          <UserPlus size={14} className="shrink-0" />
+                          Kreiraj novi karton za &ldquo;{patientSearch}&rdquo;
                         </li>
-                      ))
-                    )}
-                  </ul>
-                )}
-              </div>
-            )}
-          />
-          {errors.patientId && (
+                      )}
+                    </ul>
+                  )}
+                </div>
+              )}
+            />
+          )}
+          {errors.patientId && !isNewPatient && (
             <p className="mt-1 text-xs text-red-600">{errors.patientId.message}</p>
           )}
         </div>
@@ -258,9 +365,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
               </option>
             ))}
           </select>
-          {errors.providerId && (
-            <p className="mt-1 text-xs text-red-600">{errors.providerId.message}</p>
-          )}
+          {errors.providerId && <p className="mt-1 text-xs text-red-600">{errors.providerId.message}</p>}
         </div>
 
         {/* Appointment Type */}
@@ -291,12 +396,10 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
               </select>
             )}
           />
-          {errors.appointmentTypeId && (
-            <p className="mt-1 text-xs text-red-600">{errors.appointmentTypeId.message}</p>
-          )}
+          {errors.appointmentTypeId && <p className="mt-1 text-xs text-red-600">{errors.appointmentTypeId.message}</p>}
         </div>
 
-        {/* Date / Slot Picker toggle */}
+        {/* Date / Slot Picker */}
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -317,10 +420,8 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
           {!showSlotPicker ? (
             <div className="grid grid-cols-2 gap-4 items-end">
               <div>
-                {/* Hidden input keeps RHF registration + validation */}
                 <input type="hidden" {...register('startAt', { required: 'Start time is required' })} />
                 <div className="flex gap-1.5">
-                  {/* Date */}
                   <input
                     type="date"
                     value={slotDate}
@@ -330,7 +431,6 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                     }}
                     className="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
-                  {/* 24h time — hour : minute selects */}
                   <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shrink-0 overflow-hidden">
                     <select
                       value={watchedStartAt?.split('T')[1]?.slice(0, 2) ?? '09'}
@@ -374,7 +474,6 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
             </div>
           ) : (
             <div>
-              {/* Date selector for slot picker */}
               <input
                 type="date"
                 value={slotDate}
@@ -384,7 +483,6 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                 }}
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3"
               />
-
               {isLoadingSlots ? (
                 <p className="text-sm text-gray-400 py-4 text-center">Učitavanje slobodnih termina…</p>
               ) : !slots || slots.length === 0 ? (
@@ -438,12 +536,6 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
           />
         </div>
 
-        {/* New patient flag */}
-        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-          <input type="checkbox" {...register('isNewPatient')} className="rounded" />
-          Novi pacijent
-        </label>
-
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-2">
           <button
@@ -455,10 +547,12 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
           </button>
           <button
             type="submit"
-            disabled={mutation.isPending}
+            disabled={isPending}
             className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
           >
-            {mutation.isPending ? 'Rezervišem…' : 'Rezerviši termin'}
+            {isPending
+              ? createPatientMutation.isPending ? 'Kreiram pacijenta…' : 'Rezervišem…'
+              : 'Rezerviši termin'}
           </button>
         </div>
       </form>

@@ -5,36 +5,46 @@ import { useTranslation } from 'react-i18next'
 import { CalendarSearch, ChevronLeft, ChevronRight } from 'lucide-react'
 import { appointmentService } from '@/features/appointments/services/appointmentService'
 import { staffService } from '@/features/staff/services/staffService'
-
-// Clinic working hours and slot granularity
-const CLINIC_START_HOUR = 8   // 08:00
-const CLINIC_END_HOUR   = 23  // 23:00 (exclusive) — last slot is 22:30
-const SLOT_MINUTES      = 30
+import { tenantService } from '@/features/admin/services/tenantService'
+import type { WeeklySchedule } from '@/features/admin/services/tenantService'
 
 interface TimeSlot {
   hour: number
   minute: number
-  label: string // "08:00", "08:30", …
+  label: string
 }
 
-function buildSlots(): TimeSlot[] {
+function buildSlots(startStr: string, endStr: string, durationMinutes: number): TimeSlot[] {
+  const [sh, sm] = startStr.split(':').map(Number)
+  const [eh, em] = endStr.split(':').map(Number)
+  const startTotal = sh * 60 + sm
+  const endTotal   = eh * 60 + em
+
   const slots: TimeSlot[] = []
-  for (let h = CLINIC_START_HOUR; h < CLINIC_END_HOUR; h++) {
-    for (let m = 0; m < 60; m += SLOT_MINUTES) {
-      slots.push({
-        hour: h,
-        minute: m,
-        label: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`,
-      })
-    }
+  for (let t = startTotal; t <= endTotal; t += durationMinutes) {
+    const h = Math.floor(t / 60)
+    const m = t % 60
+    slots.push({
+      hour: h,
+      minute: m,
+      label: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`,
+    })
   }
   return slots
 }
 
-const ALL_SLOTS = buildSlots() // 30 slots: 08:00 … 22:30
-
-// Statuses that count as "occupying" a slot
 const ACTIVE_STATUSES = new Set(['Scheduled', 'CheckedIn', 'InProgress'])
+
+const DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+
+function getDaySchedule(weeklyScheduleJson: string | null | undefined, dateStr: string) {
+  if (!weeklyScheduleJson) return null
+  try {
+    const schedule = JSON.parse(weeklyScheduleJson) as WeeklySchedule
+    const dayKey = DAY_KEYS[new Date(dateStr + 'T00:00:00').getDay()]
+    return schedule[dayKey] ?? null
+  } catch { return null }
+}
 
 function toLocalDate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -51,7 +61,28 @@ export function SlotCheckerWidget() {
   const [date, setDate] = useState(() => toLocalDate(new Date()))
   const [providerId, setProviderId] = useState<string>('all')
 
-  // Reuse the same query key as DashboardPage so the result is cached
+  const { data: settings } = useQuery({
+    queryKey: ['clinic-settings'],
+    queryFn: tenantService.getSettings,
+    staleTime: 10 * 60 * 1000,
+  })
+
+  const slotDuration = settings?.slotDurationMinutes ?? 30
+
+  const daySchedule = useMemo(
+    () => getDaySchedule(settings?.weeklyScheduleJson, date),
+    [settings?.weeklyScheduleJson, date],
+  )
+
+  const workdayStart = daySchedule?.start ?? settings?.workdayStart ?? '08:00'
+  const workdayEnd   = daySchedule?.end   ?? settings?.workdayEnd   ?? '22:30'
+  const isDayClosed  = daySchedule !== null && !daySchedule.isOpen
+
+  const allSlots = useMemo(
+    () => isDayClosed ? [] : buildSlots(workdayStart, workdayEnd, slotDuration),
+    [workdayStart, workdayEnd, slotDuration, isDayClosed],
+  )
+
   const { data: allStaff } = useQuery({
     queryKey: ['staff-all-active'],
     queryFn: () => staffService.list({ isActive: true, pageSize: 50 }),
@@ -75,28 +106,26 @@ export function SlotCheckerWidget() {
     staleTime: 30 * 1000,
   })
 
-  // Build the set of busy slot labels for the selected date/provider
   const busySlotLabels = useMemo(() => {
     const busy = new Set<string>()
     for (const appt of appointments?.items ?? []) {
       if (!ACTIVE_STATUSES.has(appt.status)) continue
       const apptStart = new Date(appt.startAt).getTime()
       const apptEnd   = new Date(appt.endAt).getTime()
-      for (const slot of ALL_SLOTS) {
+      for (const slot of allSlots) {
         const slotStart = new Date(`${date}T${slot.label}:00`).getTime()
-        const slotEnd   = slotStart + SLOT_MINUTES * 60 * 1000
+        const slotEnd   = slotStart + slotDuration * 60 * 1000
         if (apptStart < slotEnd && apptEnd > slotStart) {
           busy.add(slot.label)
         }
       }
     }
     return busy
-  }, [appointments, date])
+  }, [appointments, date, allSlots, slotDuration])
 
-  const freeCount = ALL_SLOTS.length - busySlotLabels.size
+  const freeCount   = allSlots.length - busySlotLabels.size
   const bookedCount = busySlotLabels.size
-
-  const isToday = date === toLocalDate(new Date())
+  const isToday     = date === toLocalDate(new Date())
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
@@ -118,7 +147,6 @@ export function SlotCheckerWidget() {
 
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        {/* Date navigator */}
         <div className="flex items-center gap-0.5">
           <button
             onClick={() => setDate(d => shiftDate(d, -1))}
@@ -135,7 +163,6 @@ export function SlotCheckerWidget() {
           />
           <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 pl-1 whitespace-nowrap">
             {(() => {
-              // 'bs' is poorly supported in Intl — map to 'hr' (Croatian shares identical day names)
               const localeMap: Record<string, string> = { bs: 'hr', en: 'en', de: 'de' }
               const locale = localeMap[i18n.language] ?? i18n.language
               const name = new Date(date + 'T00:00:00').toLocaleDateString(locale, { weekday: 'long' })
@@ -151,7 +178,6 @@ export function SlotCheckerWidget() {
           </button>
         </div>
 
-        {/* Provider filter */}
         <select
           value={providerId}
           onChange={e => setProviderId(e.target.value)}
@@ -163,7 +189,6 @@ export function SlotCheckerWidget() {
           ))}
         </select>
 
-        {/* Summary badges */}
         <span className="text-xs text-gray-500 dark:text-gray-400">
           <span className="font-semibold text-green-600 dark:text-green-400">{t('slotChecker.freeCount', { count: freeCount })}</span>
           {' · '}
@@ -172,8 +197,13 @@ export function SlotCheckerWidget() {
       </div>
 
       {/* Slot grid */}
+      {isDayClosed ? (
+        <div className="py-6 text-center text-sm text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+          Klinika je zatvorena ovog dana
+        </div>
+      ) : (
       <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-1.5">
-        {ALL_SLOTS.map(slot => {
+        {allSlots.map(slot => {
           const busy = busySlotLabels.has(slot.label)
           if (busy) {
             return (
@@ -204,9 +234,13 @@ export function SlotCheckerWidget() {
           )
         })}
       </div>
+      )}
 
       <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
-        {t('slotChecker.footer', { startHour: CLINIC_START_HOUR, endHour: ALL_SLOTS[ALL_SLOTS.length - 1].label })}
+        {t('slotChecker.footer', {
+          startHour: workdayStart,
+          endHour:   allSlots.length > 0 ? allSlots[allSlots.length - 1].label : workdayEnd,
+        })}
       </p>
     </div>
   )
