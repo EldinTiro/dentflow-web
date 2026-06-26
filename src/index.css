@@ -3,6 +3,100 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ── Color themes ─────────────────────────────────────────────────────────────
+   @theme inline makes Tailwind generate bg-primary-*, text-primary-* etc.
+   using CSS custom properties, so themes can be switched at runtime.
+   ───────────────────────────────────────────────────────────────────────── */
+
+@theme inline {
+  --color-primary-50:  var(--df-p-50);
+  --color-primary-100: var(--df-p-100);
+  --color-primary-200: var(--df-p-200);
+  --color-primary-300: var(--df-p-300);
+  --color-primary-400: var(--df-p-400);
+  --color-primary-500: var(--df-p-500);
+  --color-primary-600: var(--df-p-600);
+  --color-primary-700: var(--df-p-700);
+  --color-primary-800: var(--df-p-800);
+  --color-primary-900: var(--df-p-900);
+  --color-primary-950: var(--df-p-950);
+}
+
+/* Default — Indigo */
+:root {
+  --df-p-50:  #eef2ff;
+  --df-p-100: #e0e7ff;
+  --df-p-200: #c7d2fe;
+  --df-p-300: #a5b4fc;
+  --df-p-400: #818cf8;
+  --df-p-500: #6366f1;
+  --df-p-600: #4f46e5;
+  --df-p-700: #4338ca;
+  --df-p-800: #3730a3;
+  --df-p-900: #312e81;
+  --df-p-950: #1e1b4b;
+}
+
+/* Rose — PinkDent */
+:root[data-color-theme="rose"] {
+  --df-p-50:  #fff1f2;
+  --df-p-100: #ffe4e6;
+  --df-p-200: #fecdd3;
+  --df-p-300: #fda4af;
+  --df-p-400: #fb7185;
+  --df-p-500: #f43f5e;
+  --df-p-600: #e11d48;
+  --df-p-700: #be123c;
+  --df-p-800: #9f1239;
+  --df-p-900: #881337;
+  --df-p-950: #4c0519;
+}
+
+/* Teal */
+:root[data-color-theme="teal"] {
+  --df-p-50:  #f0fdfa;
+  --df-p-100: #ccfbf1;
+  --df-p-200: #99f6e4;
+  --df-p-300: #5eead4;
+  --df-p-400: #2dd4bf;
+  --df-p-500: #14b8a6;
+  --df-p-600: #0d9488;
+  --df-p-700: #0f766e;
+  --df-p-800: #115e59;
+  --df-p-900: #134e4a;
+  --df-p-950: #042f2e;
+}
+
+/* Blue — Ocean */
+:root[data-color-theme="blue"] {
+  --df-p-50:  #eff6ff;
+  --df-p-100: #dbeafe;
+  --df-p-200: #bfdbfe;
+  --df-p-300: #93c5fd;
+  --df-p-400: #60a5fa;
+  --df-p-500: #3b82f6;
+  --df-p-600: #2563eb;
+  --df-p-700: #1d4ed8;
+  --df-p-800: #1e40af;
+  --df-p-900: #1e3a8a;
+  --df-p-950: #172554;
+}
+
+/* Violet */
+:root[data-color-theme="violet"] {
+  --df-p-50:  #f5f3ff;
+  --df-p-100: #ede9fe;
+  --df-p-200: #ddd6fe;
+  --df-p-300: #c4b5fd;
+  --df-p-400: #a78bfa;
+  --df-p-500: #8b5cf6;
+  --df-p-600: #7c3aed;
+  --df-p-700: #6d28d9;
+  --df-p-800: #5b21b6;
+  --df-p-900: #4c1d95;
+  --df-p-950: #2e1065;
+}
+
 @layer base {
   html {
     font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
@@ -11,7 +105,7 @@
 
 @layer components {
   .input {
-    @apply w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500;
+    @apply w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500;
   }
 
   .dot-badge {

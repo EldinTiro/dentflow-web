@@ -58,7 +58,7 @@ export function StaffDetailPage() {
     return (
       <div className="p-6">
         <p className="text-sm text-red-500 mb-3">{t('notFound')}</p>
-        <Link to="/staff" className="text-indigo-600 text-sm hover:underline">{t('backToStaff')}</Link>
+        <Link to="/staff" className="text-primary-600 text-sm hover:underline">{t('backToStaff')}</Link>
       </div>
     )
   }
@@ -72,7 +72,7 @@ export function StaffDetailPage() {
     <div className="p-6 space-y-5 max-w-5xl">
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 dark:text-gray-400">
-        <Link to="/staff" className="hover:text-indigo-600 dark:hover:text-indigo-400">{t('title')}</Link>
+        <Link to="/staff" className="hover:text-primary-600 dark:hover:text-primary-400">{t('title')}</Link>
         <span className="mx-2">/</span>
         <span className="text-gray-800 dark:text-gray-100">{staff.fullName}</span>
       </nav>
@@ -103,7 +103,7 @@ export function StaffDetailPage() {
         {canManage && (
           <button
             onClick={() => setShowEdit(true)}
-            className="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-600 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
           >
             {tc('button.edit')}
           </button>
@@ -118,7 +118,7 @@ export function StaffDetailPage() {
             onClick={() => setTab(key)}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               tab === key
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
+                ? 'border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-400'
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
             }`}
           >

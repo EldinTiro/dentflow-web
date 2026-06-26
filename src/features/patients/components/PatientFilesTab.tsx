@@ -77,7 +77,7 @@ function DocImageThumb({
   return (
     <button
       onClick={onClick}
-      className="group relative w-full aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:ring-2 hover:ring-indigo-500 focus:outline-none transition-all"
+      className="group relative w-full aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:ring-2 hover:ring-primary-500 focus:outline-none transition-all"
     >
       {isLoading ? (
         <div className="absolute inset-0 flex items-center justify-center">
@@ -313,7 +313,7 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
 
           {/* File picker */}
           <div className="space-y-2">
-            <label className="inline-flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 dark:text-gray-400 hover:border-indigo-400 hover:text-indigo-500 dark:hover:border-indigo-500 dark:hover:text-indigo-400 transition-colors">
+            <label className="inline-flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 dark:text-gray-400 hover:border-primary-400 hover:text-primary-500 dark:hover:border-primary-500 dark:hover:text-primary-400 transition-colors">
               <Upload size={15} />
               {t('files.chooseFiles')}
               <input
@@ -339,7 +339,7 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
                   >
                     <span className="shrink-0">
                       {pf.state === 'pending' && <File size={14} className="text-gray-400" />}
-                      {pf.state === 'uploading' && <Loader2 size={14} className="animate-spin text-indigo-500" />}
+                      {pf.state === 'uploading' && <Loader2 size={14} className="animate-spin text-primary-500" />}
                       {pf.state === 'done' && <CheckCircle2 size={14} className="text-green-500" />}
                       {pf.state === 'error' && <AlertCircle size={14} className="text-red-500" />}
                     </span>
@@ -367,7 +367,7 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
                 <select
                   value={category}
                   onChange={e => setCategory(e.target.value as DocumentCategory)}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   {CATEGORIES.map(c => (
                     <option key={c} value={c}>{DOCUMENT_CATEGORY_LABELS[c]}</option>
@@ -381,7 +381,7 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   placeholder={t('files.notesPlaceholder')}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             </div>
@@ -392,7 +392,7 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
             <button
               disabled={uploading}
               onClick={handleUpload}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploading ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
               {uploading ? t('files.uploading') : t('files.uploadButton', { count: pendingCount })}
@@ -458,7 +458,7 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
                 <div className="flex-1 min-w-0">
                   <button
                     onClick={() => handleOpenFile(doc)}
-                    className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline truncate block text-left"
+                    className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline truncate block text-left"
                   >
                     {doc.fileName}
                   </button>

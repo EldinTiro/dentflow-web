@@ -105,7 +105,7 @@ export function InvoiceDetailPage() {
           {patient && (
             <Link
               to={`/patients/${patient.id}`}
-              className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline mt-0.5 block"
+              className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline mt-0.5 block"
             >
               {patient.fullName}
             </Link>
@@ -128,7 +128,7 @@ export function InvoiceDetailPage() {
             </button>
             <button
               onClick={() => setShowAddItem(true)}
-              className="bg-indigo-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
+              className="bg-primary-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-700"
             >
               {t('button.addLineItem')}
             </button>

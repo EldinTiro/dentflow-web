@@ -61,7 +61,7 @@ function SortBtn({ label, col, sort, onClick }: {
     <button
       onClick={onClick}
       className={`flex items-center gap-0.5 font-medium whitespace-nowrap hover:text-gray-900 ${
-        active ? 'text-indigo-600' : 'text-gray-600'
+        active ? 'text-primary-600' : 'text-gray-600'
       }`}
     >
       {label}
@@ -335,7 +335,7 @@ export function AppointmentsPage() {
           {canManage && (
             <button
               onClick={() => setShowBook(true)}
-              className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+              className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
             >
               {t('button.bookAppointment')}
             </button>
@@ -356,7 +356,7 @@ export function AppointmentsPage() {
                   placeholder={t('search.placeholder')}
                   value={searchTerm}
                   onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-8 pr-8 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-8 pr-8 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 {searchTerm && (
                   <button
@@ -396,7 +396,7 @@ export function AppointmentsPage() {
                     onClick={() => setDateRange(p.from, p.to)}
                     className={`px-2.5 py-1 text-xs rounded-md border transition-colors ${
                       dateFrom === p.from && dateTo === p.to
-                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        ? 'bg-primary-600 text-white border-primary-600'
                         : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                   >
@@ -411,14 +411,14 @@ export function AppointmentsPage() {
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
               <span className="text-gray-400 dark:text-gray-500 text-xs">→</span>
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
 
               <div className="h-4 w-px bg-gray-200" />
@@ -426,7 +426,7 @@ export function AppointmentsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as AppointmentStatus | '')}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">{t('filter.allStatuses')}</option>
                 {ALL_STATUSES.map((s) => (
@@ -437,7 +437,7 @@ export function AppointmentsPage() {
               <select
                 value={providerFilter}
                 onChange={(e) => setProviderFilter(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">{t('filter.allProviders')}</option>
                 {(staffData?.items ?? []).map((s) => (
@@ -518,7 +518,7 @@ export function AppointmentsPage() {
                             {canManage && nextAction && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); quickStatusMutation.mutate({ id: a.id, next: nextAction.next }); }}
-                                className="invisible group-hover:visible inline-flex items-center px-1.5 py-0.5 text-xs text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-full hover:bg-indigo-50 dark:hover:bg-indigo-900/40 transition-colors whitespace-nowrap"
+                                className="invisible group-hover:visible inline-flex items-center px-1.5 py-0.5 text-xs text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 rounded-full hover:bg-primary-50 dark:hover:bg-primary-900/40 transition-colors whitespace-nowrap"
                               >
                                 → {tc(nextAction.labelKey)}
                               </button>
@@ -563,7 +563,7 @@ export function AppointmentsPage() {
             <button onClick={nextWeek} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.next')}</button>
             <button
               onClick={() => setWeekStart(getMondayOfWeek(new Date()))}
-              className="px-3 py-1 text-sm text-indigo-600 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-700 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+              className="px-3 py-1 text-sm text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-700 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/30"
             >
               {t('calendar.today')}
             </button>

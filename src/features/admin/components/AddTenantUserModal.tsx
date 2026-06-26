@@ -61,7 +61,7 @@ export function AddTenantUserModal({ tenantId, tenantName, onClose }: Props) {
           </div>
           <button
             onClick={onClose}
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700"
+            className="w-full bg-primary-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-700"
           >
             {tc('button.done')}
           </button>
@@ -88,7 +88,7 @@ export function AddTenantUserModal({ tenantId, tenantName, onClose }: Props) {
               <input
                 {...register('firstName', { required: 'Required' })}
                 placeholder="Jane"
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
               {errors.firstName && <p className="text-xs text-red-500 mt-0.5">{errors.firstName.message}</p>}
             </div>
@@ -97,7 +97,7 @@ export function AddTenantUserModal({ tenantId, tenantName, onClose }: Props) {
               <input
                 {...register('lastName', { required: 'Required' })}
                 placeholder="Smith"
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
               {errors.lastName && <p className="text-xs text-red-500 mt-0.5">{errors.lastName.message}</p>}
             </div>
@@ -107,7 +107,7 @@ export function AddTenantUserModal({ tenantId, tenantName, onClose }: Props) {
                 {...register('email', { required: 'Required' })}
                 type="email"
                 placeholder="jane@clinic.com"
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
               {errors.email && <p className="text-xs text-red-500 mt-0.5">{errors.email.message}</p>}
             </div>
@@ -115,7 +115,7 @@ export function AddTenantUserModal({ tenantId, tenantName, onClose }: Props) {
               <label className="block text-xs font-medium text-gray-600 mb-1">{t('tenant.users.addModal.roleLabel')}</label>
               <select
                 {...register('role')}
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 {TENANT_ROLES.map((r) => <option key={r}>{r}</option>)}
               </select>
@@ -137,7 +137,7 @@ export function AddTenantUserModal({ tenantId, tenantName, onClose }: Props) {
             <button
               type="submit"
               disabled={provision.isPending}
-              className="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+              className="flex-1 bg-primary-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
             >
               {provision.isPending ? t('tenant.users.addModal.creating') : t('tenant.users.addModal.addButton')}
             </button>

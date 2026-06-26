@@ -15,7 +15,7 @@ function TabButton({ label, active, onClick }: { label: string; active: boolean;
       onClick={onClick}
       className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
         active
-          ? 'border-indigo-600 text-indigo-600'
+          ? 'border-primary-600 text-primary-600'
           : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
       }`}
     >
@@ -64,12 +64,12 @@ function DetailsTab({ id }: { id: string }) {
           <input
             {...regName('name')}
             defaultValue={tenant.name}
-            className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
           <button
             type="submit"
             disabled={updateName.isPending}
-            className="bg-indigo-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+            className="bg-primary-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
           >
             {updateName.isPending ? t('tenant.detail.saving') : tc('button.save')}
           </button>
@@ -92,7 +92,7 @@ function DetailsTab({ id }: { id: string }) {
           <button
             type="submit"
             disabled={updatePlan.isPending}
-            className="bg-indigo-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+            className="bg-primary-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
           >
             {updatePlan.isPending ? t('tenant.detail.updating') : t('tenant.detail.updatePlan')}
           </button>
@@ -168,7 +168,7 @@ function UsersTab({ id, tenantName }: { id: string; tenantName: string }) {
       <div className="flex justify-end mb-3">
         <button
           onClick={() => setShowAdd(true)}
-          className="bg-indigo-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-indigo-700"
+          className="bg-primary-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-primary-700"
         >
           {t('tenant.users.addUser')}
         </button>
@@ -200,7 +200,7 @@ function UsersTab({ id, tenantName }: { id: string; tenantName: string }) {
                   <select
                     defaultValue={u.role ?? ''}
                     onChange={(e) => changeRole.mutate({ userId: u.id, role: e.target.value })}
-                    className="border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="border border-gray-200 rounded px-2 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     {TENANT_ROLES.map((r) => <option key={r}>{r}</option>)}
                   </select>
@@ -247,7 +247,7 @@ function UsersTab({ id, tenantName }: { id: string; tenantName: string }) {
               <p className="font-mono text-xs bg-white px-2 py-1 rounded border border-amber-200 break-all">{resetResult}</p>
               <p className="text-xs text-amber-600 mt-1">{t('tenant.users.resetPwd.warning')}</p>
             </div>
-            <button onClick={() => setResetResult(null)} className="w-full bg-indigo-600 text-white py-2 rounded-md text-sm font-medium hover:bg-indigo-700">{tc('button.done')}</button>
+            <button onClick={() => setResetResult(null)} className="w-full bg-primary-600 text-white py-2 rounded-md text-sm font-medium hover:bg-primary-700">{tc('button.done')}</button>
           </div>
         </div>
       )}
@@ -272,7 +272,7 @@ export function TenantDetailPage() {
 
   return (
     <div className="p-8 max-w-3xl">
-      <Link to="/admin/tenants" className="text-sm text-indigo-600 hover:underline mb-4 block">
+      <Link to="/admin/tenants" className="text-sm text-primary-600 hover:underline mb-4 block">
         {t('tenant.backToTenants')}
       </Link>
 

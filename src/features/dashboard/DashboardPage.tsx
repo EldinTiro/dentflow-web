@@ -211,7 +211,7 @@ export function DashboardPage() {
         <Link
           to="/appointments"
           state={{ openCreate: true }}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 transition-colors"
         >
           <CalendarPlus size={16} />
           {t('quickAction.bookAppointment')}
@@ -232,8 +232,8 @@ export function DashboardPage() {
           label={t('stat.todaysAppointments')}
           value={todayCount}
           icon={CalendarDays}
-          iconBg="bg-indigo-50"
-          iconColor="text-indigo-600"
+          iconBg="bg-primary-50"
+          iconColor="text-primary-600"
           sub={`${new Date().toLocaleDateString(displayLocale, { month: 'short', day: 'numeric' })}`}
           to="/appointments"
         />
@@ -351,7 +351,7 @@ export function DashboardPage() {
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <CheckCircle2 size={16} className="text-indigo-500" />
+            <CheckCircle2 size={16} className="text-primary-500" />
             <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t('schedule.title')}</h2>
             {todayCount > 0 && (
               <span className="text-xs text-gray-400 dark:text-gray-500">
@@ -361,7 +361,7 @@ export function DashboardPage() {
           </div>
           <Link
             to="/appointments"
-            className="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
+            className="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
           >
             {t('schedule.viewAll')}
           </Link>
@@ -371,7 +371,7 @@ export function DashboardPage() {
           <div className="mb-4">
             <div className="h-1.5 w-full rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
               <div
-                className="h-full rounded-full bg-indigo-500 transition-all"
+                className="h-full rounded-full bg-primary-500 transition-all"
                 style={{ width: `${Math.round((doneOrGone / todayCount) * 100)}%` }}
               />
             </div>
@@ -384,7 +384,7 @@ export function DashboardPage() {
             <p className="text-sm text-gray-400 dark:text-gray-500">{t('schedule.emptyState')}</p>
             <Link
               to="/appointments"
-              className="mt-2 inline-block text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+              className="mt-2 inline-block text-xs text-primary-600 dark:text-primary-400 hover:underline"
             >
               {t('schedule.bookNow')}
             </Link>
@@ -407,7 +407,7 @@ export function DashboardPage() {
             {todayCount > 8 && (
               <p className="text-xs text-gray-400 dark:text-gray-500 text-center pt-3">
                 {t('schedule.moreCount', { count: todayCount - 8 })}{' '}
-                <Link to="/appointments" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+                <Link to="/appointments" className="text-primary-600 dark:text-primary-400 hover:underline">
                   {t('schedule.viewAllLink')}
                 </Link>
               </p>
@@ -419,7 +419,7 @@ export function DashboardPage() {
       {/* Appointments by provider */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
-          <UserCog size={16} className="text-indigo-500" />
+          <UserCog size={16} className="text-primary-500" />
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t('provider.title')}</h2>
         </div>
         <div className="space-y-3">

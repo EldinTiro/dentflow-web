@@ -86,7 +86,7 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
           <input
             type="text"
             {...register('name')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
           {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
         </div>
@@ -101,7 +101,7 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
               min={1}
               max={480}
               {...register('defaultDurationMinutes')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             {errors.defaultDurationMinutes && (
               <p className="mt-1 text-xs text-red-600">{errors.defaultDurationMinutes.message}</p>
@@ -115,7 +115,7 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
               step="0.01"
               {...register('defaultFee')}
               placeholder="0.00"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </div>
@@ -125,7 +125,7 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
           <textarea
             {...register('description')}
             rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
           />
         </div>
 
@@ -140,7 +140,7 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
         </div>
 
         <div className="flex items-center gap-3">
-          <input type="checkbox" id="isBookableOnline" {...register('isBookableOnline')} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+          <input type="checkbox" id="isBookableOnline" {...register('isBookableOnline')} className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
           <label htmlFor="isBookableOnline" className="text-sm text-gray-700">
             Bookable online (patient-facing portal)
           </label>
@@ -157,7 +157,7 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
           <button
             type="submit"
             disabled={isSubmitting || mutation.isPending}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
           >
             {mutation.isPending ? 'Saving…' : isEdit ? 'Save Changes' : 'Create'}
           </button>

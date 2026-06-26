@@ -132,16 +132,16 @@ export function SlotCheckerWidget() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <CalendarSearch size={17} className="text-indigo-600 shrink-0" />
+          <CalendarSearch size={17} className="text-primary-600 shrink-0" />
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t('slotChecker.title')}</h2>
           {isToday && (
-            <span className="text-xs px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 font-medium">
+            <span className="text-xs px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 font-medium">
               {t('slotChecker.todayBadge')}
             </span>
           )}
         </div>
         {isFetching && (
-          <div className="h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <div className="h-4 w-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
         )}
       </div>
 
@@ -159,9 +159,9 @@ export function SlotCheckerWidget() {
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
-            className="text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition"
+            className="text-sm font-medium text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 transition"
           />
-          <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 pl-1 whitespace-nowrap">
+          <span className="text-sm font-medium text-primary-600 dark:text-primary-400 pl-1 whitespace-nowrap">
             {(() => {
               const localeMap: Record<string, string> = { bs: 'hr', en: 'en', de: 'de' }
               const locale = localeMap[i18n.language] ?? i18n.language
@@ -181,7 +181,7 @@ export function SlotCheckerWidget() {
         <select
           value={providerId}
           onChange={e => setProviderId(e.target.value)}
-          className="text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition"
+          className="text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 transition"
         >
           <option value="all">{t('slotChecker.allProviders')}</option>
           {providers.map(p => (

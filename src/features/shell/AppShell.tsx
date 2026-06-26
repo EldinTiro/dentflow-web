@@ -57,7 +57,7 @@ export function AppShell() {
 
   const sidebarContent = (
     <>
-      <div className="h-[3px] bg-gradient-to-r from-indigo-500 to-indigo-700 shrink-0" />
+      <div className="h-[3px] bg-gradient-to-r from-primary-500 to-primary-700 shrink-0" />
       <div className="flex h-14 items-center border-b border-gray-200 dark:border-gray-800 px-5">
         {currentTenant?.logoBase64 ? (
           <img
@@ -66,7 +66,7 @@ export function AppShell() {
             className="h-8 w-auto max-w-[140px] object-contain"
           />
         ) : (
-          <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">
+          <span className="text-base font-bold text-primary-600 dark:text-primary-400">
             {currentTenant?.name ?? t('nav.appName')}
           </span>
         )}
@@ -84,7 +84,7 @@ export function AppShell() {
                   cn(
                     'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                     isActive
-                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400'
+                      ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
                   )
                 }
@@ -106,7 +106,7 @@ export function AppShell() {
               cn(
                 'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400'
+                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
               )
             }
@@ -122,7 +122,7 @@ export function AppShell() {
           <Link
             to="/admin"
             onClick={() => setSidebarOpen(false)}
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950 transition-colors"
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-950 transition-colors"
           >
             <Settings2 size={16} className="shrink-0" /> {t('nav.adminPanel')}
           </Link>
@@ -140,7 +140,7 @@ export function AppShell() {
               cn(
                 'w-full flex items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs transition-colors',
                 isActive
-                  ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400'
+                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
                   : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
               )
             }
@@ -217,7 +217,7 @@ export function AppShell() {
                         className={cn(
                           'w-full text-left px-3 py-2 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg',
                           i18n.language === opt.code
-                            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400'
+                            ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
                             : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700',
                         )}
                       >

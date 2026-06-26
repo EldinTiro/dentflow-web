@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { User, Palette, Building2, Bell, Plus } from 'lucide-react'
 import { useUserPreferences, useUpdateUserPreferences } from '../hooks/useUserPreferences'
 import { userService } from '../services/userService'
-import { useTheme } from '@/shared/context/ThemeContext'
+import { useTheme, type ColorTheme } from '@/shared/context/ThemeContext'
 import { tenantService } from '@/features/admin/services/tenantService'
 import type { WeeklySchedule, NotificationConfig } from '@/features/admin/services/tenantService'
 import { useAuthStore } from '@/features/auth/store/authStore'
@@ -73,7 +73,7 @@ const MINUTES = ['00', '15', '30', '45']
 
 function TimePicker24({ value, onChange, disabled }: { value: string; onChange: (v: string) => void; disabled?: boolean }) {
   const [h = '08', m = '00'] = value.split(':')
-  const cls = `border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed`
+  const cls = `border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-40 disabled:cursor-not-allowed`
   return (
     <div className="flex items-center gap-0.5">
       <select value={h} disabled={disabled} onChange={e => onChange(`${e.target.value}:${m}`)} className={cls}>
@@ -96,7 +96,7 @@ function FieldRow({ label, children }: { label: string; children: React.ReactNod
   )
 }
 
-const INPUT_CLS = 'w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 outline-none focus:border-indigo-500'
+const INPUT_CLS = 'w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500'
 const SELECT_CLS = INPUT_CLS
 
 // ── Main component ─────────────────────────────────────────────────────────
@@ -118,7 +118,7 @@ type Tab = 'profile' | 'appearance' | 'clinic' | 'notifications'
 
 export function ProfilePage() {
   const { t, i18n } = useTranslation('auth')
-  const { setTheme } = useTheme()
+  const { setTheme, colorTheme, setColorTheme } = useTheme()
   const queryClient = useQueryClient()
   const isSuperAdmin = useAuthStore((s) => s.user?.roles?.includes('SuperAdmin') ?? false)
   const canManageClinic = useAuthStore(
@@ -315,7 +315,7 @@ export function ProfilePage() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors rounded-t-lg -mb-px border-b-2 ${
               activeTab === tab.id
-                ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+                ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
@@ -332,7 +332,7 @@ export function ProfilePage() {
           <section className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">{t('profile.sectionProfile')}</h2>
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-full bg-indigo-600 flex items-center justify-center text-white text-lg font-bold select-none shrink-0">
+              <div className="h-14 w-14 rounded-full bg-primary-600 flex items-center justify-center text-white text-lg font-bold select-none shrink-0">
                 {initials}
               </div>
               <div>
@@ -408,7 +408,7 @@ export function ProfilePage() {
 
               <div className="flex justify-end">
                 <button type="submit" disabled={changePassword.isPending}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60">
+                  className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-60">
                   {changePassword.isPending ? t('profile.pwd.changing') : t('profile.pwd.changeButton')}
                 </button>
               </div>
@@ -454,7 +454,7 @@ export function ProfilePage() {
 
             <div className="flex justify-end">
               <button type="submit" disabled={updatePrefs.isPending}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60">
+                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-60">
                 {updatePrefs.isPending ? t('profile.pref.saving') : t('profile.pref.saveButton')}
               </button>
             </div>
@@ -488,7 +488,7 @@ export function ProfilePage() {
                 disabled={!hasSms}
                 onClick={() => notifForm.setValue('smsEnabled', !smsEnabled, { shouldValidate: true })}
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 ${
-                  smsEnabled ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+                  smsEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
                 }`}
               >
                 <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform ${smsEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
@@ -506,7 +506,7 @@ export function ProfilePage() {
                     type="number"
                     min={1}
                     max={168}
-                    className="w-20 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-center text-gray-900 dark:text-gray-100 outline-none focus:border-indigo-500"
+                    className="w-20 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-center text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500"
                     {...notifForm.register('reminder1HoursBefore', { valueAsNumber: true })}
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-300">sati prije termina</span>
@@ -521,7 +521,7 @@ export function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => notifForm.setValue('reminder2HoursBefore', 2, { shouldValidate: true })}
-                  className="flex items-center gap-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+                  className="flex items-center gap-1.5 text-sm text-primary-600 dark:text-primary-400 hover:underline"
                 >
                   <Plus size={14} /> Dodaj drugi podsjetnik
                 </button>
@@ -543,7 +543,7 @@ export function ProfilePage() {
                       type="number"
                       min={1}
                       max={167}
-                      className="w-20 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-center text-gray-900 dark:text-gray-100 outline-none focus:border-indigo-500"
+                      className="w-20 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-center text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500"
                       {...notifForm.register('reminder2HoursBefore', { valueAsNumber: true })}
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">sati prije termina</span>
@@ -559,7 +559,7 @@ export function ProfilePage() {
               <button
                 type="submit"
                 disabled={saveNotifConfig.isPending}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-60"
               >
                 {saveNotifConfig.isPending ? 'Čuvam…' : 'Sačuvaj'}
               </button>
@@ -570,6 +570,38 @@ export function ProfilePage() {
 
       {/* ── Tab: Klinika ─────────────────────────────────────────────────── */}
       {activeTab === 'clinic' && canManageClinic && (
+        <div className="space-y-4">
+
+        {/* Color theme picker */}
+        <section className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Tema boja</h2>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">Primarna boja sučelja za vašu kliniku.</p>
+          <div className="flex flex-wrap gap-3">
+            {([
+              { id: 'indigo', label: 'Indigo',  hex: '#4f46e5' },
+              { id: 'rose',   label: 'Rose',    hex: '#e11d48' },
+              { id: 'teal',   label: 'Teal',    hex: '#0d9488' },
+              { id: 'blue',   label: 'Blue',    hex: '#2563eb' },
+              { id: 'violet', label: 'Violet',  hex: '#7c3aed' },
+            ] as { id: ColorTheme; label: string; hex: string }[]).map(t => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setColorTheme(t.id)}
+                title={t.label}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                  colorTheme === t.id
+                    ? 'border-gray-900 dark:border-gray-100 shadow-sm'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
+                }`}
+              >
+                <span className="h-4 w-4 rounded-full shrink-0" style={{ backgroundColor: t.hex }} />
+                <span className="text-gray-700 dark:text-gray-300">{t.label}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
         <section className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Radno vrijeme klinike</h2>
           <p className="text-xs text-gray-400 dark:text-gray-500 mb-5">
@@ -593,7 +625,7 @@ export function ProfilePage() {
                       type="checkbox"
                       checked={d.isOpen}
                       onChange={e => updateDay(day, { isOpen: e.target.checked })}
-                      className="rounded accent-indigo-600"
+                      className="rounded accent-primary-600"
                     />
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{DAY_LABELS[day]}</span>
                   </label>
@@ -616,7 +648,7 @@ export function ProfilePage() {
             <select
               value={localDuration}
               onChange={e => setLocalDuration(Number(e.target.value))}
-              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 outline-none focus:border-indigo-500"
+              className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500"
             >
               {SLOT_DURATION_OPTIONS.map(d => (
                 <option key={d} value={d}>{d} min</option>
@@ -627,12 +659,13 @@ export function ProfilePage() {
               type="button"
               onClick={() => saveClinicSettings.mutate()}
               disabled={saveClinicSettings.isPending}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-60"
             >
               {saveClinicSettings.isPending ? 'Čuvam…' : 'Sačuvaj'}
             </button>
           </div>
         </section>
+        </div>
       )}
     </div>
   )

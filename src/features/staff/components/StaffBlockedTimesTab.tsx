@@ -124,7 +124,7 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
               setForm({ startAt: now, endAt: now, absenceType: 'Vacation', notes: '' })
               setShowForm(true)
             }}
-            className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap"
+            className="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors whitespace-nowrap"
           >
             + Add Absence
           </button>
@@ -142,7 +142,7 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
                 type="datetime-local"
                 value={form.startAt}
                 onChange={(e) => setForm((f) => ({ ...f, startAt: e.target.value }))}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -151,7 +151,7 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
                 type="datetime-local"
                 value={form.endAt}
                 onChange={(e) => setForm((f) => ({ ...f, endAt: e.target.value }))}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -159,7 +159,7 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
               <select
                 value={form.absenceType}
                 onChange={(e) => setForm((f) => ({ ...f, absenceType: e.target.value }))}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 {ABSENCE_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -174,7 +174,7 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
                 value={form.notes}
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                 maxLength={1000}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
           </div>
@@ -188,7 +188,7 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
             <button
               disabled={addMutation.isPending}
               onClick={() => addMutation.mutate()}
-              className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+              className="px-3 py-1.5 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
             >
               {addMutation.isPending ? 'Saving…' : 'Save'}
             </button>

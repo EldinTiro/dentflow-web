@@ -106,7 +106,7 @@ export function CreateTenantModal({ onClose }: Props) {
           </div>
           <button
             onClick={onClose}
-            className="w-full mt-2 bg-indigo-600 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-indigo-700"
+            className="w-full mt-2 bg-primary-600 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-primary-700"
           >
             {tc('button.done')}
           </button>
@@ -184,7 +184,7 @@ export function CreateTenantModal({ onClose }: Props) {
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+            className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
           >
             {mutation.isPending ? t('tenants.create.creating') : t('tenants.create.createButton')}
           </button>

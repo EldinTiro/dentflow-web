@@ -73,7 +73,7 @@ export function StaffPage() {
         {canManage && (
           <button
             onClick={() => setShowCreate(true)}
-            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+            className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
           >
             {t('button.addStaff')}
           </button>
@@ -87,12 +87,12 @@ export function StaffPage() {
           placeholder={t('search.placeholder')}
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm w-64 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm w-64 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
         <select
           value={staffTypeFilter}
           onChange={(e) => { setStaffTypeFilter(e.target.value as StaffType | ''); setPage(1); }}
-          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           <option value="">{tc('staffType.allTypes')}</option>
           {ALL_STAFF_TYPES.map((t) => (
@@ -132,7 +132,7 @@ export function StaffPage() {
             ) : (
               members.map((m) => (
                 <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" onClick={() => navigate(`/staff/${m.id}`)}>
-                  <td className="px-4 py-3 font-medium text-indigo-600 dark:text-indigo-400 hover:underline">{m.fullName}</td>
+                  <td className="px-4 py-3 font-medium text-primary-600 dark:text-primary-400 hover:underline">{m.fullName}</td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{STAFF_TYPE_LABELS[m.staffType]}</td>
                   <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.email ?? '—'}</td>
                   <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.phone ?? '—'}</td>
@@ -159,7 +159,7 @@ export function StaffPage() {
                       <div className="flex justify-end gap-1">
                         <button
                           onClick={(e) => { e.stopPropagation(); setEditing(m); }}
-                          className="p-1.5 text-gray-400 hover:text-indigo-600 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                           title={tc('button.edit')}
                         >
                           <Pencil size={14} />

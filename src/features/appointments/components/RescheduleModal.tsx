@@ -64,7 +64,7 @@ export function RescheduleModal({ appointment, onClose }: Props) {
             <input
               type="datetime-local"
               {...register('newStartAt', { required: 'Required' })}
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             {errors.newStartAt && (
               <p className="mt-1 text-xs text-red-600">{errors.newStartAt.message}</p>
@@ -78,7 +78,7 @@ export function RescheduleModal({ appointment, onClose }: Props) {
               min={5}
               step={5}
               {...register('durationMinutes', { required: true, min: 5, valueAsNumber: true })}
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
 
@@ -93,7 +93,7 @@ export function RescheduleModal({ appointment, onClose }: Props) {
             <button
               type="submit"
               disabled={mutation.isPending}
-              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
             >
               {mutation.isPending ? 'Saving…' : 'Reschedule'}
             </button>

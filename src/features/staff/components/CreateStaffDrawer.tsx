@@ -53,7 +53,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
           <input
             type="text"
             {...register('firstName', { required: 'First name is required' })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
           {errors.firstName && (
             <p className="mt-1 text-xs text-red-600">{errors.firstName.message}</p>
@@ -68,7 +68,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
           <input
             type="text"
             {...register('lastName', { required: 'Last name is required' })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
           {errors.lastName && (
             <p className="mt-1 text-xs text-red-600">{errors.lastName.message}</p>
@@ -82,7 +82,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
           </label>
           <select
             {...register('staffType', { required: true })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             {ALL_STAFF_TYPES.map((t) => (
               <option key={t} value={t}>{STAFF_TYPE_LABELS[t]}</option>
@@ -96,7 +96,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
           <input
             type="email"
             {...register('email')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="staff@clinic.com"
           />
         </div>
@@ -107,7 +107,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
           <input
             type="tel"
             {...register('phone')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
 
@@ -117,7 +117,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
           <input
             type="text"
             {...register('specialty')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="e.g. Orthodontics"
           />
         </div>
@@ -128,7 +128,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
           <input
             type="date"
             {...register('hireDate')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
 
@@ -156,7 +156,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
           <button
             type="submit"
             disabled={isSubmitting || mutation.isPending}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
           >
             {mutation.isPending ? 'Saving…' : 'Add Staff Member'}
           </button>

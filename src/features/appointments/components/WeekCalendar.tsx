@@ -106,13 +106,13 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
             <div
               key={i}
               className={`px-2 py-2 text-center text-xs font-medium border-r border-gray-100 dark:border-gray-700/60 last:border-r-0 ${
-                isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'
+                isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'
               }`}
             >
               <div>{DAY_LABELS[i]}</div>
               <div
                 className={`mx-auto mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-sm font-semibold ${
-                  isToday ? 'bg-indigo-600 text-white' : 'text-gray-800 dark:text-gray-200'
+                  isToday ? 'bg-primary-600 text-white' : 'text-gray-800 dark:text-gray-200'
                 }`}
               >
                 {d.getDate()}
@@ -150,7 +150,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                 <div
                   key={colIdx}
                   className={`relative flex-1 border-l border-gray-100 dark:border-gray-700/50 ${
-                    isToday ? 'bg-indigo-50/20 dark:bg-indigo-900/10' : ''
+                    isToday ? 'bg-primary-50/20 dark:bg-primary-900/10' : ''
                   }`}
                 >
                   {/* Hour lines */}

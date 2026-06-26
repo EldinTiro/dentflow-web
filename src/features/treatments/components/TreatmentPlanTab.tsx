@@ -41,20 +41,20 @@ function CreatePlanForm({ patientId, onDone }: { patientId: string; onDone: () =
         placeholder="Plan title (e.g. Initial Treatment Plan)"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
       />
       <textarea
         placeholder="Notes (optional)"
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         rows={2}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
       />
       <div className="flex gap-2">
         <button
           onClick={() => mutation.mutate()}
           disabled={!title.trim() || mutation.isPending}
-          className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+          className="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
         >
           {mutation.isPending ? 'Creating…' : 'Create Plan'}
         </button>
@@ -144,7 +144,7 @@ function ItemForm({
             placeholder="1–32"
             value={form.toothNumber}
             onChange={(e) => set('toothNumber', e.target.value)}
-            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
         <div>
@@ -153,7 +153,7 @@ function ItemForm({
             placeholder="M, D, O…"
             value={form.surface}
             onChange={(e) => set('surface', e.target.value.toUpperCase())}
-            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
         <div>
@@ -162,7 +162,7 @@ function ItemForm({
             placeholder="D0150"
             value={form.cdtCode}
             onChange={(e) => set('cdtCode', e.target.value.toUpperCase())}
-            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
         <div>
@@ -174,7 +174,7 @@ function ItemForm({
             placeholder="0.00"
             value={form.fee}
             onChange={(e) => set('fee', e.target.value)}
-            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
       </div>
@@ -186,7 +186,7 @@ function ItemForm({
             placeholder="Composite restoration, 2 surfaces…"
             value={form.description}
             onChange={(e) => set('description', e.target.value)}
-            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
         <div>
@@ -194,7 +194,7 @@ function ItemForm({
           <select
             value={form.status}
             onChange={(e) => set('status', e.target.value)}
-            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             {ALL_ITEM_STATUSES.map((s) => (
               <option key={s} value={s}>{ITEM_STATUS_LABELS[s]}</option>
@@ -206,7 +206,7 @@ function ItemForm({
         <button
           onClick={() => mutation.mutate()}
           disabled={!form.description.trim() || mutation.isPending}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
         >
           <Check size={12} /> {mutation.isPending ? 'Saving…' : existing ? 'Save' : 'Add Item'}
         </button>
@@ -292,12 +292,12 @@ function PlanCard({
               <input
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
               <select
                 value={editStatus}
                 onChange={(e) => setEditStatus(e.target.value as TreatmentPlanStatus)}
-                className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 {ALL_PLAN_STATUSES.map((s) => (
                   <option key={s} value={s}>{PLAN_STATUS_LABELS[s]}</option>
@@ -309,13 +309,13 @@ function PlanCard({
               onChange={(e) => setEditNotes(e.target.value)}
               rows={1}
               placeholder="Notes…"
-              className="w-full border border-gray-300 rounded px-2 py-1 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded px-2 py-1 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             <div className="flex gap-2">
               <button
                 onClick={() => updatePlan.mutate()}
                 disabled={!editTitle.trim() || updatePlan.isPending}
-                className="flex items-center gap-1 px-2 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                className="flex items-center gap-1 px-2 py-1 text-xs bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
               >
                 <Check size={11} /> {updatePlan.isPending ? 'Saving…' : 'Save'}
               </button>
@@ -450,7 +450,7 @@ function PlanCard({
             <div className="px-4 py-2 flex items-center justify-between">
               <button
                 onClick={() => setAddingItem(true)}
-                className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800 font-medium"
               >
                 <Plus size={13} /> Add item
               </button>
@@ -534,7 +534,7 @@ export function TreatmentPlanTab({
         {canManage && !showCreate && (
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700"
           >
             <Plus size={14} /> New Plan
           </button>
@@ -553,7 +553,7 @@ export function TreatmentPlanTab({
           {canManage && (
             <button
               onClick={() => setShowCreate(true)}
-              className="mt-3 flex items-center gap-1.5 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 mx-auto"
+              className="mt-3 flex items-center gap-1.5 px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 mx-auto"
             >
               <Plus size={14} /> Create First Plan
             </button>

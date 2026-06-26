@@ -29,7 +29,7 @@ interface Props {
 }
 
 const INPUT_CLASS =
-  'w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+  'w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500'
 const LABEL_CLASS = 'block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1'
 
 const fmt = (n: number) =>
@@ -133,7 +133,7 @@ export function CreateInvoiceDrawer({ patientId, appointmentTypeId, onClose }: P
               onClick={() =>
                 append({ source: 'other', appointmentTypeId: '', description: '', unitFee: 0 })
               }
-              className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+              className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
             >
               {t('create.addItem')}
             </button>
@@ -236,7 +236,7 @@ export function CreateInvoiceDrawer({ patientId, appointmentTypeId, onClose }: P
           <button
             type="submit"
             disabled={createMutation.isPending}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-60"
+            className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-60"
           >
             {createMutation.isPending ? '…' : tc('button.save')}
           </button>

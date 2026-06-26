@@ -182,7 +182,7 @@ export function AppointmentDetailPanel({
               patient ? (
                 <a
                   href={`/patients/${a.patientId}`}
-                  className="text-indigo-600 hover:underline font-medium"
+                  className="text-primary-600 hover:underline font-medium"
                 >
                   {patient.fullName}
                 </a>
@@ -234,7 +234,7 @@ export function AppointmentDetailPanel({
                 {canManage && !editingNotes && (
                   <button
                     onClick={() => { setNotesDraft(a.notes ?? ''); setEditingNotes(true) }}
-                    className="text-gray-400 hover:text-indigo-600 p-0.5 rounded"
+                    className="text-gray-400 hover:text-primary-600 p-0.5 rounded"
                   >
                     <Pencil size={12} />
                   </button>
@@ -246,13 +246,13 @@ export function AppointmentDetailPanel({
                     value={notesDraft}
                     onChange={(e) => setNotesDraft(e.target.value)}
                     rows={3}
-                    className="w-full border border-gray-300 rounded text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full border border-gray-300 rounded text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={() => notesMutation.mutate(notesDraft || null)}
                       disabled={notesMutation.isPending}
-                      className="flex items-center gap-1 text-xs bg-indigo-600 text-white px-2 py-1 rounded hover:bg-indigo-700 disabled:opacity-50"
+                      className="flex items-center gap-1 text-xs bg-primary-600 text-white px-2 py-1 rounded hover:bg-primary-700 disabled:opacity-50"
                     >
                       <Check size={11} /> Save
                     </button>
@@ -314,7 +314,7 @@ export function AppointmentDetailPanel({
                     <a
                       key={inv.id}
                       href={`/billing/${inv.id}`}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50 transition-colors"
+                      className="flex items-center justify-between px-3 py-2 rounded-lg border border-gray-100 hover:border-primary-200 hover:bg-primary-50 transition-colors"
                     >
                       <div>
                         <p className="text-xs font-medium text-gray-800">{inv.invoiceNumber}</p>
@@ -333,7 +333,7 @@ export function AppointmentDetailPanel({
                 )}
                 <a
                   href={`/patients/${a.patientId}?tab=billing`}
-                  className="block text-xs text-indigo-600 hover:underline pt-1"
+                  className="block text-xs text-primary-600 hover:underline pt-1"
                 >
                   View all invoices →
                 </a>
@@ -362,7 +362,7 @@ export function AppointmentDetailPanel({
                 ) : (
                   history.map((h) => (
                     <div key={h.id} className="flex items-start gap-2 text-xs text-gray-600 py-1 border-b border-gray-50 last:border-0">
-                      <div className="mt-0.5 w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-1.5" />
+                      <div className="mt-0.5 w-1.5 h-1.5 rounded-full bg-primary-400 shrink-0 mt-1.5" />
                       <div className="flex-1">
                         <span className="font-medium">{h.fromStatus ?? '—'}</span>
                         <span className="mx-1 text-gray-400">→</span>
@@ -390,7 +390,7 @@ export function AppointmentDetailPanel({
                 <button
                   onClick={() => statusMutation.mutate('CheckedIn')}
                   disabled={statusMutation.isPending}
-                  className="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                  className="flex-1 bg-primary-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
                 >
                   Check In
                 </button>
@@ -452,7 +452,7 @@ export function AppointmentDetailPanel({
               {isTerminal && onRebook && (
                 <button
                   onClick={() => onRebook(a)}
-                  className="flex-1 border border-indigo-200 text-indigo-600 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors"
+                  className="flex-1 border border-primary-200 text-primary-600 py-2 rounded-lg text-sm font-medium hover:bg-primary-50 transition-colors"
                 >
                   Rebook
                 </button>

@@ -100,7 +100,7 @@ export function PatientsPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+          className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
         >
           {t('button.newPatient')}
         </button>
@@ -111,12 +111,12 @@ export function PatientsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('search.placeholder')}
-          className="w-72 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-72 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as PatientStatus | '')}
-          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           {STATUS_KEYS.map((o) => (
             <option key={o.value} value={o.value}>{tc(o.labelKey)}</option>
@@ -171,7 +171,7 @@ export function PatientsPage() {
                     <div className="flex justify-end gap-1">
                       <button
                         onClick={(e) => { e.stopPropagation(); setEditing(p) }}
-                        className="p-1.5 text-gray-400 hover:text-indigo-600 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                        className="p-1.5 text-gray-400 hover:text-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                         title={tc('button.edit')}
                       >
                         <Pencil size={14} />

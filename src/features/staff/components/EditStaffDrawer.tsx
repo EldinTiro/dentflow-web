@@ -78,7 +78,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
             <input
               type="text"
               {...register('firstName', { required: 'Required' })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             {errors.firstName && (
               <p className="mt-1 text-xs text-red-600">{errors.firstName.message}</p>
@@ -91,7 +91,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
             <input
               type="text"
               {...register('lastName', { required: 'Required' })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             {errors.lastName && (
               <p className="mt-1 text-xs text-red-600">{errors.lastName.message}</p>
@@ -105,7 +105,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
           <input
             type="email"
             {...register('email')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
 
@@ -115,7 +115,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
           <input
             type="tel"
             {...register('phone')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
 
@@ -125,7 +125,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
           <input
             type="text"
             {...register('specialty')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
 
@@ -146,7 +146,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
             <input
               type="text"
               {...register('licenseNumber')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -154,7 +154,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
             <input
               type="date"
               {...register('licenseExpiry')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </div>
@@ -164,7 +164,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
           <input
             type="text"
             {...register('npiNumber')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
 
@@ -174,7 +174,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
           <textarea
             {...register('biography')}
             rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
           />
         </div>
 
@@ -184,7 +184,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
           <input
             type="text"
             {...register('address')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
 
@@ -194,7 +194,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
             <input
               type="text"
               {...register('city')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -202,7 +202,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
             <input
               type="text"
               {...register('postalCode')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </div>
@@ -231,7 +231,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
             <button
               type="submit"
               disabled={isSubmitting || updateMutation.isPending}
-              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
             >
               {updateMutation.isPending ? 'Saving…' : 'Save Changes'}
             </button>

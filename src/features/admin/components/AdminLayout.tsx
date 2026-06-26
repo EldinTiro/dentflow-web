@@ -24,7 +24,7 @@ export function AdminLayout() {
       {/* Sidebar */}
       <aside className="w-56 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
         <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-          <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{t('layout.brand')}</span>
+          <span className="text-lg font-bold text-primary-600 dark:text-primary-400">{t('layout.brand')}</span>
           <span className="ml-2 text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">
             {t('layout.badge')}
           </span>
@@ -38,7 +38,7 @@ export function AdminLayout() {
               className={({ isActive }) =>
                 `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400'
+                    ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100'
                 }`
               }

@@ -56,7 +56,7 @@ export function TenantsPage() {
         <h1 className="text-2xl font-bold text-gray-900">{ta('tenants.title')}</h1>
         <button
           onClick={() => setShowCreate(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
+          className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700"
         >
           {ta('tenants.button.newTenant')}
         </button>
@@ -67,7 +67,7 @@ export function TenantsPage() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
           placeholder={ta('tenants.search.placeholder')}
-          className="w-72 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-72 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
       </div>
 
@@ -101,7 +101,7 @@ export function TenantsPage() {
             {data?.items.map((tn: TenantResponse) => (
               <tr key={tn.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-900">
-                  <Link to={`/admin/tenants/${tn.id}`} className="hover:text-indigo-600">
+                  <Link to={`/admin/tenants/${tn.id}`} className="hover:text-primary-600">
                     {tn.name}
                   </Link>
                 </td>

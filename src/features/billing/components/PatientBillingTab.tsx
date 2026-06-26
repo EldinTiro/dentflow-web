@@ -44,7 +44,7 @@ export function PatientBillingTab({ patientId }: Props) {
         </span>
         <button
           onClick={() => setShowCreate(true)}
-          className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors"
+          className="bg-primary-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-primary-700 transition-colors"
         >
           {t('patientTab.newInvoice')}
         </button>
@@ -76,7 +76,7 @@ export function PatientBillingTab({ patientId }: Props) {
                   <td className="px-4 py-3 font-mono text-xs">
                     <Link
                       to={`/invoices/${inv.id}`}
-                      className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                      className="font-medium text-primary-600 dark:text-primary-400 hover:underline"
                     >
                       {inv.invoiceNumber}
                     </Link>

@@ -190,9 +190,9 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
 
           {isNewPatient ? (
             /* ── Inline new-patient mini-form ── */
-            <div className="rounded-lg border border-indigo-200 dark:border-indigo-700 bg-indigo-50/40 dark:bg-indigo-900/10 p-3 space-y-3">
+            <div className="rounded-lg border border-primary-200 dark:border-primary-700 bg-primary-50/40 dark:bg-primary-900/10 p-3 space-y-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                <span className="flex items-center gap-1.5 text-xs font-medium text-primary-600 dark:text-primary-400">
                   <UserPlus size={13} /> Novi pacijent
                 </span>
                 <button
@@ -217,7 +217,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                   <input
                     {...register('newFirstName', { required: isNewPatient ? 'Obavezno' : false })}
                     placeholder="npr. Amra"
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                   {errors.newFirstName && <p className="mt-1 text-xs text-red-600">{errors.newFirstName.message}</p>}
                 </div>
@@ -228,7 +228,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                   <input
                     {...register('newLastName', { required: isNewPatient ? 'Obavezno' : false })}
                     placeholder="npr. Begić"
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                   {errors.newLastName && <p className="mt-1 text-xs text-red-600">{errors.newLastName.message}</p>}
                 </div>
@@ -238,7 +238,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                 <input
                   {...register('newPhone')}
                   placeholder="+387 61 123 456"
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
               <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -256,7 +256,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                   <div
                     className={`flex items-center gap-1 w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 ${
                       errors.patientId ? 'border-red-400' : 'border-gray-300 dark:border-gray-600'
-                    } focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500`}
+                    } focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500`}
                   >
                     <Search size={14} className="shrink-0 text-gray-400" />
                     {selectedPatient && !patientOpen ? (
@@ -308,8 +308,8 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                                 setPatientSearch('');
                                 setPatientOpen(false);
                               }}
-                              className={`px-3 py-2 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/40 ${
-                                p.id === field.value ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-700 dark:text-gray-300'
+                              className={`px-3 py-2 cursor-pointer hover:bg-primary-50 dark:hover:bg-primary-900/40 ${
+                                p.id === field.value ? 'bg-primary-50 text-primary-700 font-medium' : 'text-gray-700 dark:text-gray-300'
                               }`}
                             >
                               <span className="font-medium">{p.fullName}</span>
@@ -331,7 +331,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                             setValue('newLastName', lastName);
                             setPatientOpen(false);
                           }}
-                          className="px-3 py-2.5 cursor-pointer flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-medium"
+                          className="px-3 py-2.5 cursor-pointer flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 font-medium"
                         >
                           <UserPlus size={14} className="shrink-0" />
                           Kreiraj novi karton za &ldquo;{patientSearch}&rdquo;
@@ -356,7 +356,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
           <select
             {...register('providerId', { required: 'Provider is required' })}
             disabled={isStaffLoading}
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:cursor-wait"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-wait"
           >
             <option value="">{isStaffLoading ? 'Učitavanje…' : 'Odaberi doktora…'}</option>
             {providers.map((s) => (
@@ -385,7 +385,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                   const type = apptTypes.find((t) => t.id === e.target.value);
                   if (type) setValue('durationMinutes', type.defaultDurationMinutes);
                 }}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">Odaberi vrstu…</option>
                 {apptTypes.map((t) => (
@@ -409,7 +409,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
               <button
                 type="button"
                 onClick={() => setShowSlotPicker((v) => !v)}
-                className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+                className="text-xs text-primary-600 hover:text-primary-800 flex items-center gap-1"
               >
                 <Clock size={12} />
                 {showSlotPicker ? 'Ručni unos' : 'Slobodni termini'}
@@ -429,7 +429,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                       const time = watchedStartAt?.split('T')[1] ?? '09:00';
                       setValue('startAt', `${e.target.value}T${time}`, { shouldValidate: true });
                     }}
-                    className="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                   <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shrink-0 overflow-hidden">
                     <select
@@ -468,7 +468,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                   min={5}
                   step={5}
                   {...register('durationMinutes', { required: true, min: 5, valueAsNumber: true })}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             </div>
@@ -481,7 +481,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                   const currentTime = watchedStartAt ? watchedStartAt.split('T')[1] : '09:00';
                   setValue('startAt', `${e.target.value}T${currentTime}`);
                 }}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 mb-3"
               />
               {isLoadingSlots ? (
                 <p className="text-sm text-gray-400 py-4 text-center">Učitavanje slobodnih termina…</p>
@@ -501,8 +501,8 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
                         onClick={() => setValue('startAt', localValue)}
                         className={`py-2 px-1 rounded-lg text-sm font-medium border transition-colors ${
                           isSelected
-                            ? 'bg-indigo-600 text-white border-indigo-600'
-                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-indigo-400 hover:text-indigo-600'
+                            ? 'bg-primary-600 text-white border-primary-600'
+                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-primary-400 hover:text-primary-600'
                         }`}
                       >
                         {timeStr}
@@ -521,7 +521,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
           <input
             type="text"
             {...register('chiefComplaint')}
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="npr. Bol u zubu, redovni pregled"
           />
         </div>
@@ -532,7 +532,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
           <textarea
             {...register('notes')}
             rows={2}
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
           />
         </div>
 
@@ -548,7 +548,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
           <button
             type="submit"
             disabled={isPending}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
           >
             {isPending
               ? createPatientMutation.isPending ? 'Kreiram pacijenta…' : 'Rezervišem…'

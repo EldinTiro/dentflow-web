@@ -62,7 +62,7 @@ export function AppointmentTypesPage() {
         {canManage && (
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700"
+            className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700"
           >
             <Plus size={16} />
             {t('types.button.newType')}
@@ -78,7 +78,7 @@ export function AppointmentTypesPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('types.searchPlaceholder')}
-          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-8 pr-8 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-8 pr-8 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -120,7 +120,7 @@ export function AppointmentTypesPage() {
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => setEditing(tp)}
-                          className="p-1.5 text-gray-400 hover:text-indigo-600 rounded hover:bg-indigo-50 transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-primary-600 rounded hover:bg-primary-50 transition-colors"
                           title={t('types.editTooltip')}
                         >
                           <Pencil size={14} />

@@ -52,7 +52,7 @@ export function UsersPage() {
         {canManage && (
           <button
             onClick={() => setShowInvite(true)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+            className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
           >
             {t('team.button.invite')}
           </button>
@@ -64,7 +64,7 @@ export function UsersPage() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
           placeholder={t('team.search.placeholder')}
-          className="w-72 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-72 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
       </div>
 
@@ -104,7 +104,7 @@ export function UsersPage() {
                     <select
                       defaultValue={u.role ?? ''}
                       onChange={(e) => changeRole.mutate({ id: u.id, role: e.target.value })}
-                      className="border border-gray-200 dark:border-gray-600 rounded px-2 py-0.5 text-xs bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="border border-gray-200 dark:border-gray-600 rounded px-2 py-0.5 text-xs bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary-500"
                     >
                       {TENANT_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                     </select>
@@ -173,7 +173,7 @@ export function UsersPage() {
             </p>
             <button
               onClick={() => setResetResult(null)}
-              className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+              className="w-full bg-primary-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
             >
               {tc('button.done')}
             </button>
