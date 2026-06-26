@@ -92,6 +92,12 @@ export const tenantService = {
 
   updateSettings: (body: { slotDurationMinutes: number; weeklyScheduleJson: string | null }) =>
     apiClient.put<ClinicSettings>('/api/v1/tenant/settings', body).then((r) => r.data),
+
+  getNotificationConfig: () =>
+    apiClient.get<NotificationConfig>('/api/v1/tenant/notification-config').then((r) => r.data),
+
+  updateNotificationConfig: (body: UpdateNotificationConfigRequest) =>
+    apiClient.put<NotificationConfig>('/api/v1/tenant/notification-config', body).then((r) => r.data),
 }
 
 export interface TenantFeaturesResponse {
@@ -113,4 +119,16 @@ export interface ClinicSettings {
   workdayEnd: string          // legacy fallback "22:30"
   slotDurationMinutes: number
   weeklyScheduleJson: string | null
+}
+
+export interface NotificationConfig {
+  smsEnabled: boolean
+  reminder1HoursBefore: number | null
+  reminder2HoursBefore: number | null
+}
+
+export interface UpdateNotificationConfigRequest {
+  smsEnabled: boolean
+  reminder1HoursBefore: number | null
+  reminder2HoursBefore: number | null
 }
