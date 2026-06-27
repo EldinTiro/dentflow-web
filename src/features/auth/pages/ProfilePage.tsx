@@ -459,6 +459,36 @@ export function ProfilePage() {
               </button>
             </div>
           </form>
+
+          {/* Color theme picker */}
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Tema boja</h3>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">Primarna boja sučelja.</p>
+            <div className="flex flex-wrap gap-3">
+              {([
+                { id: 'indigo', label: 'Indigo',  hex: '#4f46e5' },
+                { id: 'rose',   label: 'Rose',    hex: '#e11d48' },
+                { id: 'teal',   label: 'Teal',    hex: '#0d9488' },
+                { id: 'blue',   label: 'Blue',    hex: '#2563eb' },
+                { id: 'violet', label: 'Violet',  hex: '#7c3aed' },
+              ] as { id: ColorTheme; label: string; hex: string }[]).map(t => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setColorTheme(t.id)}
+                  title={t.label}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                    colorTheme === t.id
+                      ? 'border-gray-900 dark:border-gray-100 shadow-sm'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
+                  }`}
+                >
+                  <span className="h-4 w-4 rounded-full shrink-0" style={{ backgroundColor: t.hex }} />
+                  <span className="text-gray-700 dark:text-gray-300">{t.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
       )}
 
@@ -570,38 +600,6 @@ export function ProfilePage() {
 
       {/* ── Tab: Klinika ─────────────────────────────────────────────────── */}
       {activeTab === 'clinic' && canManageClinic && (
-        <div className="space-y-4">
-
-        {/* Color theme picker */}
-        <section className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Tema boja</h2>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">Primarna boja sučelja za vašu kliniku.</p>
-          <div className="flex flex-wrap gap-3">
-            {([
-              { id: 'indigo', label: 'Indigo',  hex: '#4f46e5' },
-              { id: 'rose',   label: 'Rose',    hex: '#e11d48' },
-              { id: 'teal',   label: 'Teal',    hex: '#0d9488' },
-              { id: 'blue',   label: 'Blue',    hex: '#2563eb' },
-              { id: 'violet', label: 'Violet',  hex: '#7c3aed' },
-            ] as { id: ColorTheme; label: string; hex: string }[]).map(t => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setColorTheme(t.id)}
-                title={t.label}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
-                  colorTheme === t.id
-                    ? 'border-gray-900 dark:border-gray-100 shadow-sm'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
-                }`}
-              >
-                <span className="h-4 w-4 rounded-full shrink-0" style={{ backgroundColor: t.hex }} />
-                <span className="text-gray-700 dark:text-gray-300">{t.label}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
         <section className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Radno vrijeme klinike</h2>
           <p className="text-xs text-gray-400 dark:text-gray-500 mb-5">
@@ -665,7 +663,6 @@ export function ProfilePage() {
             </button>
           </div>
         </section>
-        </div>
       )}
     </div>
   )
