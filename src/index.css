@@ -3,98 +3,100 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ── Color themes ─────────────────────────────────────────────────────────────
-   @theme inline makes Tailwind generate bg-primary-*, text-primary-* etc.
-   using CSS custom properties, so themes can be switched at runtime.
+/* ── Runtime color variables ──────────────────────────────────────────────────
+   Defined on :root and overridden per theme via data-color-theme attribute.
+   @theme inline wires Tailwind utilities directly to these vars so that
+   bg-primary-600 generates background-color: var(--p-600) at runtime.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Default: Indigo */
+  --p-50:  #eef2ff;
+  --p-100: #e0e7ff;
+  --p-200: #c7d2fe;
+  --p-300: #a5b4fc;
+  --p-400: #818cf8;
+  --p-500: #6366f1;
+  --p-600: #4f46e5;
+  --p-700: #4338ca;
+  --p-800: #3730a3;
+  --p-900: #312e81;
+  --p-950: #1e1b4b;
+}
+
+[data-color-theme="rose"] {
+  --p-50:  #fff1f2;
+  --p-100: #ffe4e6;
+  --p-200: #fecdd3;
+  --p-300: #fda4af;
+  --p-400: #fb7185;
+  --p-500: #f43f5e;
+  --p-600: #e11d48;
+  --p-700: #be123c;
+  --p-800: #9f1239;
+  --p-900: #881337;
+  --p-950: #4c0519;
+}
+
+[data-color-theme="teal"] {
+  --p-50:  #f0fdfa;
+  --p-100: #ccfbf1;
+  --p-200: #99f6e4;
+  --p-300: #5eead4;
+  --p-400: #2dd4bf;
+  --p-500: #14b8a6;
+  --p-600: #0d9488;
+  --p-700: #0f766e;
+  --p-800: #115e59;
+  --p-900: #134e4a;
+  --p-950: #042f2e;
+}
+
+[data-color-theme="blue"] {
+  --p-50:  #eff6ff;
+  --p-100: #dbeafe;
+  --p-200: #bfdbfe;
+  --p-300: #93c5fd;
+  --p-400: #60a5fa;
+  --p-500: #3b82f6;
+  --p-600: #2563eb;
+  --p-700: #1d4ed8;
+  --p-800: #1e40af;
+  --p-900: #1e3a8a;
+  --p-950: #172554;
+}
+
+[data-color-theme="violet"] {
+  --p-50:  #f5f3ff;
+  --p-100: #ede9fe;
+  --p-200: #ddd6fe;
+  --p-300: #c4b5fd;
+  --p-400: #a78bfa;
+  --p-500: #8b5cf6;
+  --p-600: #7c3aed;
+  --p-700: #6d28d9;
+  --p-800: #5b21b6;
+  --p-900: #4c1d95;
+  --p-950: #2e1065;
+}
+
+/* ── Tailwind utility wiring ──────────────────────────────────────────────────
+   @theme inline: utilities reference var(--p-*) directly at runtime,
+   so theme switches take effect without a page reload.
    ───────────────────────────────────────────────────────────────────────── */
 
 @theme inline {
-  --color-primary-50:  var(--df-p-50);
-  --color-primary-100: var(--df-p-100);
-  --color-primary-200: var(--df-p-200);
-  --color-primary-300: var(--df-p-300);
-  --color-primary-400: var(--df-p-400);
-  --color-primary-500: var(--df-p-500);
-  --color-primary-600: var(--df-p-600);
-  --color-primary-700: var(--df-p-700);
-  --color-primary-800: var(--df-p-800);
-  --color-primary-900: var(--df-p-900);
-  --color-primary-950: var(--df-p-950);
-}
-
-/* Default — Indigo */
-:root {
-  --df-p-50:  #eef2ff;
-  --df-p-100: #e0e7ff;
-  --df-p-200: #c7d2fe;
-  --df-p-300: #a5b4fc;
-  --df-p-400: #818cf8;
-  --df-p-500: #6366f1;
-  --df-p-600: #4f46e5;
-  --df-p-700: #4338ca;
-  --df-p-800: #3730a3;
-  --df-p-900: #312e81;
-  --df-p-950: #1e1b4b;
-}
-
-/* Rose — PinkDent */
-:root[data-color-theme="rose"] {
-  --df-p-50:  #fff1f2;
-  --df-p-100: #ffe4e6;
-  --df-p-200: #fecdd3;
-  --df-p-300: #fda4af;
-  --df-p-400: #fb7185;
-  --df-p-500: #f43f5e;
-  --df-p-600: #e11d48;
-  --df-p-700: #be123c;
-  --df-p-800: #9f1239;
-  --df-p-900: #881337;
-  --df-p-950: #4c0519;
-}
-
-/* Teal */
-:root[data-color-theme="teal"] {
-  --df-p-50:  #f0fdfa;
-  --df-p-100: #ccfbf1;
-  --df-p-200: #99f6e4;
-  --df-p-300: #5eead4;
-  --df-p-400: #2dd4bf;
-  --df-p-500: #14b8a6;
-  --df-p-600: #0d9488;
-  --df-p-700: #0f766e;
-  --df-p-800: #115e59;
-  --df-p-900: #134e4a;
-  --df-p-950: #042f2e;
-}
-
-/* Blue — Ocean */
-:root[data-color-theme="blue"] {
-  --df-p-50:  #eff6ff;
-  --df-p-100: #dbeafe;
-  --df-p-200: #bfdbfe;
-  --df-p-300: #93c5fd;
-  --df-p-400: #60a5fa;
-  --df-p-500: #3b82f6;
-  --df-p-600: #2563eb;
-  --df-p-700: #1d4ed8;
-  --df-p-800: #1e40af;
-  --df-p-900: #1e3a8a;
-  --df-p-950: #172554;
-}
-
-/* Violet */
-:root[data-color-theme="violet"] {
-  --df-p-50:  #f5f3ff;
-  --df-p-100: #ede9fe;
-  --df-p-200: #ddd6fe;
-  --df-p-300: #c4b5fd;
-  --df-p-400: #a78bfa;
-  --df-p-500: #8b5cf6;
-  --df-p-600: #7c3aed;
-  --df-p-700: #6d28d9;
-  --df-p-800: #5b21b6;
-  --df-p-900: #4c1d95;
-  --df-p-950: #2e1065;
+  --color-primary-50:  var(--p-50);
+  --color-primary-100: var(--p-100);
+  --color-primary-200: var(--p-200);
+  --color-primary-300: var(--p-300);
+  --color-primary-400: var(--p-400);
+  --color-primary-500: var(--p-500);
+  --color-primary-600: var(--p-600);
+  --color-primary-700: var(--p-700);
+  --color-primary-800: var(--p-800);
+  --color-primary-900: var(--p-900);
+  --color-primary-950: var(--p-950);
 }
 
 @layer base {
