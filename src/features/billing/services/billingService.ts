@@ -3,6 +3,22 @@ import apiClient from '@/shared/api/client'
 export type InvoiceStatus = 'Draft' | 'Sent' | 'PartiallyPaid' | 'Paid' | 'Void'
 export type PaymentMethod = 'Cash' | 'Card' | 'Insurance' | 'BankTransfer' | 'Other'
 
+export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
+  Draft: 'Draft',
+  Sent: 'Sent',
+  PartiallyPaid: 'Partially Paid',
+  Paid: 'Paid',
+  Void: 'Void',
+}
+
+export const INVOICE_STATUS_COLORS: Record<InvoiceStatus, string> = {
+  Draft: 'bg-gray-100 text-gray-600',
+  Sent: 'bg-blue-100 text-blue-700',
+  PartiallyPaid: 'bg-yellow-100 text-yellow-700',
+  Paid: 'bg-green-100 text-green-700',
+  Void: 'bg-red-100 text-red-500',
+}
+
 export interface InvoiceLineItemResponse {
   id: string
   invoiceId: string

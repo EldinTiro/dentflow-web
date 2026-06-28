@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
+import { StatusBadge } from '@/shared/components/StatusBadge'
+import { useAuthStore } from '@/features/auth/store/authStore'
 import {
   CalendarDays,
   Clock,
@@ -16,6 +18,7 @@ import {
   History,
   Pencil,
   Check,
+  ShieldAlert,
 } from 'lucide-react'
 import {
   appointmentService,
@@ -26,7 +29,7 @@ import {
 } from '../services/appointmentService'
 import { patientService } from '@/features/patients/services/patientService'
 import { staffService } from '@/features/staff/services/staffService'
-import { billingService } from '@/features/billing/services/billingService'
+import { billingService, INVOICE_STATUS_COLORS, INVOICE_STATUS_LABELS } from '@/features/billing/services/billingService'
 import { CreateInvoiceDrawer } from '@/features/billing/components/CreateInvoiceDrawer'
 
 interface Props {
@@ -58,13 +61,6 @@ function DetailRow({
   )
 }
 
-const INVOICE_STATUS_COLORS: Record<string, string> = {
-  Draft: 'bg-gray-100 text-gray-600',
-  Sent: 'bg-blue-100 text-blue-700',
-  PartiallyPaid: 'bg-yellow-100 text-yellow-700',
-  Paid: 'bg-green-100 text-green-700',
-  Void: 'bg-red-100 text-red-500',
-}
 
 export function AppointmentDetailPanel({
   appointment: a,
@@ -74,12 +70,18 @@ export function AppointmentDetailPanel({
   canManage,
 }: Props) {
   const queryClient = useQueryClient()
+  const isAdmin = useAuthStore((s) =>
+    s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'SuperAdmin'].includes(r)) ?? false
+  )
   const [confirmCancel, setConfirmCancel] = useState(false)
   const [showHistory, setShowHistory] = useState(true)
   const [showBilling, setShowBilling] = useState(false)
   const [editingNotes, setEditingNotes] = useState(false)
   const [notesDraft, setNotesDraft] = useState(a.notes ?? '')
   const [showCreateInvoice, setShowCreateInvoice] = useState(false)
+  const [showOverride, setShowOverride] = useState(false)
+  const [overrideNewStatus, setOverrideNewStatus] = useState<AppointmentStatus>('Scheduled')
+  const [overrideReason, setOverrideReason] = useState('')
 
   const { data: patient } = useQuery({
     queryKey: ['patient', a.patientId],
@@ -132,6 +134,16 @@ export function AppointmentDetailPanel({
     },
   })
 
+  const overrideMutation = useMutation({
+    mutationFn: () => appointmentService.overrideStatus(a.id, overrideNewStatus, overrideReason || undefined),
+    onSuccess: () => {
+      invalidate()
+      setShowOverride(false)
+      setOverrideReason('')
+      onClose()
+    },
+  })
+
   const apptType = types?.find((t) => t.id === a.appointmentTypeId)
   const isTerminal = ['Completed', 'Cancelled', 'NoShow'].includes(a.status)
 
@@ -157,13 +169,7 @@ export function AppointmentDetailPanel({
         <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
           <div>
             <h2 className="text-base font-semibold text-gray-900">Appointment Detail</h2>
-            <span
-              className={`dot-badge mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                STATUS_COLORS[a.status as AppointmentStatus] ?? 'bg-gray-100 text-gray-600'
-              }`}
-            >
-              {APPOINTMENT_STATUS_LABELS[a.status as AppointmentStatus] ?? a.status}
-            </span>
+            <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={APPOINTMENT_STATUS_LABELS} className="mt-1" />
           </div>
           <button
             onClick={onClose}
@@ -321,9 +327,7 @@ export function AppointmentDetailPanel({
                         <p className="text-xs text-gray-400">{formatShortDate(inv.issuedAt)}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${INVOICE_STATUS_COLORS[inv.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                          {inv.status}
-                        </span>
+                        <StatusBadge status={inv.status} colorMap={INVOICE_STATUS_COLORS} labelMap={INVOICE_STATUS_LABELS} />
                         <span className="text-xs font-semibold text-gray-700">
                           {inv.balanceDue.toFixed(2)} KM due
                         </span>
@@ -467,6 +471,58 @@ export function AppointmentDetailPanel({
               >
                 {a.status === 'Completed' ? 'Bill Patient' : 'Kreiraj fakturu'}
               </button>
+            )}
+
+            {/* Admin override */}
+            {isAdmin && (
+              <div className="pt-1 border-t border-gray-100">
+                {!showOverride ? (
+                  <button
+                    onClick={() => { setOverrideNewStatus(a.status); setShowOverride(true) }}
+                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-orange-600 transition-colors"
+                  >
+                    <ShieldAlert size={13} />
+                    Ručno promijeni status
+                  </button>
+                ) : (
+                  <div className="space-y-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 border border-orange-200 dark:border-orange-800">
+                    <p className="text-xs font-medium text-orange-700 dark:text-orange-400 flex items-center gap-1.5">
+                      <ShieldAlert size={13} />
+                      Admin override — zaobilazi pravila tranzicije
+                    </p>
+                    <select
+                      value={overrideNewStatus}
+                      onChange={(e) => setOverrideNewStatus(e.target.value as AppointmentStatus)}
+                      className="w-full border border-orange-200 dark:border-orange-700 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    >
+                      {(['Scheduled', 'CheckedIn', 'InProgress', 'Completed', 'Cancelled', 'NoShow'] as AppointmentStatus[]).map((s) => (
+                        <option key={s} value={s}>{APPOINTMENT_STATUS_LABELS[s]}</option>
+                      ))}
+                    </select>
+                    <input
+                      value={overrideReason}
+                      onChange={(e) => setOverrideReason(e.target.value)}
+                      placeholder="Razlog (opciono)"
+                      className="w-full border border-orange-200 dark:border-orange-700 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowOverride(false)}
+                        className="flex-1 text-sm text-gray-500 hover:text-gray-700 py-1"
+                      >
+                        Odustani
+                      </button>
+                      <button
+                        disabled={overrideMutation.isPending}
+                        onClick={() => overrideMutation.mutate()}
+                        className="flex-1 bg-orange-600 text-white py-1.5 rounded text-sm font-medium hover:bg-orange-700 disabled:opacity-50"
+                      >
+                        {overrideMutation.isPending ? 'Čekaj…' : 'Primijeni'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}

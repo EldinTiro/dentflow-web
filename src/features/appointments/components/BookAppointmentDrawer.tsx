@@ -130,6 +130,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['patients-all'] });
       onClose();
     },
     onError: (err: unknown) => {

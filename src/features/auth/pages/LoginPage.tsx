@@ -8,7 +8,7 @@ export function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4">
       {/* Brand mark */}
       <div className="mb-8 flex flex-col items-center gap-3">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-indigo-200">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-primary-600 shadow-lg shadow-primary-200">
           <Gem size={32} className="text-white" strokeWidth={1.5} />
         </div>
         <div className="text-center">

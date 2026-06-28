@@ -35,13 +35,11 @@
   },
   "appointmentStatus": {
     "scheduled": "Zakazan",
-    "confirmed": "Potvrđen",
     "checkedIn": "Prijavljen",
-    "inChair": "U stolici",
+    "inProgress": "U tretmanu",
     "completed": "Završen",
     "cancelled": "Otkazan",
-    "noShow": "Nije došao",
-    "rescheduled": "Pomjeren"
+    "noShow": "Nije došao"
   },
   "appointmentAction": {
     "checkIn": "Prijavi",

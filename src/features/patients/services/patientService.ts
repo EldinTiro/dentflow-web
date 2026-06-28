@@ -109,6 +109,75 @@ export interface PatientSearchResult {
   email: string | null
 }
 
+export interface EmergencyContact {
+  id: string
+  name: string
+  relationship: string | null
+  phonePrimary: string | null
+  isPrimary: boolean
+}
+
+export interface Allergy {
+  id: string
+  allergen: string
+  reaction: string | null
+  severity: string | null
+  notes: string | null
+  reportedAt: string | null
+}
+
+export interface MedicalHistory {
+  id: string
+  bloodType: string | null
+  isPregnant: boolean | null
+  isSmoker: boolean
+  isDiabetic: boolean
+  hasHeartCondition: boolean
+  hasHypertension: boolean
+  hasBleedingDisorder: boolean
+  isOnBloodThinners: boolean
+  hasPacemaker: boolean
+  hasArtificialJoints: boolean
+  hasLatexAllergy: boolean
+  generalNotes: string | null
+  currentMedications: string | null
+  physicianName: string | null
+  physicianPhone: string | null
+  recordedAt: string
+}
+
+export interface UpsertMedicalHistoryRequest {
+  bloodType?: string | null
+  isPregnant?: boolean | null
+  isSmoker: boolean
+  isDiabetic: boolean
+  hasHeartCondition: boolean
+  hasHypertension: boolean
+  hasBleedingDisorder: boolean
+  isOnBloodThinners: boolean
+  hasPacemaker: boolean
+  hasArtificialJoints: boolean
+  hasLatexAllergy: boolean
+  generalNotes?: string | null
+  currentMedications?: string | null
+  physicianName?: string | null
+  physicianPhone?: string | null
+}
+
+export interface AddEmergencyContactRequest {
+  name: string
+  relationship?: string | null
+  phonePrimary?: string | null
+  isPrimary: boolean
+}
+
+export interface AddAllergyRequest {
+  allergen: string
+  reaction?: string | null
+  severity?: string | null
+  notes?: string | null
+}
+
 export const patientService = {
   search: (q: string, limit = 20) =>
     apiClient
@@ -118,6 +187,7 @@ export const patientService = {
   list: (params?: {
     search?: string
     status?: PatientStatus
+    recallFilter?: 'overdue' | 'due-soon'
     page?: number
     pageSize?: number
   }) =>
@@ -143,5 +213,49 @@ export const patientService = {
   delete: (id: string) =>
     apiClient
       .delete(`/api/v1/patients/${id}`)
+      .then((r) => r.data),
+
+  // Emergency contacts
+  listEmergencyContacts: (patientId: string) =>
+    apiClient
+      .get<EmergencyContact[]>(`/api/v1/patients/${patientId}/emergency-contacts`)
+      .then((r) => r.data),
+
+  addEmergencyContact: (patientId: string, body: AddEmergencyContactRequest) =>
+    apiClient
+      .post<EmergencyContact>(`/api/v1/patients/${patientId}/emergency-contacts`, body)
+      .then((r) => r.data),
+
+  deleteEmergencyContact: (patientId: string, contactId: string) =>
+    apiClient
+      .delete(`/api/v1/patients/${patientId}/emergency-contacts/${contactId}`)
+      .then((r) => r.data),
+
+  // Allergies
+  listAllergies: (patientId: string) =>
+    apiClient
+      .get<Allergy[]>(`/api/v1/patients/${patientId}/allergies`)
+      .then((r) => r.data),
+
+  addAllergy: (patientId: string, body: AddAllergyRequest) =>
+    apiClient
+      .post<Allergy>(`/api/v1/patients/${patientId}/allergies`, body)
+      .then((r) => r.data),
+
+  deleteAllergy: (patientId: string, allergyId: string) =>
+    apiClient
+      .delete(`/api/v1/patients/${patientId}/allergies/${allergyId}`)
+      .then((r) => r.data),
+
+  // Medical history
+  getMedicalHistory: (patientId: string) =>
+    apiClient
+      .get<MedicalHistory | null>(`/api/v1/patients/${patientId}/medical-history`)
+      .then((r) => r.data)
+      .catch(() => null),
+
+  upsertMedicalHistory: (patientId: string, body: UpsertMedicalHistoryRequest) =>
+    apiClient
+      .put<MedicalHistory>(`/api/v1/patients/${patientId}/medical-history`, body)
       .then((r) => r.data),
 }

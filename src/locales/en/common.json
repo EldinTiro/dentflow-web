@@ -35,13 +35,11 @@
   },
   "appointmentStatus": {
     "scheduled": "Scheduled",
-    "confirmed": "Confirmed",
     "checkedIn": "Checked In",
-    "inChair": "In Chair",
+    "inProgress": "In Progress",
     "completed": "Completed",
     "cancelled": "Cancelled",
-    "noShow": "No Show",
-    "rescheduled": "Rescheduled"
+    "noShow": "No Show"
   },
   "appointmentAction": {
     "checkIn": "Check In",

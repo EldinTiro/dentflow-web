@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { patientService, type PatientResponse, type PatientStatus } from '../services/patientService'
 import { CreatePatientDrawer } from '../components/CreatePatientDrawer'
@@ -53,21 +53,25 @@ export function PatientsPage() {
 
   const search = searchParams.get('search') ?? ''
   const status = (searchParams.get('status') ?? '') as PatientStatus | ''
+  const recallFilter = (searchParams.get('recallFilter') ?? '') as 'overdue' | 'due-soon' | ''
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
 
   const setSearch = (v: string) =>
     setSearchParams((p) => { const n = new URLSearchParams(p); v ? n.set('search', v) : n.delete('search'); n.set('page', '1'); return n }, { replace: true })
   const setStatus = (v: PatientStatus | '') =>
     setSearchParams((p) => { const n = new URLSearchParams(p); v ? n.set('status', v) : n.delete('status'); n.set('page', '1'); return n }, { replace: true })
+  const clearRecallFilter = () =>
+    setSearchParams((p) => { const n = new URLSearchParams(p); n.delete('recallFilter'); n.set('page', '1'); return n }, { replace: true })
   const setPage = (v: number) =>
     setSearchParams((p) => { const n = new URLSearchParams(p); n.set('page', String(v)); return n }, { replace: true })
 
   const { data, isLoading } = useQuery({
-    queryKey: ['patients', search, status, page],
+    queryKey: ['patients', search, status, recallFilter, page],
     queryFn: () =>
       patientService.list({
         search: search || undefined,
         status: (status as PatientStatus) || undefined,
+        recallFilter: recallFilter || undefined,
         page,
         pageSize: 20,
       }),
@@ -123,6 +127,26 @@ export function PatientsPage() {
           ))}
         </select>
       </div>
+
+      {recallFilter && (
+        <div className={`flex items-center gap-2 mb-4 px-4 py-2.5 rounded-lg text-sm font-medium border ${
+          recallFilter === 'overdue'
+            ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400'
+            : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400'
+        }`}>
+          <span>
+            {recallFilter === 'overdue' ? '🔴 Recall prošao rok' : '🟡 Recall uskoro'}
+            {data && ` — ${data.totalCount} pacijent${data.totalCount === 1 ? '' : 'a'}`}
+          </span>
+          <button
+            onClick={clearRecallFilter}
+            className="ml-auto p-0.5 rounded hover:bg-black/10 transition-colors"
+            title="Ukloni filter"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <table className="min-w-full text-sm">

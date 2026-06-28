@@ -6,11 +6,12 @@ import {
   CalendarDays, Users, UserCog, Clock, TrendingUp, TrendingDown,
   CheckCircle2, CalendarPlus, UserPlus, DollarSign, Wallet, Bell,
 } from 'lucide-react'
-import { appointmentService } from '@/features/appointments/services/appointmentService'
+import { appointmentService, AppointmentStatus, STATUS_COLORS, APPOINTMENT_STATUS_LABELS } from '@/features/appointments/services/appointmentService'
 import { patientService } from '@/features/patients/services/patientService'
 import { staffService } from '@/features/staff/services/staffService'
 import { dashboardService } from './dashboardService'
 import { SlotCheckerWidget } from './SlotCheckerWidget'
+import { StatusBadge } from '@/shared/components/StatusBadge'
 
 function toLocalDateStr(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -45,25 +46,23 @@ function StatCard({ label, value, icon: Icon, iconBg, iconColor, sub, to }: Stat
 
 interface RecentApptRowProps {
   time: string
-  status: string
-  statusColor: string
+  status: AppointmentStatus
   complaint: string | null
   duration: number
-  apptStatus: string
   patientName?: string
   providerName?: string
 }
 
-function RecentApptRow({ time, status, statusColor, complaint, duration, apptStatus, patientName, providerName }: RecentApptRowProps) {
+function RecentApptRow({ time, status, complaint, duration, patientName, providerName }: RecentApptRowProps) {
   const rowBg =
-    apptStatus === 'Completed' ? 'bg-gray-50/80 dark:bg-gray-800/50 opacity-70' :
-    apptStatus === 'Cancelled' ? 'bg-red-50/60 dark:bg-red-950/20' :
-    apptStatus === 'NoShow'    ? 'bg-red-50/40 dark:bg-red-950/10' : ''
+    status === 'Completed' ? 'bg-gray-50/80 dark:bg-gray-800/50 opacity-70' :
+    status === 'Cancelled' ? 'bg-red-50/60 dark:bg-red-950/20' :
+    status === 'NoShow'    ? 'bg-red-50/40 dark:bg-red-950/10' : ''
   return (
     <div className={`flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0 ${rowBg}`}>
       <div className="flex items-center gap-3 min-w-0">
         <div className="text-sm font-medium text-gray-800 dark:text-gray-200 shrink-0">{time}</div>
-        <span className={`dot-badge inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full shrink-0 ${statusColor}`}>{status}</span>
+        <StatusBadge status={status} colorMap={STATUS_COLORS} labelMap={APPOINTMENT_STATUS_LABELS} className="shrink-0" />
         {patientName && (
           <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{patientName}</span>
         )}
@@ -79,26 +78,10 @@ function RecentApptRow({ time, status, statusColor, complaint, duration, apptSta
   )
 }
 
-const STATUS_LABEL_KEYS: Record<string, string> = {
-  Scheduled: 'appointmentStatus.scheduled', Confirmed: 'appointmentStatus.confirmed', CheckedIn: 'appointmentStatus.checkedIn',
-  InChair: 'appointmentStatus.inChair', Completed: 'appointmentStatus.completed', Cancelled: 'appointmentStatus.cancelled',
-  NoShow: 'appointmentStatus.noShow', Rescheduled: 'appointmentStatus.rescheduled',
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  Scheduled: 'bg-blue-100 text-blue-700',
-  Confirmed: 'bg-green-100 text-green-700',
-  CheckedIn: 'bg-yellow-100 text-yellow-700',
-  InChair: 'bg-orange-100 text-orange-700',
-  Completed: 'bg-gray-100 text-gray-600',
-  Cancelled: 'bg-red-100 text-red-600',
-  NoShow: 'bg-red-50 text-red-400',
-  Rescheduled: 'bg-purple-100 text-purple-700',
-}
 
 export function DashboardPage() {
   const { t, i18n } = useTranslation('dashboard')
-  const tc = useTranslation('common').t
+
   const localeMap: Record<string, string> = { bs: 'hr', en: 'en', de: 'de' }
   const displayLocale = localeMap[i18n.language] ?? i18n.language
   const today = toLocalDateStr(new Date())
@@ -332,13 +315,13 @@ export function DashboardPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             {recallOverdue > 0 && (
-              <Link to="/patients" className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 hover:shadow-sm transition-shadow">
+              <Link to="/patients?recallFilter=overdue" className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 hover:shadow-sm transition-shadow">
                 <span className="text-2xl font-bold text-red-600 dark:text-red-400">{recallOverdue}</span>
                 <span className="text-xs text-red-600 dark:text-red-400 font-medium">{t('recall.overdue')}</span>
               </Link>
             )}
             {recallDueSoon > 0 && (
-              <Link to="/patients" className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 hover:shadow-sm transition-shadow">
+              <Link to="/patients?recallFilter=due-soon" className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 hover:shadow-sm transition-shadow">
                 <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">{recallDueSoon}</span>
                 <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">{t('recall.dueSoon')}</span>
               </Link>
@@ -395,11 +378,9 @@ export function DashboardPage() {
               <RecentApptRow
                 key={a.id}
                 time={formatTime(a.startAt)}
-                status={tc(STATUS_LABEL_KEYS[a.status]) ?? a.status}
-                statusColor={STATUS_COLORS[a.status] ?? 'bg-gray-100 text-gray-600'}
+                status={a.status}
                 complaint={a.chiefComplaint}
                 duration={a.durationMinutes}
-                apptStatus={a.status}
                 patientName={patientNames[a.patientId]}
                 providerName={providerNames[a.providerId]}
               />

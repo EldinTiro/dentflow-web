@@ -35,13 +35,11 @@
   },
   "appointmentStatus": {
     "scheduled": "Geplant",
-    "confirmed": "Bestätigt",
     "checkedIn": "Eingecheckt",
-    "inChair": "Auf dem Stuhl",
+    "inProgress": "In Behandlung",
     "completed": "Abgeschlossen",
     "cancelled": "Storniert",
-    "noShow": "Nicht erschienen",
-    "rescheduled": "Verschoben"
+    "noShow": "Nicht erschienen"
   },
   "appointmentAction": {
     "checkIn": "Einchecken",

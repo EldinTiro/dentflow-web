@@ -12,6 +12,7 @@ import {
 } from '../services/appointmentService';
 import { staffService } from '@/features/staff/services/staffService';
 import { patientService } from '@/features/patients/services/patientService';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { BookAppointmentDrawer } from '../components/BookAppointmentDrawer';
 import { RescheduleModal } from '../components/RescheduleModal';
 import { WeekCalendar } from '../components/WeekCalendar';
@@ -508,13 +509,7 @@ export function AppointmentsPage() {
                         <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{a.durationMinutes} {tc('unit.min')}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <span
-                              className={`dot-badge inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                STATUS_COLORS[a.status as AppointmentStatus] ?? 'bg-gray-100 text-gray-600'
-                              }`}
-                            >
-                              {APPOINTMENT_STATUS_LABELS[a.status as AppointmentStatus] ?? a.status}
-                            </span>
+                            <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={APPOINTMENT_STATUS_LABELS} />
                             {canManage && nextAction && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); quickStatusMutation.mutate({ id: a.id, next: nextAction.next }); }}

@@ -17,6 +17,7 @@ import {
   type TreatmentPlanItemStatus,
 } from '../services/treatmentService'
 import { billingService } from '@/features/billing/services/billingService'
+import { StatusBadge } from '@/shared/components/StatusBadge'
 
 // ─── Create Plan Form ────────────────────────────────────────────────────────
 
@@ -335,13 +336,7 @@ function PlanCard({
                 <p className="text-xs text-gray-400 mt-0.5 truncate">{plan.notes}</p>
               )}
             </div>
-            <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${
-                PLAN_STATUS_COLORS[plan.status]
-              }`}
-            >
-              {PLAN_STATUS_LABELS[plan.status]}
-            </span>
+            <StatusBadge status={plan.status} colorMap={PLAN_STATUS_COLORS} labelMap={PLAN_STATUS_LABELS} className="shrink-0" />
             <span className="text-xs text-gray-500 shrink-0 font-mono">
               {plan.totalFee.toFixed(2)} KM
             </span>
@@ -408,13 +403,7 @@ function PlanCard({
                     )}
                   </div>
                 </div>
-                <span
-                  className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${
-                    ITEM_STATUS_COLORS[item.status]
-                  }`}
-                >
-                  {ITEM_STATUS_LABELS[item.status]}
-                </span>
+                <StatusBadge status={item.status} colorMap={ITEM_STATUS_COLORS} labelMap={ITEM_STATUS_LABELS} className="shrink-0" />
                 <span className="text-sm font-mono text-gray-700 shrink-0 w-20 text-right">
                   {item.fee.toFixed(2)} KM
                 </span>
