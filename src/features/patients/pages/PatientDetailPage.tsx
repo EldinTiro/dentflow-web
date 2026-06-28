@@ -9,7 +9,6 @@ import {
   appointmentService,
   APPOINTMENT_STATUS_LABELS,
   STATUS_COLORS,
-  type AppointmentStatus,
 } from '@/features/appointments/services/appointmentService'
 import { AppointmentDetailPanel } from '@/features/appointments/components/AppointmentDetailPanel'
 import { RescheduleModal } from '@/features/appointments/components/RescheduleModal'
@@ -19,7 +18,7 @@ import { TreatmentPlanTab } from '@/features/treatments/components/TreatmentPlan
 import { PatientFilesTab } from '../components/PatientFilesTab'
 import { PatientBillingTab } from '@/features/billing/components/PatientBillingTab'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
-import { Trash2, Plus, AlertTriangle, Phone, User, Heart, Stethoscope, ChevronDown, ChevronUp } from 'lucide-react'
+import { Trash2, Plus, AlertTriangle, Phone, User, Heart } from 'lucide-react'
 
 type Tab = 'overview' | 'appointments' | 'treatments' | 'files' | 'billing' | 'medical'
 
