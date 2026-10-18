@@ -19,3 +19,7 @@ Thumbs.db
 
 # TypeScript cache
 *.tsbuildinfo
+
+# UI audit artifacts (regenerable — node e2e/ui-audit.mjs)
+e2e/audit-shots/
+e2e/audit-results.json
