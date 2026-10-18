@@ -101,9 +101,15 @@ for (const route of ROUTES) {
     await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {})
     await page.waitForTimeout(1200)
 
+    // Any redirect means the findings below describe a different page than the one
+    // requested — without this the audit silently attributes them to the wrong route
+    // (a ClinicOwner asking for /admin lands on /dashboard and measures it again).
     const landedOn = new URL(page.url()).pathname
-    if (!route.anon && landedOn === '/login')
-      add(route, 'auth-redirect', 'Redirected to /login — session not accepted', 'high')
+    if (!route.anon && landedOn !== route.path) {
+      add(route, landedOn === '/login' ? 'auth-redirect' : 'route-redirect',
+        `Requested ${route.path} but landed on ${landedOn} — findings for this route describe ${landedOn}, not ${route.path}`,
+        'high')
+    }
 
     // Accessibility
     try {
