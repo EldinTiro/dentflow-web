@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { logout } from '@/features/auth/services/authService'
 import { useTranslation } from 'react-i18next'
 import { LayoutDashboard, Building2, Users, LogOut } from 'lucide-react'
 
@@ -11,11 +11,11 @@ const navItems = [
 
 export function AdminLayout() {
   const { t } = useTranslation('admin')
-  const clearAuth = useAuthStore((s) => s.clearAuth)
   const navigate = useNavigate()
 
-  function handleLogout() {
-    clearAuth()
+  async function handleLogout() {
+    // Revokes the refresh family server-side and drops the query cache.
+    await logout()
     navigate('/login')
   }
 

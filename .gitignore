@@ -23,3 +23,7 @@ Thumbs.db
 # UI audit artifacts (regenerable — node e2e/ui-audit.mjs)
 e2e/audit-shots/
 e2e/audit-results.json
+
+# Playwright
+test-results/
+playwright-report/
