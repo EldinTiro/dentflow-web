@@ -107,6 +107,12 @@
 @layer base {
   html {
     font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    /* Mobile browsers show this in overscroll ("bounce") areas and use it to
+       tint their toolbar — match the app canvas instead of white/black. */
+    background-color: var(--color-gray-50);
+  }
+  html.dark {
+    background-color: var(--color-gray-950);
   }
 
   /* Keyboard focus for every control (DR-05). Zero specificity via :where(), so a
@@ -142,6 +148,20 @@
 @keyframes enter-glow {
   from { opacity: 0; transform: scale(0.85); }
   to   { opacity: 1; transform: none; }
+}
+
+@keyframes enter-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Reduced motion (iOS "Reduce Motion", Android "Remove animations", many
+   battery savers): no movement or scaling, just a short dissolve in the same
+   order — the standard substitute for slide/zoom transitions. */
+@media (prefers-reduced-motion: reduce) {
+  .enter-up, .enter-pop, .enter-glow {
+    animation: enter-fade 400ms ease-out var(--enter-delay, 0ms) both;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
