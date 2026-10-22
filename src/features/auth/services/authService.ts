@@ -16,6 +16,7 @@ interface LoginResponse {
   fullName: string
   roles: string[]
   language: string
+  mustChangePassword: boolean
 }
 
 export async function login(credentials: LoginRequest): Promise<void> {
@@ -26,8 +27,8 @@ export async function login(credentials: LoginRequest): Promise<void> {
     '/api/v1/auth/login',
     credentials,
   )
-  const { accessToken, userId, email, fullName, roles, language } = response.data
-  useAuthStore.getState().setAuth(accessToken, { userId, email, fullName, roles })
+  const { accessToken, userId, email, fullName, roles, language, mustChangePassword } = response.data
+  useAuthStore.getState().setAuth(accessToken, { userId, email, fullName, roles, mustChangePassword })
   if (language) {
     await i18n.changeLanguage(language)
   }

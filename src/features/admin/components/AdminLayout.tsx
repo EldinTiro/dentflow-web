@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate } from 'react-router'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
+import { ErrorBoundary } from '@/shared/components/ErrorBoundary'
 import { logout } from '@/features/auth/services/authService'
 import { useTranslation } from 'react-i18next'
 import { LayoutDashboard, Building2, Users, LogOut } from 'lucide-react'
@@ -12,6 +13,7 @@ const navItems = [
 export function AdminLayout() {
   const { t } = useTranslation('admin')
   const navigate = useNavigate()
+  const location = useLocation()
 
   async function handleLogout() {
     // Revokes the refresh family server-side and drops the query cache.
@@ -25,7 +27,7 @@ export function AdminLayout() {
       <aside className="w-56 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
         <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
           <span className="text-lg font-bold text-primary-600 dark:text-primary-400">{t('layout.brand')}</span>
-          <span className="ml-2 text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">
+          <span className="ml-2 text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">
             {t('layout.badge')}
           </span>
         </div>
@@ -61,7 +63,9 @@ export function AdminLayout() {
 
       {/* Main content */}
       <main className="flex-1 overflow-auto">
-        <Outlet />
+        <ErrorBoundary resetKey={location.pathname}>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   )

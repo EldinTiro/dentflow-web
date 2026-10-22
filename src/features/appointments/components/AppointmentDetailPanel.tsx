@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
 import { StatusBadge } from '@/shared/components/StatusBadge'
@@ -22,7 +23,6 @@ import {
 } from 'lucide-react'
 import {
   appointmentService,
-  APPOINTMENT_STATUS_LABELS,
   STATUS_COLORS,
   type AppointmentResponse,
   type AppointmentStatus,
@@ -31,6 +31,8 @@ import { patientService } from '@/features/patients/services/patientService'
 import { staffService } from '@/features/staff/services/staffService'
 import { billingService, INVOICE_STATUS_COLORS, INVOICE_STATUS_LABELS } from '@/features/billing/services/billingService'
 import { CreateInvoiceDrawer } from '@/features/billing/components/CreateInvoiceDrawer'
+import { AllergyAlert } from '@/features/patients/components/AllergyAlert'
+import { useEscapeKey } from '@/shared/lib/useEscapeKey'
 
 interface Props {
   appointment: AppointmentResponse
@@ -51,25 +53,33 @@ function DetailRow({
   value: React.ReactNode
 }) {
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
-      <Icon size={15} className="text-gray-400 mt-0.5 shrink-0" />
+    <div className="flex items-start gap-3 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0">
+      <Icon size={15} className="text-gray-500 mt-0.5 shrink-0 dark:text-gray-400" />
       <div className="min-w-0 flex-1">
-        <p className="text-xs text-gray-400 font-medium">{label}</p>
-        <div className="text-sm text-gray-800 mt-0.5 break-words">{value}</div>
+        <p className="text-xs text-gray-500 font-medium dark:text-gray-400">{label}</p>
+        <div className="text-sm text-gray-800 mt-0.5 break-words dark:text-gray-100">{value}</div>
       </div>
     </div>
   )
 }
 
 
+/** 'CheckedIn' → common:appointmentStatus.checkedIn */
+const statusKey = (status: string) => `appointmentStatus.${status.charAt(0).toLowerCase()}${status.slice(1)}`
+
 export function AppointmentDetailPanel({
-  appointment: a,
+  appointment: initialAppointment,
   onClose,
   onReschedule,
   onRebook,
   canManage,
 }: Props) {
   const queryClient = useQueryClient()
+  const { t: td } = useTranslation('appointments')
+  const { t: tc } = useTranslation('common')
+  // Held locally so the drawer can stay open and reflect each status action (QA-027).
+  const [a, setA] = useState(initialAppointment)
+  useEffect(() => setA(initialAppointment), [initialAppointment])
   const isAdmin = useAuthStore((s) =>
     s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'SuperAdmin'].includes(r)) ?? false
   )
@@ -82,6 +92,8 @@ export function AppointmentDetailPanel({
   const [showOverride, setShowOverride] = useState(false)
   const [overrideNewStatus, setOverrideNewStatus] = useState<AppointmentStatus>('Scheduled')
   const [overrideReason, setOverrideReason] = useState('')
+  // Escape closes the drawer unless a dialog on top of it should get the key (QA-027).
+  useEscapeKey(onClose, !confirmCancel && !showOverride && !showCreateInvoice)
 
   const { data: patient } = useQuery({
     queryKey: ['patient', a.patientId],
@@ -111,6 +123,8 @@ export function AppointmentDetailPanel({
   })
 
   const invalidate = () => {
+    // The history query used to be fetched once and never refreshed (QA-017).
+    queryClient.invalidateQueries({ queryKey: ['appointment-history', a.id] })
     queryClient.invalidateQueries({ queryKey: ['appointments'] })
     queryClient.invalidateQueries({ queryKey: ['appointments-today'] })
     queryClient.invalidateQueries({ queryKey: ['appointments-week'] })
@@ -118,12 +132,12 @@ export function AppointmentDetailPanel({
 
   const statusMutation = useMutation({
     mutationFn: (next: AppointmentStatus) => appointmentService.updateStatus(a.id, next),
-    onSuccess: () => { invalidate(); onClose() },
+    onSuccess: (updated) => { setA(updated); invalidate() },
   })
 
   const cancelMutation = useMutation({
     mutationFn: () => appointmentService.cancel(a.id),
-    onSuccess: () => { invalidate(); onClose() },
+    onSuccess: (updated) => { setA(updated); invalidate(); setConfirmCancel(false) },
   })
 
   const notesMutation = useMutation({
@@ -136,16 +150,18 @@ export function AppointmentDetailPanel({
 
   const overrideMutation = useMutation({
     mutationFn: () => appointmentService.overrideStatus(a.id, overrideNewStatus, overrideReason || undefined),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      setA(updated)
       invalidate()
       setShowOverride(false)
       setOverrideReason('')
-      onClose()
     },
   })
 
   const apptType = types?.find((t) => t.id === a.appointmentTypeId)
   const isTerminal = ['Completed', 'Cancelled', 'NoShow'].includes(a.status)
+  // Mirrors the API: only a visit that has not started can be moved or cancelled (QA-034).
+  const notStarted = ['Scheduled', 'CheckedIn'].includes(a.status)
 
   const formatDT = (iso: string) =>
     new Date(iso).toLocaleString([], {
@@ -164,16 +180,16 @@ export function AppointmentDetailPanel({
     <>
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative z-50 w-[420px] bg-white shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-200">
+      <div className="relative z-50 w-[420px] bg-white dark:bg-gray-900 shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-600">
           <div>
-            <h2 className="text-base font-semibold text-gray-900">Appointment Detail</h2>
-            <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={APPOINTMENT_STATUS_LABELS} className="mt-1" />
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">{td('detail.title')}</h2>
+            <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={{ [a.status]: tc(statusKey(a.status)) }} className="mt-1" />
           </div>
           <button
             onClick={onClose}
-            className="rounded-md p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+            className="rounded-md p-1.5 text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400"
           >
             <X size={18} />
           </button>
@@ -181,30 +197,31 @@ export function AppointmentDetailPanel({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1">
+          <AllergyAlert patientId={a.patientId} className="mb-2" />
           <DetailRow
             icon={User}
-            label="Patient"
+            label={td('detail.patient')}
             value={
               patient ? (
                 <a
                   href={`/patients/${a.patientId}`}
-                  className="text-primary-600 hover:underline font-medium"
+                  className="text-primary-600 hover:underline font-medium dark:text-primary-400"
                 >
                   {patient.fullName}
                 </a>
               ) : (
-                <span className="text-gray-300 italic">Loading…</span>
+                <span className="text-gray-500 italic dark:text-gray-400">{td('detail.loading')}</span>
               )
             }
           />
           <DetailRow
             icon={Stethoscope}
-            label="Provider"
-            value={provider?.fullName ?? <span className="text-gray-300 italic">Loading…</span>}
+            label={td('detail.provider')}
+            value={provider?.fullName ?? <span className="text-gray-500 italic dark:text-gray-400">{td('detail.loading')}</span>}
           />
           <DetailRow
             icon={CalendarDays}
-            label="Date & Time"
+            label={td('detail.dateTime')}
             value={`${formatDT(a.startAt)} → ${new Date(a.endAt).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
@@ -213,34 +230,34 @@ export function AppointmentDetailPanel({
           />
           <DetailRow
             icon={Clock}
-            label="Duration"
-            value={`${a.durationMinutes} minutes`}
+            label={td('detail.duration')}
+            value={td('detail.minutes', { count: a.durationMinutes })}
           />
           {apptType && (
             <DetailRow
               icon={FileText}
-              label="Appointment Type"
+              label={td('detail.type')}
               value={apptType.name}
             />
           )}
           {a.chiefComplaint && (
             <DetailRow
               icon={MessageSquare}
-              label="Chief Complaint"
+              label={td('detail.chiefComplaint')}
               value={a.chiefComplaint}
             />
           )}
 
           {/* Notes with inline editing */}
-          <div className="flex items-start gap-3 py-3 border-b border-gray-100">
-            <FileText size={15} className="text-gray-400 mt-0.5 shrink-0" />
+          <div className="flex items-start gap-3 py-3 border-b border-gray-100 dark:border-gray-800">
+            <FileText size={15} className="text-gray-500 mt-0.5 shrink-0 dark:text-gray-400" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-400 font-medium">Notes</p>
+                <p className="text-xs text-gray-500 font-medium dark:text-gray-400">{td('detail.notes')}</p>
                 {canManage && !editingNotes && (
                   <button
                     onClick={() => { setNotesDraft(a.notes ?? ''); setEditingNotes(true) }}
-                    className="text-gray-400 hover:text-primary-600 p-0.5 rounded"
+                    className="text-gray-500 hover:text-primary-600 p-0.5 rounded dark:text-gray-400"
                   >
                     <Pencil size={12} />
                   </button>
@@ -252,7 +269,7 @@ export function AppointmentDetailPanel({
                     value={notesDraft}
                     onChange={(e) => setNotesDraft(e.target.value)}
                     rows={3}
-                    className="w-full border border-gray-300 rounded text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                    className="w-full border border-gray-300 rounded text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600"
                   />
                   <div className="flex gap-2">
                     <button
@@ -260,22 +277,22 @@ export function AppointmentDetailPanel({
                       disabled={notesMutation.isPending}
                       className="flex items-center gap-1 text-xs bg-primary-600 text-white px-2 py-1 rounded hover:bg-primary-700 disabled:opacity-50"
                     >
-                      <Check size={11} /> Save
+                      <Check size={11} /> {td('detail.save')}
                     </button>
                     <button
                       onClick={() => setEditingNotes(false)}
-                      className="text-xs text-gray-500 px-2 py-1 rounded hover:bg-gray-100"
+                      className="text-xs text-gray-500 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400"
                     >
-                      Cancel
+                      {td('detail.cancel')}
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="text-sm text-gray-800 mt-0.5">
+                <div className="text-sm text-gray-800 mt-0.5 dark:text-gray-100">
                   {a.notes ? (
                     <span className="whitespace-pre-wrap">{a.notes}</span>
                   ) : (
-                    <span className="text-gray-300 italic text-xs">No notes</span>
+                    <span className="text-gray-500 italic text-xs dark:text-gray-400">{td('detail.noNotes')}</span>
                   )}
                 </div>
               )}
@@ -285,14 +302,14 @@ export function AppointmentDetailPanel({
           {a.cancellationReason && (
             <DetailRow
               icon={AlertCircle}
-              label="Cancellation Reason"
+              label={td('detail.cancellationReason')}
               value={a.cancellationReason}
             />
           )}
           {a.isNewPatient && (
             <div className="pt-1">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700">
-                New Patient
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 dark:bg-teal-400/10 dark:text-teal-300">
+                {td('detail.newPatient')}
               </span>
             </div>
           )}
@@ -301,34 +318,34 @@ export function AppointmentDetailPanel({
           <div className="pt-2">
             <button
               onClick={() => setShowBilling((v) => !v)}
-              className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
+              className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900 py-2 dark:text-gray-300 dark:hover:text-gray-100"
             >
               <span className="flex items-center gap-2">
-                <Receipt size={14} className="text-gray-400" />
-                Patient Invoices
+                <Receipt size={14} className="text-gray-500 dark:text-gray-400" />
+                {td('detail.patientInvoices')}
               </span>
               {showBilling ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
             {showBilling && (
               <div className="mt-1 space-y-1.5">
                 {!invoices ? (
-                  <p className="text-xs text-gray-400 italic">Loading…</p>
+                  <p className="text-xs text-gray-500 italic dark:text-gray-400">{td('detail.loading')}</p>
                 ) : invoices.items.length === 0 ? (
-                  <p className="text-xs text-gray-400 italic">No invoices found for this patient.</p>
+                  <p className="text-xs text-gray-500 italic dark:text-gray-400">{td('detail.noInvoices')}</p>
                 ) : (
                   invoices.items.map((inv) => (
                     <a
                       key={inv.id}
                       href={`/billing/${inv.id}`}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg border border-gray-100 hover:border-primary-200 hover:bg-primary-50 transition-colors"
+                      className="flex items-center justify-between px-3 py-2 rounded-lg border border-gray-100 dark:border-gray-800 hover:border-primary-200 hover:bg-primary-50 transition-colors dark:hover:bg-primary-400/10"
                     >
                       <div>
-                        <p className="text-xs font-medium text-gray-800">{inv.invoiceNumber}</p>
-                        <p className="text-xs text-gray-400">{formatShortDate(inv.issuedAt)}</p>
+                        <p className="text-xs font-medium text-gray-800 dark:text-gray-100">{inv.invoiceNumber}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{formatShortDate(inv.issuedAt)}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <StatusBadge status={inv.status} colorMap={INVOICE_STATUS_COLORS} labelMap={INVOICE_STATUS_LABELS} />
-                        <span className="text-xs font-semibold text-gray-700">
+                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                           {inv.balanceDue.toFixed(2)} KM due
                         </span>
                       </div>
@@ -337,7 +354,7 @@ export function AppointmentDetailPanel({
                 )}
                 <a
                   href={`/patients/${a.patientId}?tab=billing`}
-                  className="block text-xs text-primary-600 hover:underline pt-1"
+                  className="block text-xs text-primary-600 hover:underline pt-1 dark:text-primary-400"
                 >
                   View all invoices →
                 </a>
@@ -349,33 +366,35 @@ export function AppointmentDetailPanel({
           <div className="pt-2">
             <button
               onClick={() => setShowHistory((v) => !v)}
-              className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900 py-2"
+              className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900 py-2 dark:text-gray-300 dark:hover:text-gray-100"
             >
               <span className="flex items-center gap-2">
-                <History size={14} className="text-gray-400" />
-                Status History
+                <History size={14} className="text-gray-500 dark:text-gray-400" />
+                {td('detail.statusHistory')}
               </span>
               {showHistory ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
             {showHistory && (
               <div className="mt-1 space-y-1.5">
                 {!history ? (
-                  <p className="text-xs text-gray-400 italic">Loading…</p>
+                  <p className="text-xs text-gray-500 italic dark:text-gray-400">{td('detail.loading')}</p>
                 ) : history.length === 0 ? (
-                  <p className="text-xs text-gray-400 italic">No status changes recorded.</p>
+                  <p className="text-xs text-gray-500 italic dark:text-gray-400">{td('detail.noHistory')}</p>
                 ) : (
                   history.map((h) => (
-                    <div key={h.id} className="flex items-start gap-2 text-xs text-gray-600 py-1 border-b border-gray-50 last:border-0">
+                    <div key={h.id} className="flex items-start gap-2 text-xs text-gray-600 py-1 border-b border-gray-50 last:border-0 dark:text-gray-300">
                       <div className="mt-0.5 w-1.5 h-1.5 rounded-full bg-primary-400 shrink-0 mt-1.5" />
                       <div className="flex-1">
-                        <span className="font-medium">{h.fromStatus ?? '—'}</span>
-                        <span className="mx-1 text-gray-400">→</span>
-                        <span className="font-medium">{h.toStatus}</span>
+                        <span className="font-medium">{h.fromStatus ? tc(statusKey(h.fromStatus)) : '—'}</span>
+                        <span className="mx-1 text-gray-500 dark:text-gray-400">→</span>
+                        <span className="font-medium" data-testid="history-to">{tc(statusKey(h.toStatus))}</span>
                         {h.isOverride && (
                           <span className="ml-1.5 text-orange-600 font-medium">(override)</span>
                         )}
-                        {h.reason && <p className="text-gray-400 mt-0.5">{h.reason}</p>}
-                        <p className="text-gray-300 mt-0.5">{formatShortDate(h.changedAt)}</p>
+                        {h.reason && <p className="text-gray-500 mt-0.5 dark:text-gray-400">{h.reason}</p>}
+                        <p className="text-gray-500 mt-0.5 dark:text-gray-400">
+                          {new Date(h.changedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                        </p>
                       </div>
                     </div>
                   ))
@@ -387,7 +406,7 @@ export function AppointmentDetailPanel({
 
         {/* Actions footer */}
         {canManage && (
-          <div className="border-t border-gray-200 px-5 py-4 space-y-2">
+          <div className="border-t border-gray-200 px-5 py-4 space-y-2 dark:border-gray-600">
             {/* Primary lifecycle action */}
             {a.status === 'Scheduled' && (
               <div className="flex gap-2">
@@ -396,14 +415,14 @@ export function AppointmentDetailPanel({
                   disabled={statusMutation.isPending}
                   className="flex-1 bg-primary-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
                 >
-                  Check In
+                  {td('detail.checkIn')}
                 </button>
                 <button
                   onClick={() => statusMutation.mutate('InProgress')}
                   disabled={statusMutation.isPending}
-                  className="flex-1 bg-orange-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-orange-600 disabled:opacity-50 transition-colors"
+                  className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                 >
-                  Start Treatment
+                  {td('detail.startTreatment')}
                 </button>
               </div>
             )}
@@ -411,18 +430,18 @@ export function AppointmentDetailPanel({
               <button
                 onClick={() => statusMutation.mutate('InProgress')}
                 disabled={statusMutation.isPending}
-                className="w-full bg-orange-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-orange-600 disabled:opacity-50 transition-colors"
+                className="w-full bg-primary-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
               >
-                {statusMutation.isPending ? 'Updating…' : 'Start Treatment'}
+                {statusMutation.isPending ? td('detail.updating') : td('detail.startTreatment')}
               </button>
             )}
             {a.status === 'InProgress' && (
               <button
                 onClick={() => statusMutation.mutate('Completed')}
                 disabled={statusMutation.isPending}
-                className="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+                className="w-full bg-primary-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
               >
-                {statusMutation.isPending ? 'Updating…' : 'Complete Appointment'}
+                {statusMutation.isPending ? td('detail.updating') : td('detail.complete')}
               </button>
             )}
 
@@ -432,33 +451,33 @@ export function AppointmentDetailPanel({
                 <button
                   onClick={() => statusMutation.mutate('NoShow')}
                   disabled={statusMutation.isPending}
-                  className="flex-1 border border-gray-300 text-gray-600 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="flex-1 border border-gray-300 text-gray-600 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-300"
                 >
-                  No Show
+                  {td('detail.noShow')}
                 </button>
               )}
-              {!isTerminal && (
+              {notStarted && (
                 <button
                   onClick={() => onReschedule(a)}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-300"
                 >
-                  Reschedule
+                  {td('detail.reschedule')}
                 </button>
               )}
-              {!isTerminal && (
+              {notStarted && (
                 <button
                   onClick={() => setConfirmCancel(true)}
-                  className="flex-1 border border-red-200 text-red-600 py-2 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
+                  className="flex-1 border border-red-200 text-red-600 py-2 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors dark:border-red-400/30 dark:hover:bg-red-400/10 dark:text-red-300"
                 >
-                  Cancel
+                  {td('detail.cancelAppointment')}
                 </button>
               )}
               {isTerminal && onRebook && (
                 <button
                   onClick={() => onRebook(a)}
-                  className="flex-1 border border-primary-200 text-primary-600 py-2 rounded-lg text-sm font-medium hover:bg-primary-50 transition-colors"
+                  className="flex-1 border border-primary-200 text-primary-600 py-2 rounded-lg text-sm font-medium hover:bg-primary-50 transition-colors dark:border-primary-400/30 dark:hover:bg-primary-400/10 dark:text-primary-300"
                 >
-                  Rebook
+                  {td('detail.rebook')}
                 </button>
               )}
             </div>
@@ -467,28 +486,32 @@ export function AppointmentDetailPanel({
             {a.status !== 'Cancelled' && a.status !== 'NoShow' && (
               <button
                 onClick={() => setShowCreateInvoice(true)}
-                className="w-full bg-emerald-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"
+                className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
+                  a.status === 'Completed'
+                    ? 'bg-primary-600 text-white hover:bg-primary-700'
+                    : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
               >
-                {a.status === 'Completed' ? 'Bill Patient' : 'Kreiraj fakturu'}
+                {a.status === 'Completed' ? td('detail.billPatient') : td('detail.createInvoice')}
               </button>
             )}
 
             {/* Admin override */}
             {isAdmin && (
-              <div className="pt-1 border-t border-gray-100">
+              <div className="pt-1 border-t border-gray-100 dark:border-gray-800">
                 {!showOverride ? (
                   <button
                     onClick={() => { setOverrideNewStatus(a.status); setShowOverride(true) }}
-                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-orange-600 transition-colors"
+                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-orange-600 transition-colors dark:text-gray-400"
                   >
                     <ShieldAlert size={13} />
-                    Ručno promijeni status
+                    {td('detail.overrideButton')}
                   </button>
                 ) : (
                   <div className="space-y-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 border border-orange-200 dark:border-orange-800">
                     <p className="text-xs font-medium text-orange-700 dark:text-orange-400 flex items-center gap-1.5">
                       <ShieldAlert size={13} />
-                      Admin override — zaobilazi pravila tranzicije
+                      {td('detail.overrideHint')}
                     </p>
                     <select
                       value={overrideNewStatus}
@@ -496,28 +519,28 @@ export function AppointmentDetailPanel({
                       className="w-full border border-orange-200 dark:border-orange-700 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400"
                     >
                       {(['Scheduled', 'CheckedIn', 'InProgress', 'Completed', 'Cancelled', 'NoShow'] as AppointmentStatus[]).map((s) => (
-                        <option key={s} value={s}>{APPOINTMENT_STATUS_LABELS[s]}</option>
+                        <option key={s} value={s}>{tc(statusKey(s))}</option>
                       ))}
                     </select>
                     <input
                       value={overrideReason}
                       onChange={(e) => setOverrideReason(e.target.value)}
-                      placeholder="Razlog (opciono)"
+                      placeholder={td('detail.overrideReason')}
                       className="w-full border border-orange-200 dark:border-orange-700 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400"
                     />
                     <div className="flex gap-2">
                       <button
                         onClick={() => setShowOverride(false)}
-                        className="flex-1 text-sm text-gray-500 hover:text-gray-700 py-1"
+                        className="flex-1 text-sm text-gray-500 hover:text-gray-700 py-1 dark:text-gray-400"
                       >
-                        Odustani
+                        {td('detail.cancel')}
                       </button>
                       <button
                         disabled={overrideMutation.isPending}
                         onClick={() => overrideMutation.mutate()}
-                        className="flex-1 bg-orange-600 text-white py-1.5 rounded text-sm font-medium hover:bg-orange-700 disabled:opacity-50"
+                        className="flex-1 bg-primary-600 text-white py-1.5 rounded text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
                       >
-                        {overrideMutation.isPending ? 'Čekaj…' : 'Primijeni'}
+                        {overrideMutation.isPending ? td('detail.applying') : td('detail.apply')}
                       </button>
                     </div>
                   </div>
@@ -530,9 +553,9 @@ export function AppointmentDetailPanel({
 
       <ConfirmDialog
         open={confirmCancel}
-        title="Cancel appointment"
-        description={<>Are you sure you want to cancel this appointment?</>}
-        confirmLabel="Cancel Appointment"
+        title={td('detail.cancelTitle')}
+        description={td('detail.cancelBody')}
+        confirmLabel={td('detail.cancelConfirm')}
         isPending={cancelMutation.isPending}
         onConfirm={() => cancelMutation.mutate()}
         onCancel={() => setConfirmCancel(false)}

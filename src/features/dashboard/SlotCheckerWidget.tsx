@@ -6,7 +6,8 @@ import { CalendarSearch, ChevronLeft, ChevronRight } from 'lucide-react'
 import { appointmentService } from '@/features/appointments/services/appointmentService'
 import { staffService } from '@/features/staff/services/staffService'
 import { tenantService } from '@/features/admin/services/tenantService'
-import type { WeeklySchedule } from '@/features/admin/services/tenantService'
+import { daySchedule as scheduleFor, busySlotLabels as computeBusySlots } from '@/shared/lib/clinicSchedule'
+import { formatTime } from '@/shared/lib/format'
 
 interface TimeSlot {
   hour: number
@@ -33,19 +34,6 @@ function buildSlots(startStr: string, endStr: string, durationMinutes: number): 
   return slots
 }
 
-const ACTIVE_STATUSES = new Set(['Scheduled', 'CheckedIn', 'InProgress'])
-
-const DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-
-function getDaySchedule(weeklyScheduleJson: string | null | undefined, dateStr: string) {
-  if (!weeklyScheduleJson) return null
-  try {
-    const schedule = JSON.parse(weeklyScheduleJson) as WeeklySchedule
-    const dayKey = DAY_KEYS[new Date(dateStr + 'T00:00:00').getDay()]
-    return schedule[dayKey] ?? null
-  } catch { return null }
-}
-
 function toLocalDate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
@@ -69,14 +57,15 @@ export function SlotCheckerWidget() {
 
   const slotDuration = settings?.slotDurationMinutes ?? 30
 
+  // Same schedule (and same unsaved default) as Settings → Klinika (QA-018).
   const daySchedule = useMemo(
-    () => getDaySchedule(settings?.weeklyScheduleJson, date),
+    () => scheduleFor(settings?.weeklyScheduleJson, date),
     [settings?.weeklyScheduleJson, date],
   )
 
-  const workdayStart = daySchedule?.start ?? settings?.workdayStart ?? '08:00'
-  const workdayEnd   = daySchedule?.end   ?? settings?.workdayEnd   ?? '22:30'
-  const isDayClosed  = daySchedule !== null && !daySchedule.isOpen
+  const workdayStart = daySchedule.start
+  const workdayEnd   = daySchedule.end
+  const isDayClosed  = !daySchedule.isOpen
 
   const allSlots = useMemo(
     () => isDayClosed ? [] : buildSlots(workdayStart, workdayEnd, slotDuration),
@@ -106,22 +95,14 @@ export function SlotCheckerWidget() {
     staleTime: 30 * 1000,
   })
 
-  const busySlotLabels = useMemo(() => {
-    const busy = new Set<string>()
-    for (const appt of appointments?.items ?? []) {
-      if (!ACTIVE_STATUSES.has(appt.status)) continue
-      const apptStart = new Date(appt.startAt).getTime()
-      const apptEnd   = new Date(appt.endAt).getTime()
-      for (const slot of allSlots) {
-        const slotStart = new Date(`${date}T${slot.label}:00`).getTime()
-        const slotEnd   = slotStart + slotDuration * 60 * 1000
-        if (apptStart < slotEnd && apptEnd > slotStart) {
-          busy.add(slot.label)
-        }
-      }
-    }
-    return busy
-  }, [appointments, date, allSlots, slotDuration])
+  // "All providers": a slot is only taken when every provider is booked in it.
+  const busySlotLabels = useMemo(
+    () => computeBusySlots(
+      appointments?.items ?? [], allSlots, date, slotDuration,
+      providerId === 'all' ? providers.map((p) => p.id) : [providerId],
+    ),
+    [appointments, allSlots, date, slotDuration, providerId, providers],
+  )
 
   const freeCount   = allSlots.length - busySlotLabels.size
   const bookedCount = busySlotLabels.size
@@ -132,7 +113,7 @@ export function SlotCheckerWidget() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <CalendarSearch size={17} className="text-primary-600 shrink-0" />
+          <CalendarSearch size={17} className="text-primary-600 shrink-0 dark:text-primary-400" />
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t('slotChecker.title')}</h2>
           {isToday && (
             <span className="text-xs px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 font-medium">
@@ -190,7 +171,7 @@ export function SlotCheckerWidget() {
         </select>
 
         <span className="text-xs text-gray-500 dark:text-gray-400">
-          <span className="font-semibold text-green-600 dark:text-green-400">{t('slotChecker.freeCount', { count: freeCount })}</span>
+          <span className="font-semibold text-green-700 dark:text-green-400">{t('slotChecker.freeCount', { count: freeCount })}</span>
           {' · '}
           <span className="font-semibold text-gray-600 dark:text-gray-300">{t('slotChecker.bookedCount', { count: bookedCount })}</span>
         </span>
@@ -198,8 +179,8 @@ export function SlotCheckerWidget() {
 
       {/* Slot grid */}
       {isDayClosed ? (
-        <div className="py-6 text-center text-sm text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
-          Klinika je zatvorena ovog dana
+        <div className="py-6 text-center text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+          {t('slotChecker.closedDay')}
         </div>
       ) : (
       <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-1.5">
@@ -210,7 +191,7 @@ export function SlotCheckerWidget() {
               <div
                 key={slot.label}
                 title={t('slotChecker.bookedTooltip')}
-                className="rounded-md py-1.5 text-center text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-400 dark:text-red-400 border border-red-100 dark:border-red-800/30 select-none cursor-default"
+                className="rounded-md py-1.5 text-center text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-100 dark:border-red-800/30 select-none cursor-default"
               >
                 {slot.label}
               </div>
@@ -236,10 +217,10 @@ export function SlotCheckerWidget() {
       </div>
       )}
 
-      <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
+      <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
         {t('slotChecker.footer', {
-          startHour: workdayStart,
-          endHour:   allSlots.length > 0 ? allSlots[allSlots.length - 1].label : workdayEnd,
+          startHour: formatTime(workdayStart),
+          endHour:   formatTime(allSlots.length > 0 ? allSlots[allSlots.length - 1].label : workdayEnd),
         })}
       </p>
     </div>

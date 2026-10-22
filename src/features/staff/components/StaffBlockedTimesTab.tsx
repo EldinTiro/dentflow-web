@@ -1,9 +1,13 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import i18n from 'i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
 import { staffService } from '../services/staffService'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
+import { todayLocal } from '@/shared/lib/dates'
+import { absenceDays, formatAbsenceDays, formatAbsenceDate } from '../lib/absence'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { X, Plus, Trash2, CalendarOff } from 'lucide-react'
 
@@ -12,19 +16,16 @@ interface Props {
 }
 
 const ABSENCE_TYPES = [
-  { value: 'Vacation',         label: 'Godišnji odmor',   emoji: '🏖️' },
-  { value: 'Sickness',         label: 'Bolovanje',         emoji: '🤒' },
-  { value: 'SpecialLeave',     label: 'Slobodan dan',      emoji: '📋' },
-  { value: 'ReligiousHoliday', label: 'Vjerski praznik',   emoji: '🕌' },
-  { value: 'PublicHoliday',    label: 'Državni praznik',   emoji: '🎉' },
-  { value: 'Education',        label: 'Edukacija / kurs',  emoji: '🎓' },
+  { value: 'Vacation',         emoji: '🏖️' },
+  { value: 'Sickness',         emoji: '🤒' },
+  { value: 'SpecialLeave',     emoji: '📋' },
+  { value: 'ReligiousHoliday', emoji: '🕌' },
+  { value: 'PublicHoliday',    emoji: '🎉' },
+  { value: 'Education',        emoji: '🎓' },
 ] as const
 
 type AbsenceTypeValue = typeof ABSENCE_TYPES[number]['value']
 
-const ABSENCE_LABEL: Record<string, string> = Object.fromEntries(
-  ABSENCE_TYPES.map((t) => [t.value, t.label])
-)
 const ABSENCE_EMOJI: Record<string, string> = Object.fromEntries(
   ABSENCE_TYPES.map((t) => [t.value, t.emoji])
 )
@@ -33,7 +34,7 @@ const ABSENCE_COLOR: Record<string, string> = {
   Sickness:         'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   SpecialLeave:     'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
   ReligiousHoliday: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  PublicHoliday:    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  PublicHoliday:    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
   Education:        'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
 }
 
@@ -51,23 +52,18 @@ function buildDateTime(dateStr: string, boundary: DayBoundary): string {
   return d.toISOString()
 }
 
-function todayStr(): string {
-  return new Date().toISOString().split('T')[0]
-}
 
 function formatDateRange(startAt: string, endAt: string): string {
-  const s = new Date(startAt)
-  const e = new Date(endAt)
-  const fmt = (d: Date) =>
-    d.toLocaleDateString('bs-BA', { day: 'numeric', month: 'short', year: 'numeric' })
-  return fmt(s) === fmt(e) ? fmt(s) : `${fmt(s)} – ${fmt(e)}`
+  const s = formatAbsenceDate(startAt)
+  const e = formatAbsenceDate(endAt)
+  return s === e ? s : `${s} – ${e}`
 }
 
 function formatTime(iso: string): string {
   const h = new Date(iso).getHours()
-  if (h <= 9) return 'Jutro'
-  if (h <= 13) return 'Podne'
-  return 'Večer'
+  if (h <= 9) return i18n.t('staff:absence.part.morning')
+  if (h <= 13) return i18n.t('staff:absence.part.noon')
+  return i18n.t('staff:absence.part.evening')
 }
 
 interface FormState {
@@ -82,15 +78,16 @@ interface FormState {
 function defaultForm(): FormState {
   return {
     type: 'Vacation',
-    fromDate: todayStr(),
+    fromDate: todayLocal(),
     fromBoundary: 'morning',
-    toDate: todayStr(),
+    toDate: todayLocal(),
     toBoundary: 'evening',
     notes: '',
   }
 }
 
 export function StaffBlockedTimesTab({ staffId }: Props) {
+  const { t } = useTranslation('staff')
   const queryClient = useQueryClient()
   const canManage = useAuthStore((s) =>
     s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'SuperAdmin'].includes(r)) ?? false
@@ -101,7 +98,13 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [showPast, setShowPast] = useState(false)
 
-  const today = todayStr()
+  const today = todayLocal()
+  const formDays = form.fromDate && form.toDate
+    ? absenceDays(
+        new Date(buildDateTime(form.fromDate, form.fromBoundary)),
+        new Date(buildDateTime(form.toDate, form.toBoundary)),
+      )
+    : 0
 
   const { data: blockedTimes = [], isLoading } = useQuery({
     queryKey: ['staff-blocked-times', staffId, showPast],
@@ -114,7 +117,7 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
       const startAt = buildDateTime(form.fromDate, form.fromBoundary)
       const endAt = buildDateTime(form.toDate, form.toBoundary)
       if (new Date(startAt) >= new Date(endAt))
-        throw new Error('Datum završetka mora biti nakon datuma početka.')
+        throw new Error(t('absence.endBeforeStart'))
       return staffService.addBlockedTime(staffId, {
         startAt,
         endAt,
@@ -126,9 +129,9 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
       queryClient.invalidateQueries({ queryKey: ['staff-blocked-times', staffId] })
       setShowModal(false)
       setForm(defaultForm())
-      toast.success('Odsustvo dodano.')
+      toast.success(t('absence.added'))
     },
-    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Greška pri dodavanju odsustva.')),
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, t('absence.addFailed'))),
   })
 
   const deleteMutation = useMutation({
@@ -136,7 +139,7 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff-blocked-times', staffId] })
       setDeletingId(null)
-      toast.success('Odsustvo uklonjeno.')
+      toast.success(t('absence.removed'))
     },
   })
 
@@ -155,7 +158,7 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
             onChange={(e) => setShowPast(e.target.checked)}
             className="rounded"
           />
-          Prikaži prošla odsustva
+          {t('absence.showPast')}
         </label>
         {canManage && (
           <button
@@ -163,39 +166,35 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
             <Plus size={15} />
-            Dodaj odsustvo
+            {t('absence.add')}
           </button>
         )}
       </div>
 
       {/* List */}
       {isLoading ? (
-        <div className="py-10 text-center text-sm text-gray-400">Učitavanje…</div>
+        <div className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">{t('absence.loading')}</div>
       ) : blockedTimes.length === 0 ? (
         <div className="py-12 text-center">
-          <CalendarOff size={32} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-          <p className="text-sm text-gray-400">Nema {showPast ? '' : 'predstojećih '}odsustva.</p>
+          <CalendarOff size={32} className="mx-auto text-gray-400 dark:text-gray-500 mb-3" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">{showPast ? t('absence.none') : t('absence.noneUpcoming')}</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
+        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900/60 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Tip</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Period</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Trajanje</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Napomena</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('absence.colType')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('absence.colPeriod')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('absence.colDuration')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('absence.colNote')}</th>
                 {canManage && <th className="px-4 py-3 w-10" />}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700/60">
               {blockedTimes.map((bt) => {
                 const isPast = new Date(bt.endAt) < new Date()
-                const startDay = new Date(bt.startAt).toDateString()
-                const endDay = new Date(bt.endAt).toDateString()
-                const days = Math.ceil(
-                  (new Date(bt.endAt).getTime() - new Date(bt.startAt).getTime()) / (1000 * 60 * 60 * 24)
-                )
+                const days = absenceDays(new Date(bt.startAt), new Date(bt.endAt))
                 return (
                   <tr
                     key={bt.id}
@@ -203,31 +202,31 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
                   >
                     <td className="px-4 py-3">
                       {bt.absenceType ? (
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${ABSENCE_COLOR[bt.absenceType] ?? 'bg-gray-100 text-gray-600'}`}>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${ABSENCE_COLOR[bt.absenceType] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300'}`}>
                           <span>{ABSENCE_EMOJI[bt.absenceType] ?? '📅'}</span>
-                          {ABSENCE_LABEL[bt.absenceType] ?? bt.absenceType}
+                          {t(`absence.type.${bt.absenceType}`, { defaultValue: bt.absenceType })}
                         </span>
                       ) : (
-                        <span className="text-gray-300 dark:text-gray-600">—</span>
+                        <span className="text-gray-500 dark:text-gray-400">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium">
                       {formatDateRange(bt.startAt, bt.endAt)}
-                      <span className="ml-2 text-xs text-gray-400 font-normal">
+                      <span className="ml-2 text-xs text-gray-500 font-normal dark:text-gray-400">
                         {formatTime(bt.startAt)} – {formatTime(bt.endAt)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
-                      {startDay === endDay ? '1 dan' : `${days} dana`}
+                      {formatAbsenceDays(days)}
                     </td>
                     <td className="px-4 py-3 text-gray-500 dark:text-gray-400 max-w-[200px] truncate">
-                      {bt.notes ?? <span className="text-gray-300 dark:text-gray-600">—</span>}
+                      {bt.notes ?? <span className="text-gray-500 dark:text-gray-400">—</span>}
                     </td>
                     {canManage && (
                       <td className="px-4 py-3">
                         <button
                           onClick={() => setDeletingId(bt.id)}
-                          className="text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                          className="text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors dark:text-gray-400"
                         >
                           <Trash2 size={15} />
                         </button>
@@ -252,9 +251,9 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
                 <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
                   <CalendarOff size={16} className="text-white" />
                 </div>
-                <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Zahtjev za odsustvo</h2>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">{t('absence.modalTitle')}</h2>
               </div>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 dark:text-gray-400">
                 <X size={20} />
               </button>
             </div>
@@ -263,15 +262,15 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
             <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
               {/* Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tip odsustva</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('absence.typeLabel')}</label>
                 <select
                   value={form.type}
                   onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as AbsenceTypeValue }))}
                   className={inputCls}
                 >
-                  {ABSENCE_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.emoji} {t.label}
+                  {ABSENCE_TYPES.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.emoji} {t(`absence.type.${type.value}`)}
                     </option>
                   ))}
                 </select>
@@ -279,7 +278,7 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
 
               {/* From */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Od</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('absence.from')}</label>
                 <input
                   type="date"
                   value={form.fromDate}
@@ -289,20 +288,20 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
                 <div className="mt-2.5 space-y-2">
                   <label className={radioCls}>
                     <input type="radio" name="fromBoundary" value="morning" checked={form.fromBoundary === 'morning'}
-                      onChange={() => setForm((f) => ({ ...f, fromBoundary: 'morning' }))} className="text-primary-600" />
-                    Jutro (08:00)
+                      onChange={() => setForm((f) => ({ ...f, fromBoundary: 'morning' }))} className="text-primary-600 dark:text-primary-400" />
+                    {t('absence.boundary.morning')}
                   </label>
                   <label className={radioCls}>
                     <input type="radio" name="fromBoundary" value="lunchtime" checked={form.fromBoundary === 'lunchtime'}
-                      onChange={() => setForm((f) => ({ ...f, fromBoundary: 'lunchtime' }))} className="text-primary-600" />
-                    Podne (13:00)
+                      onChange={() => setForm((f) => ({ ...f, fromBoundary: 'lunchtime' }))} className="text-primary-600 dark:text-primary-400" />
+                    {t('absence.boundary.lunchtime')}
                   </label>
                 </div>
               </div>
 
               {/* To */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Do</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('absence.to')}</label>
                 <input
                   type="date"
                   value={form.toDate}
@@ -313,13 +312,13 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
                 <div className="mt-2.5 space-y-2">
                   <label className={radioCls}>
                     <input type="radio" name="toBoundary" value="lunchtime" checked={form.toBoundary === 'lunchtime'}
-                      onChange={() => setForm((f) => ({ ...f, toBoundary: 'lunchtime' }))} className="text-primary-600" />
-                    Podne (13:00)
+                      onChange={() => setForm((f) => ({ ...f, toBoundary: 'lunchtime' }))} className="text-primary-600 dark:text-primary-400" />
+                    {t('absence.boundary.lunchtime')}
                   </label>
                   <label className={radioCls}>
                     <input type="radio" name="toBoundary" value="evening" checked={form.toBoundary === 'evening'}
-                      onChange={() => setForm((f) => ({ ...f, toBoundary: 'evening' }))} className="text-primary-600" />
-                    Večer (17:00)
+                      onChange={() => setForm((f) => ({ ...f, toBoundary: 'evening' }))} className="text-primary-600 dark:text-primary-400" />
+                    {t('absence.boundary.evening')}
                   </label>
                 </div>
               </div>
@@ -327,27 +326,20 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
               {/* Summary pill */}
               {form.fromDate && form.toDate && (
                 <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg px-4 py-2.5 text-sm text-primary-700 dark:text-primary-400">
-                  {(() => {
-                    const start = new Date(`${form.fromDate}T${String(BOUNDARY_HOURS[form.fromBoundary]).padStart(2,'0')}:00:00`)
-                    const end = new Date(`${form.toDate}T${String(BOUNDARY_HOURS[form.toBoundary]).padStart(2,'0')}:00:00`)
-                    const diffH = (end.getTime() - start.getTime()) / 3600000
-                    if (diffH <= 0) return '⚠️ Nevažeći period'
-                    const days = diffH / 8
-                    return `📅 ${days % 1 === 0 ? days : days.toFixed(1)} ${days === 1 ? 'dan' : 'dana'}`
-                  })()}
+                  {formDays > 0 ? `📅 ${formatAbsenceDays(formDays)}` : `⚠️ ${t('absence.invalidPeriod')}`}
                 </div>
               )}
 
               {/* Notes */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Napomena <span className="text-gray-400 font-normal">(opciono)</span>
+                  {t('absence.note')} <span className="text-gray-500 font-normal dark:text-gray-400">{t('absence.optional')}</span>
                 </label>
                 <textarea
                   rows={3}
                   value={form.notes}
                   onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                  placeholder="Dodatne informacije…"
+                  placeholder={t('absence.notePlaceholder')}
                   className={inputCls + ' resize-none'}
                 />
               </div>
@@ -359,14 +351,14 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
                 onClick={() => setShowModal(false)}
                 className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
-                Zatvori
+                {t('absence.close')}
               </button>
               <button
-                disabled={addMutation.isPending}
+                disabled={addMutation.isPending || formDays <= 0}
                 onClick={() => addMutation.mutate()}
                 className="px-5 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
               >
-                {addMutation.isPending ? 'Čuvam…' : 'Potvrdi odsustvo'}
+                {addMutation.isPending ? t('absence.saving') : t('absence.confirm')}
               </button>
             </div>
           </div>
@@ -375,9 +367,9 @@ export function StaffBlockedTimesTab({ staffId }: Props) {
 
       <ConfirmDialog
         open={!!deletingId}
-        title="Ukloni odsustvo?"
-        description="Ovo odsustvo će biti trajno uklonjeno iz sistema."
-        confirmLabel="Ukloni"
+        title={t('absence.removeTitle')}
+        description={t('absence.removeBody')}
+        confirmLabel={t('absence.remove')}
         isPending={deleteMutation.isPending}
         onConfirm={() => deleteMutation.mutate(deletingId!)}
         onCancel={() => setDeletingId(null)}

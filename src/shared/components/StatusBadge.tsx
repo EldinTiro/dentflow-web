@@ -6,7 +6,7 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, colorMap, labelMap, className }: StatusBadgeProps) {
-  const colors = colorMap[status] ?? 'bg-gray-100 text-gray-600'
+  const colors = colorMap[status] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300'
   const label = labelMap?.[status] ?? status
   return (
     <span

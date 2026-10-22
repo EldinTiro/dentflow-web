@@ -43,5 +43,55 @@
   "toast": {
     "deleted": "Član osoblja uklonjen",
     "deleteFailed": "Uklanjanje nije uspjelo"
+  },
+  "absence": {
+    "type": {
+      "Vacation": "Godišnji odmor",
+      "Sickness": "Bolovanje",
+      "SpecialLeave": "Slobodan dan",
+      "ReligiousHoliday": "Vjerski praznik",
+      "PublicHoliday": "Državni praznik",
+      "Education": "Edukacija / kurs"
+    },
+    "part": {
+      "morning": "Jutro",
+      "noon": "Podne",
+      "evening": "Večer"
+    },
+    "boundary": {
+      "morning": "Jutro (08:00)",
+      "lunchtime": "Podne (13:00)",
+      "evening": "Večer (17:00)"
+    },
+    "showPast": "Prikaži prošla odsustva",
+    "add": "Dodaj odsustvo",
+    "loading": "Učitavanje…",
+    "noneUpcoming": "Nema predstojećih odsustva.",
+    "none": "Nema odsustva.",
+    "colType": "Tip",
+    "colPeriod": "Period",
+    "colDuration": "Trajanje",
+    "colNote": "Napomena",
+    "modalTitle": "Zahtjev za odsustvo",
+    "typeLabel": "Tip odsustva",
+    "from": "Od",
+    "to": "Do",
+    "note": "Napomena",
+    "optional": "(opciono)",
+    "notePlaceholder": "Dodatne informacije…",
+    "invalidPeriod": "Nevažeći period",
+    "close": "Zatvori",
+    "saving": "Čuvam…",
+    "confirm": "Potvrdi odsustvo",
+    "endBeforeStart": "Datum završetka mora biti nakon datuma početka.",
+    "added": "Odsustvo dodano.",
+    "addFailed": "Greška pri dodavanju odsustva.",
+    "removed": "Odsustvo uklonjeno.",
+    "removeTitle": "Ukloni odsustvo?",
+    "removeBody": "Ovo odsustvo će biti uklonjeno.",
+    "remove": "Ukloni",
+    "days_one": "{{value}} dan",
+    "days_few": "{{value}} dana",
+    "days_other": "{{value}} dana"
   }
 }

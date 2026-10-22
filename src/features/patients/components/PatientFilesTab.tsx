@@ -12,6 +12,7 @@ import {
   type DocumentCategory,
   type PatientDocumentResponse,
 } from '../services/documentService'
+import { formatDate } from '@/shared/lib/format'
 
 const CATEGORIES: DocumentCategory[] = ['XRay', 'Photo', 'Consent', 'Insurance', 'Other']
 
@@ -81,12 +82,12 @@ function DocImageThumb({
     >
       {isLoading ? (
         <div className="absolute inset-0 flex items-center justify-center">
-          <Loader2 size={20} className="animate-spin text-gray-400" />
+          <Loader2 size={20} className="animate-spin text-gray-500 dark:text-gray-400" />
         </div>
       ) : url ? (
         <img src={url} alt={doc.fileName} className="w-full h-full object-cover" />
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+        <div className="absolute inset-0 flex items-center justify-center text-gray-500 dark:text-gray-400">
           <ImageIcon size={24} />
         </div>
       )}
@@ -325,7 +326,7 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
                 className="hidden"
               />
             </label>
-            <p className="text-xs text-gray-400 dark:text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {t('files.supportedFormats')}
             </p>
 
@@ -338,17 +339,17 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
                     className="flex items-center gap-2 text-sm bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-1.5"
                   >
                     <span className="shrink-0">
-                      {pf.state === 'pending' && <File size={14} className="text-gray-400" />}
+                      {pf.state === 'pending' && <File size={14} className="text-gray-500 dark:text-gray-400" />}
                       {pf.state === 'uploading' && <Loader2 size={14} className="animate-spin text-primary-500" />}
                       {pf.state === 'done' && <CheckCircle2 size={14} className="text-green-500" />}
                       {pf.state === 'error' && <AlertCircle size={14} className="text-red-500" />}
                     </span>
                     <span className="flex-1 truncate text-gray-700 dark:text-gray-200">{pf.file.name}</span>
-                    <span className="text-xs text-gray-400 shrink-0">{formatBytes(pf.file.size)}</span>
+                    <span className="text-xs text-gray-500 shrink-0 dark:text-gray-400">{formatBytes(pf.file.size)}</span>
                     {(pf.state === 'pending' || pf.state === 'error') && (
                       <button
                         onClick={() => removePending(pf.localId)}
-                        className="text-gray-300 hover:text-red-400 transition-colors shrink-0"
+                        className="text-gray-500 hover:text-red-400 transition-colors shrink-0 dark:text-gray-400"
                       >
                         <X size={14} />
                       </button>
@@ -404,7 +405,7 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
       {/* Loading */}
       {isLoading && (
         <div className="py-12 flex justify-center">
-          <Loader2 size={24} className="animate-spin text-gray-300 dark:text-gray-600" />
+          <Loader2 size={24} className="animate-spin text-gray-400 dark:text-gray-500" />
         </div>
       )}
 
@@ -413,7 +414,7 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="px-5 py-3 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              {t('files.imagesHeading')} <span className="text-gray-400 font-normal">({imageDocuments.length})</span>
+              {t('files.imagesHeading')} <span className="text-gray-500 font-normal dark:text-gray-400">({imageDocuments.length})</span>
             </h3>
           </div>
           <div className="p-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
@@ -446,13 +447,13 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="px-5 py-3 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              {t('files.documentsHeading')} <span className="text-gray-400 font-normal">({otherDocuments.length})</span>
+              {t('files.documentsHeading')} <span className="text-gray-500 font-normal dark:text-gray-400">({otherDocuments.length})</span>
             </h3>
           </div>
           <ul className="divide-y divide-gray-100 dark:divide-gray-700">
             {otherDocuments.map(doc => (
               <li key={doc.id} className="px-5 py-3 flex items-center gap-3 group">
-                <span className="text-gray-400 dark:text-gray-500 shrink-0">
+                <span className="text-gray-500 dark:text-gray-400 shrink-0">
                   {CATEGORY_ICONS[doc.category]}
                 </span>
                 <div className="flex-1 min-w-0">
@@ -462,11 +463,11 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
                   >
                     {doc.fileName}
                   </button>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     {DOCUMENT_CATEGORY_LABELS[doc.category]}
                     {doc.notes && <> · {doc.notes}</>}
                     {' · '}{formatBytes(doc.fileSizeBytes)}
-                    {' · '}{new Date(doc.createdAt).toLocaleDateString()}
+                    {' · '}{formatDate(doc.createdAt)}
                   </p>
                 </div>
                 {canManage && (
@@ -488,8 +489,8 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
       {/* Empty state */}
       {!isLoading && documents.length === 0 && (
         <div className="py-12 text-center">
-          <FileText size={32} className="mx-auto text-gray-300 dark:text-gray-600 mb-2" />
-          <p className="text-sm text-gray-400 dark:text-gray-500">{t('files.emptyState')}</p>
+          <FileText size={32} className="mx-auto text-gray-400 dark:text-gray-500 mb-2" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('files.emptyState')}</p>
         </div>
       )}
 

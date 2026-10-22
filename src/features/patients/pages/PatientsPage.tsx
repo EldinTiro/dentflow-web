@@ -8,7 +8,8 @@ import { patientService, type PatientResponse, type PatientStatus } from '../ser
 import { CreatePatientDrawer } from '../components/CreatePatientDrawer'
 import { EditPatientDrawer } from '../components/EditPatientDrawer'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
+import { formatDate } from '@/shared/lib/format'
 
 const STATUS_KEYS: { value: PatientStatus | ''; labelKey: string }[] = [
   { value: '', labelKey: 'status.allStatuses' },
@@ -18,9 +19,9 @@ const STATUS_KEYS: { value: PatientStatus | ''; labelKey: string }[] = [
 ]
 
 const STATUS_STYLES: Record<PatientStatus, string> = {
-  Active: 'bg-green-100 text-green-700',
-  Inactive: 'bg-gray-100 text-gray-500',
-  Transferred: 'bg-blue-100 text-blue-700',
+  Active: 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300',
+  Inactive: 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300',
+  Transferred: 'bg-blue-100 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300',
 }
 
 function StatusBadge({ status }: { status: PatientStatus }) {
@@ -46,7 +47,7 @@ export function PatientsPage() {
   const [editing, setEditing] = useState<PatientResponse | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  const roles = useAuthStore((s) => s.user?.roles ?? [])
+  const roles = useAuthStore(selectRoles)
   const canManage = roles.some((r) =>
     ['ClinicOwner', 'ClinicAdmin', 'Receptionist', 'SuperAdmin'].includes(r)
   )
@@ -99,7 +100,7 @@ export function PatientsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
           {data && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{t('totalCount', { count: data.totalCount })}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('totalCount', { count: data.totalCount })}</p>
           )}
         </div>
         <button
@@ -110,12 +111,12 @@ export function PatientsPage() {
         </button>
       </div>
 
-      <div className="flex gap-3 mb-4">
+      <div className="flex flex-wrap gap-3 mb-4">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('search.placeholder')}
-          className="w-72 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full sm:w-72 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
         <select
           value={status}
@@ -135,8 +136,8 @@ export function PatientsPage() {
             : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400'
         }`}>
           <span>
-            {recallFilter === 'overdue' ? '🔴 Recall prošao rok' : '🟡 Recall uskoro'}
-            {data && ` — ${data.totalCount} pacijent${data.totalCount === 1 ? '' : 'a'}`}
+            {recallFilter === 'overdue' ? t('recallBanner.overdue') : t('recallBanner.dueSoon')}
+            {data && ` — ${t('recallBanner.patients', { count: data.totalCount })}`}
           </span>
           <button
             onClick={clearRecallFilter}
@@ -148,7 +149,7 @@ export function PatientsPage() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
             <tr>
@@ -164,12 +165,12 @@ export function PatientsPage() {
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {isLoading && (
               <tr>
-                <td colSpan={colCount} className="px-4 py-8 text-center text-gray-400">{tc('loading')}</td>
+                <td colSpan={colCount} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">{tc('loading')}</td>
               </tr>
             )}
             {!isLoading && data?.items.length === 0 && (
               <tr>
-                <td colSpan={colCount} className="px-4 py-8 text-center text-gray-400">{t('emptyState')}</td>
+                <td colSpan={colCount} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">{t('emptyState')}</td>
               </tr>
             )}
             {data?.items.map((p: PatientResponse) => (
@@ -178,14 +179,14 @@ export function PatientsPage() {
                 className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
                 onClick={() => navigate(`/patients/${p.id}`)}
               >
-                <td className="px-4 py-3 font-mono text-xs text-gray-400 dark:text-gray-500">{p.patientNumber}</td>
+                <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-gray-500 dark:text-gray-400">{p.patientNumber}</td>
                 <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{p.fullName}</td>
                 <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
                   {p.dateOfBirth
-                    ? new Date(p.dateOfBirth + 'T00:00:00').toLocaleDateString()
+                    ? formatDate(p.dateOfBirth + 'T00:00:00')
                     : '—'}
                 </td>
-                <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{p.phoneMobile ?? '—'}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{p.phoneMobile ?? '—'}</td>
                 <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{p.email ?? '—'}</td>
                 <td className="px-4 py-3">
                   <StatusBadge status={p.status} />
@@ -195,14 +196,14 @@ export function PatientsPage() {
                     <div className="flex justify-end gap-1">
                       <button
                         onClick={(e) => { e.stopPropagation(); setEditing(p) }}
-                        className="p-1.5 text-gray-400 hover:text-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                        className="p-1.5 text-gray-500 hover:text-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors dark:text-gray-400"
                         title={tc('button.edit')}
                       >
                         <Pencil size={14} />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); setDeletingId(p.id) }}
-                        className="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        className="p-1.5 text-gray-500 hover:text-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors dark:text-gray-400"
                         title={t('table.deleteTooltip')}
                       >
                         <Trash2 size={14} />

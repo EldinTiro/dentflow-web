@@ -12,10 +12,7 @@ import { staffService } from '@/features/staff/services/staffService'
 import { dashboardService } from './dashboardService'
 import { SlotCheckerWidget } from './SlotCheckerWidget'
 import { StatusBadge } from '@/shared/components/StatusBadge'
-
-function toLocalDateStr(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
+import { toLocalIsoDate } from '@/shared/lib/dates'
 
 interface StatCardProps {
   label: string
@@ -29,14 +26,14 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon: Icon, iconBg, iconColor, sub, to }: StatCardProps) {
   const inner = (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex items-start gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex items-start gap-4 min-w-0 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
       <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${iconBg}`}>
         <Icon size={22} className={iconColor} />
       </div>
       <div className="min-w-0">
-        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</p>
+        <p className="text-xs font-medium leading-tight break-words text-gray-500 dark:text-gray-400">{label}</p>
         <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">{value}</p>
-        {sub && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{sub}</p>}
+        {sub && <p className="text-xs leading-tight break-words text-gray-500 dark:text-gray-400 mt-0.5">{sub}</p>}
       </div>
     </div>
   )
@@ -67,10 +64,10 @@ function RecentApptRow({ time, status, complaint, duration, patientName, provide
           <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{patientName}</span>
         )}
         {providerName && (
-          <span className="text-xs text-gray-400 dark:text-gray-500 truncate hidden sm:block">· {providerName}</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">· {providerName}</span>
         )}
       </div>
-      <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500 shrink-0">
+      <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 shrink-0">
         {complaint && <span className="truncate max-w-[120px] hidden md:block">{complaint}</span>}
         <span>{duration} min</span>
       </div>
@@ -84,17 +81,18 @@ export function DashboardPage() {
 
   const localeMap: Record<string, string> = { bs: 'hr', en: 'en', de: 'de' }
   const displayLocale = localeMap[i18n.language] ?? i18n.language
-  const today = toLocalDateStr(new Date())
-  const tomorrow = toLocalDateStr(new Date(Date.now() + 86400000))
+  const today = toLocalIsoDate(new Date())
+  const tomorrow = toLocalIsoDate(new Date(Date.now() + 86400000))
 
   const { data: todayAppts } = useQuery({
     queryKey: ['appointments-today', today],
     queryFn: () => appointmentService.list({ dateFrom: today, dateTo: today, pageSize: 50 }),
   })
 
+  // Upcoming only: past visits nobody updated are not waiting for confirmation (QA-035).
   const { data: pendingAppts } = useQuery({
-    queryKey: ['appointments-pending'],
-    queryFn: () => appointmentService.list({ status: 'Scheduled', pageSize: 1 }),
+    queryKey: ['appointments-pending', today],
+    queryFn: () => appointmentService.list({ status: 'Scheduled', dateFrom: today, pageSize: 1 }),
   })
 
   const { data: patients } = useQuery({
@@ -115,11 +113,6 @@ export function DashboardPage() {
   const { data: allStaff } = useQuery({
     queryKey: ['staff-all-active'],
     queryFn: () => staffService.list({ isActive: true, pageSize: 50 }),
-  })
-
-  const { data: allPatients } = useQuery({
-    queryKey: ['patients-all'],
-    queryFn: () => patientService.list({ pageSize: 500 }),
   })
 
   const { data: kpi } = useQuery({
@@ -157,11 +150,12 @@ export function DashboardPage() {
     return map
   }, [allStaff])
 
+  // The appointment list carries the names; no need to download every patient (QA-033).
   const patientNames = useMemo(() => {
     const map: Record<string, string> = {}
-    for (const p of allPatients?.items ?? []) map[p.id] = p.fullName
+    for (const a of todayAppts?.items ?? []) if (a.patientName) map[a.patientId] = a.patientName
     return map
-  }, [allPatients])
+  }, [todayAppts])
 
   const byProvider = useMemo(() => {
     const countMap = new Map<string, number>()
@@ -210,13 +204,13 @@ export function DashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <StatCard
           label={t('stat.todaysAppointments')}
           value={todayCount}
           icon={CalendarDays}
-          iconBg="bg-primary-50"
-          iconColor="text-primary-600"
+          iconBg="bg-primary-50 dark:bg-primary-400/10"
+          iconColor="text-primary-600 dark:text-primary-400"
           sub={`${new Date().toLocaleDateString(displayLocale, { month: 'short', day: 'numeric' })}`}
           to="/appointments"
         />
@@ -224,16 +218,16 @@ export function DashboardPage() {
           label={t('stat.pendingConfirmation')}
           value={pendingCount}
           icon={Clock}
-          iconBg="bg-amber-50"
+          iconBg="bg-amber-50 dark:bg-amber-400/10"
           iconColor="text-amber-600"
-          sub={t('stat.scheduledPlusConfirmed')}
+          sub={t('stat.upcomingScheduled')}
           to="/appointments"
         />
         <StatCard
           label={t('stat.totalPatients')}
           value={patientCount}
           icon={Users}
-          iconBg="bg-blue-50"
+          iconBg="bg-blue-50 dark:bg-blue-400/10"
           iconColor="text-blue-600"
           sub={t('stat.activeRecords')}
           to="/patients"
@@ -242,8 +236,8 @@ export function DashboardPage() {
           label={t('stat.activeStaff')}
           value={staffCount}
           icon={UserCog}
-          iconBg="bg-green-50"
-          iconColor="text-green-600"
+          iconBg="bg-green-50 dark:bg-green-400/10"
+          iconColor="text-green-700"
           sub={t('stat.providersAndAdmin')}
           to="/staff"
         />
@@ -251,7 +245,7 @@ export function DashboardPage() {
           label={t('stat.tomorrow')}
           value={tomorrowCount}
           icon={CalendarDays}
-          iconBg="bg-violet-50"
+          iconBg="bg-violet-50 dark:bg-violet-400/10"
           iconColor="text-violet-600"
           sub={t('stat.appointmentsBooked')}
           to="/appointments"
@@ -259,12 +253,12 @@ export function DashboardPage() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label={t('stat.revenueThisMonth')}
           value={`${revenueThisMonth.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} KM`}
           icon={DollarSign}
-          iconBg="bg-emerald-50"
+          iconBg="bg-emerald-50 dark:bg-emerald-400/10"
           iconColor="text-emerald-600"
           sub={t('stat.thisMonth')}
         />
@@ -272,7 +266,7 @@ export function DashboardPage() {
           label={t('stat.outstandingBalance')}
           value={`${outstandingBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} KM`}
           icon={Wallet}
-          iconBg="bg-orange-50"
+          iconBg="bg-orange-50 dark:bg-orange-400/10"
           iconColor="text-orange-500"
           sub={t('stat.unpaidInvoices')}
           to="/billing"
@@ -281,13 +275,13 @@ export function DashboardPage() {
           label={t('stat.newPatientsThisMonth')}
           value={newPatientsThisMonth}
           icon={UserPlus}
-          iconBg="bg-purple-50"
+          iconBg="bg-purple-50 dark:bg-purple-400/10"
           iconColor="text-purple-600"
           sub={t('stat.firstVisitThisMonth')}
           to="/patients"
         />
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex items-start gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-teal-50">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-400/10">
             <CheckCircle2 size={22} className="text-teal-600" />
           </div>
           <div className="min-w-0 flex-1">
@@ -299,7 +293,7 @@ export function DashboardPage() {
               ) : weeklyTrend < 0 ? (
                 <><TrendingDown size={12} className="text-red-400" /><span className="text-red-500">{weeklyTrend} {t('stat.vsLastWeek')}</span></>
               ) : (
-                <span className="text-gray-400">{t('stat.vsLastWeekSame')}</span>
+                <span className="text-gray-500 dark:text-gray-400">{t('stat.vsLastWeekSame')}</span>
               )}
             </p>
           </div>
@@ -337,7 +331,7 @@ export function DashboardPage() {
             <CheckCircle2 size={16} className="text-primary-500" />
             <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t('schedule.title')}</h2>
             {todayCount > 0 && (
-              <span className="text-xs text-gray-400 dark:text-gray-500">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 {t('schedule.completedOfTotal', { completed: completedToday, total: todayCount })}
               </span>
             )}
@@ -363,8 +357,8 @@ export function DashboardPage() {
 
         {recentAppointments.length === 0 ? (
           <div className="py-8 text-center">
-            <TrendingUp size={28} className="mx-auto text-gray-200 dark:text-gray-600 mb-2" />
-            <p className="text-sm text-gray-400 dark:text-gray-500">{t('schedule.emptyState')}</p>
+            <TrendingUp size={28} className="mx-auto text-gray-200 dark:text-gray-500 mb-2" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('schedule.emptyState')}</p>
             <Link
               to="/appointments"
               className="mt-2 inline-block text-xs text-primary-600 dark:text-primary-400 hover:underline"
@@ -386,7 +380,7 @@ export function DashboardPage() {
               />
             ))}
             {todayCount > 8 && (
-              <p className="text-xs text-gray-400 dark:text-gray-500 text-center pt-3">
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center pt-3">
                 {t('schedule.moreCount', { count: todayCount - 8 })}{' '}
                 <Link to="/appointments" className="text-primary-600 dark:text-primary-400 hover:underline">
                   {t('schedule.viewAllLink')}
@@ -405,7 +399,7 @@ export function DashboardPage() {
         </div>
         <div className="space-y-3">
           {byProvider.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500 py-2">{t('provider.emptyState')}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 py-2">{t('provider.emptyState')}</p>
           ) : (
             byProvider.map(({ id, count, member }) => (
               <div key={id}>
@@ -416,7 +410,7 @@ export function DashboardPage() {
                       style={{ backgroundColor: member.colorHex ?? '#6366f1' }}
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-200">{member.fullName}</span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">{member.staffType}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{member.staffType}</span>
                   </div>
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">{count}</span>
                 </div>

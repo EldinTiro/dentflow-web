@@ -6,15 +6,16 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 import { staffService, STAFF_TYPE_LABELS } from '../services/staffService'
 import { EditStaffDrawer } from '../components/EditStaffDrawer'
 import { StaffBlockedTimesTab } from '../components/StaffBlockedTimesTab'
+import { formatDate } from '@/shared/lib/format'
 
 type Tab = 'overview' | 'absence'
 
 function Field({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div>
-      <dt className="text-xs text-gray-400 dark:text-gray-500 font-medium">{label}</dt>
+      <dt className="text-xs text-gray-500 dark:text-gray-400 font-medium">{label}</dt>
       <dd className="text-sm text-gray-800 dark:text-gray-200 mt-0.5">
-        {value ?? <span className="text-gray-300 dark:text-gray-600">—</span>}
+        {value || <span className="text-gray-500 dark:text-gray-400">—</span>}
       </dd>
     </div>
   )
@@ -50,7 +51,7 @@ export function StaffDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 text-center text-sm text-gray-400">{tc('loading')}</div>
+      <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">{tc('loading')}</div>
     )
   }
 
@@ -58,7 +59,7 @@ export function StaffDetailPage() {
     return (
       <div className="p-6">
         <p className="text-sm text-red-500 mb-3">{t('notFound')}</p>
-        <Link to="/staff" className="text-primary-600 text-sm hover:underline">{t('backToStaff')}</Link>
+        <Link to="/staff" className="text-primary-600 text-sm hover:underline dark:text-primary-400">{t('backToStaff')}</Link>
       </div>
     )
   }
@@ -92,7 +93,7 @@ export function StaffDetailPage() {
               <span className="text-sm text-gray-500 dark:text-gray-400">{STAFF_TYPE_LABELS[staff.staffType]}</span>
               <span
                 className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                  staff.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                  staff.isActive ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300'
                 }`}
               >
                 {staff.isActive ? tc('status.active') : tc('status.inactive')}
@@ -138,7 +139,7 @@ export function StaffDetailPage() {
           <Section title={t('section.employment')}>
             <Field label={t('field.staffType')} value={STAFF_TYPE_LABELS[staff.staffType]} />
             <Field label={t('field.specialty')} value={staff.specialty} />
-            <Field label={t('field.hireDate')} value={staff.hireDate ?? undefined} />
+            <Field label={t('field.hireDate')} value={staff.hireDate ? formatDate(staff.hireDate) : undefined} />
             <Field label={t('field.terminationDate')} value={staff.terminationDate ?? undefined} />
           </Section>
 

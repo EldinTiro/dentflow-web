@@ -103,6 +103,17 @@
   html {
     font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
   }
+
+  /* Keyboard focus for every control (DR-05). Zero specificity via :where(), so a
+     component's own focus:ring utilities still win; this only fills the gaps that
+     previously fell back to the browser default outline. */
+  :where(a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid var(--p-600);
+    outline-offset: 2px;
+  }
+  :where(.dark) :where(a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline-color: var(--p-400);
+  }
 }
 
 @layer components {

@@ -29,6 +29,7 @@
   },
   "table": {
     "invoiceNumber": "Rechnungs-Nr.",
+    "patient": "Patient",
     "status": "Status",
     "issuedAt": "Ausgestellt",
     "dueDate": "Fälligkeitsdatum",
@@ -101,5 +102,13 @@
   "patientTab": {
     "emptyState": "Keine Rechnungen für diesen Patienten.",
     "newInvoice": "+ Neue Rechnung"
+  },
+  "overdue": "Überfällig",
+  "toast": {
+    "paymentRecorded": "Zahlung erfasst."
+  },
+  "otherItem": {
+    "option": "Sonstiges (manuelle Eingabe)",
+    "placeholder": "Eigene Beschreibung"
   }
 }

@@ -19,11 +19,15 @@ const ThemeContext = createContext<ThemeContextValue>({
   setColorTheme: () => {},
 })
 
+/**
+ * Before the signed-in user's preference loads: the last theme used on this device,
+ * else the OS setting. There is no clock-based switch any more — it silently overrode
+ * an explicit choice, so the app could be dark while the preference said Light (QA-021).
+ */
 function getInitialDarkMode(): DarkMode {
   const saved = localStorage.getItem('theme') as DarkMode | null
-  if (saved) return saved
-  const hour = new Date().getHours()
-  return hour >= 20 || hour < 6 ? 'dark' : 'light'
+  if (saved === 'light' || saved === 'dark') return saved
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
 function getInitialColorTheme(): ColorTheme {
@@ -50,23 +54,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('colorTheme', colorTheme)
   }, [colorTheme])
 
-  // Auto dark/light switch at 20:00 / 06:00
-  useEffect(() => {
-    const tick = setInterval(() => {
-      const hour = new Date().getHours()
-      const shouldBeDark = hour >= 20 || hour < 6
-      setThemeState((current) => {
-        const auto = shouldBeDark ? 'dark' : 'light'
-        if (current === auto) return current
-        const saved = localStorage.getItem('theme')
-        if (saved && saved !== auto) return current
-        return auto
-      })
-    }, 60_000)
-    return () => clearInterval(tick)
-  }, [])
-
-  function setTheme(t: DarkMode) { setThemeState(t) }
+  // The setter state function is stable, so consumers can list it as an effect dependency.
+  const setTheme = setThemeState
   function setColorTheme(t: ColorTheme) { setColorThemeState(t) }
 
   return (

@@ -7,7 +7,7 @@
   "stat": {
     "todaysAppointments": "Heutige Termine",
     "pendingConfirmation": "Ausstehende Bestätigung",
-    "scheduledPlusConfirmed": "Geplant + Bestätigt",
+    "upcomingScheduled": "Bevorstehend, noch geplant",
     "totalPatients": "Patienten gesamt",
     "activeRecords": "Aktive Datensätze",
     "activeStaff": "Aktives Personal",
@@ -44,6 +44,7 @@
   },
   "slotChecker": {
     "title": "Schnelle Terminprüfung",
+    "closedDay": "Die Praxis ist an diesem Tag geschlossen",
     "todayBadge": "Heute",
     "allProviders": "Alle Ärzte",
     "freeCount": "{{count}} frei",

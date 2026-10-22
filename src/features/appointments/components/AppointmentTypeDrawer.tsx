@@ -6,14 +6,15 @@ import { toast } from 'sonner'
 import { Drawer } from '@/shared/components/Drawer'
 import { appointmentService, type AppointmentTypeResponse } from '../services/appointmentService'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
+import i18n from 'i18next'
 
 const schema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
+  name: z.string().min(1, 'common:validation.nameRequired').max(255),
   defaultDurationMinutes: z.coerce.number().int().min(1).max(480),
   description: z.string().optional(),
   colorHex: z
     .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex colour')
+    .regex(/^#[0-9A-Fa-f]{6}$/, 'common:validation.hexColour')
     .optional()
     .or(z.literal('')),
   isBookableOnline: z.boolean(),
@@ -78,79 +79,75 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
 
   return (
     <Drawer title={isEdit ? `Edit — ${type!.name}` : 'New Appointment Type'} onClose={onClose}>
-      <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-5 p-6">
+      <form noValidate onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-5 p-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="appt-type-name" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">
             Name <span className="text-red-500">*</span>
           </label>
-          <input
+          <input id="appt-type-name"
             type="text"
             {...register('name')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
-          {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
+          {errors.name && <p className="mt-1 text-xs text-red-600">{i18n.t(errors.name.message ?? '')}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="appt-type-defaultDurationMinutes" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">
               Duration (minutes) <span className="text-red-500">*</span>
             </label>
-            <input
+            <input id="appt-type-defaultDurationMinutes"
               type="number"
               min={1}
               max={480}
               {...register('defaultDurationMinutes')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             />
             {errors.defaultDurationMinutes && (
-              <p className="mt-1 text-xs text-red-600">{errors.defaultDurationMinutes.message}</p>
+              <p className="mt-1 text-xs text-red-600">{i18n.t(errors.defaultDurationMinutes.message ?? '')}</p>
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Default Fee (KM)</label>
-            <input
+            <label htmlFor="appt-type-defaultFee" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Default Fee (KM)</label>
+            <input id="appt-type-defaultFee"
               type="number"
               min={0}
               step="0.01"
               {...register('defaultFee')}
               placeholder="0.00"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea
+          <label htmlFor="appt-type-description" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Description</label>
+          <textarea id="appt-type-description"
             {...register('description')}
             rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Calendar Colour</label>
-          <input
+          <label htmlFor="appt-type-colorHex" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Calendar Colour</label>
+          <input id="appt-type-colorHex"
             type="color"
             {...register('colorHex')}
-            className="h-9 w-20 border border-gray-300 rounded-lg px-1 py-1 cursor-pointer"
+            className="h-9 w-20 border border-gray-300 rounded-lg px-1 py-1 cursor-pointer dark:border-gray-600"
           />
-          {errors.colorHex && <p className="mt-1 text-xs text-red-600">{errors.colorHex.message}</p>}
+          {errors.colorHex && <p className="mt-1 text-xs text-red-600">{i18n.t(errors.colorHex.message ?? '')}</p>}
         </div>
 
-        <div className="flex items-center gap-3">
-          <input type="checkbox" id="isBookableOnline" {...register('isBookableOnline')} className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-          <label htmlFor="isBookableOnline" className="text-sm text-gray-700">
-            Bookable online (patient-facing portal)
-          </label>
-        </div>
+        {/* "Bookable online" stays hidden until a patient portal exists (ROADMAP Tier 3, QA-031).
+            The stored value is still sent back unchanged. */}
 
         <div className="flex justify-end gap-3 pt-2">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
           >
             Cancel
           </button>

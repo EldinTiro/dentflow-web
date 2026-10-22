@@ -29,6 +29,7 @@
   },
   "table": {
     "invoiceNumber": "Invoice #",
+    "patient": "Patient",
     "status": "Status",
     "issuedAt": "Issued",
     "dueDate": "Due Date",
@@ -101,5 +102,13 @@
   "patientTab": {
     "emptyState": "No invoices for this patient.",
     "newInvoice": "+ New Invoice"
+  },
+  "overdue": "Overdue",
+  "toast": {
+    "paymentRecorded": "Payment recorded."
+  },
+  "otherItem": {
+    "option": "Other (manual entry)",
+    "placeholder": "Custom description"
   }
 }

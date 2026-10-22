@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Drawer } from '@/shared/components/Drawer'
 import { userService, type InviteUserResult } from '../services/userService'
+import { TempPasswordBox } from '@/shared/components/TempPasswordBox'
 
 const TENANT_ROLES = [
   'ClinicOwner', 'ClinicAdmin', 'Dentist', 'Hygienist',
@@ -39,33 +40,31 @@ export function InviteUserDrawer({ onClose }: Props) {
     },
   })
 
-  const inputClass = 'w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-  const labelClass = 'block text-xs font-medium text-gray-600 mb-1'
+  const inputClass = 'w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+  const labelClass = 'block text-xs font-medium text-gray-600 mb-1 dark:text-gray-300'
   const errorClass = 'text-xs text-red-500 mt-0.5'
 
   if (invited) {
     return (
       <Drawer title={t('invite.successTitle')} onClose={onClose}>
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             {t('invite.successMessage')}
           </p>
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3 dark:bg-amber-400/10 dark:border-amber-400/30">
             <div>
               <p className="text-xs text-amber-700 font-medium">{t('invite.email')}</p>
-              <p className="text-sm font-mono text-gray-800 mt-0.5">{invited.email}</p>
+              <p className="text-sm font-mono text-gray-800 mt-0.5 dark:text-gray-200">{invited.email}</p>
             </div>
             <div>
               <p className="text-xs text-amber-700 font-medium">{t('invite.tempPassword')}</p>
-              <p className="text-sm font-mono bg-white px-2 py-1 rounded border border-amber-200 break-all mt-0.5">
-                {invited.tempPassword}
-              </p>
+              <div className="mt-0.5"><TempPasswordBox password={invited.tempPassword} /></div>
             </div>
             <p className="text-xs text-amber-600">{t('invite.tempPasswordWarning')}</p>
           </div>
           <button
             onClick={onClose}
-            className="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+            className="w-full bg-primary-600 text-white py-2 rounded-md text-sm font-medium hover:bg-primary-700"
           >
             {tc('button.done')}
           </button>
@@ -76,11 +75,11 @@ export function InviteUserDrawer({ onClose }: Props) {
 
   return (
     <Drawer title={t('invite.title')} onClose={onClose}>
-      <form onSubmit={handleSubmit((v) => invite.mutate(v))} className="space-y-4">
+      <form noValidate onSubmit={handleSubmit((v) => invite.mutate(v))} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>{t('invite.firstName')}</label>
-            <input
+            <label htmlFor="invite-firstName" className={labelClass}>{t('invite.firstName')}</label>
+            <input id="invite-firstName"
               {...register('firstName', { required: 'Required' })}
               className={inputClass}
               placeholder="Jane"
@@ -88,8 +87,8 @@ export function InviteUserDrawer({ onClose }: Props) {
             {errors.firstName && <p className={errorClass}>{errors.firstName.message}</p>}
           </div>
           <div>
-            <label className={labelClass}>{t('invite.lastName')}</label>
-            <input
+            <label htmlFor="invite-lastName" className={labelClass}>{t('invite.lastName')}</label>
+            <input id="invite-lastName"
               {...register('lastName', { required: 'Required' })}
               className={inputClass}
               placeholder="Smith"
@@ -99,8 +98,8 @@ export function InviteUserDrawer({ onClose }: Props) {
         </div>
 
         <div>
-          <label className={labelClass}>{t('invite.emailLabel')}</label>
-          <input
+          <label htmlFor="invite-email" className={labelClass}>{t('invite.emailLabel')}</label>
+          <input id="invite-email"
             type="email"
             {...register('email', { required: 'Required' })}
             className={inputClass}
@@ -110,10 +109,10 @@ export function InviteUserDrawer({ onClose }: Props) {
         </div>
 
         <div>
-          <label className={labelClass}>{t('invite.roleLabel')}</label>
-          <select {...register('role')} className={inputClass}>
+          <label htmlFor="invite-role" className={labelClass}>{t('invite.roleLabel')}</label>
+          <select id="invite-role" {...register('role')} className={inputClass}>
             {TENANT_ROLES.map((r) => (
-              <option key={r} value={r}>{r}</option>
+              <option key={r} value={r}>{tc(`role.${r}`)}</option>
             ))}
           </select>
         </div>
@@ -126,14 +125,14 @@ export function InviteUserDrawer({ onClose }: Props) {
           <button
             type="submit"
             disabled={invite.isPending}
-            className="flex-1 bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+            className="flex-1 bg-primary-600 text-white py-2 rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
           >
             {invite.isPending ? t('invite.sending') : t('invite.sendButton')}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-md text-sm font-medium hover:bg-gray-50"
+            className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
           >
             {tc('button.cancel')}
           </button>

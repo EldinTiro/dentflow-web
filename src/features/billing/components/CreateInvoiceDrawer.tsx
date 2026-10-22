@@ -8,6 +8,7 @@ import { billingService } from '../services/billingService'
 import { appointmentService } from '@/features/appointments/services/appointmentService'
 import { Drawer } from '@/shared/components/Drawer'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
+import { formatMoney } from '@/shared/lib/format'
 
 interface LineItemField {
   source: 'preset' | 'other'
@@ -32,8 +33,8 @@ const INPUT_CLASS =
   'w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500'
 const LABEL_CLASS = 'block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1'
 
-const fmt = (n: number) =>
-  n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+// Always with the currency (QA-032).
+const fmt = (n: number) => formatMoney(n)
 
 export function CreateInvoiceDrawer({ patientId, appointmentTypeId, onClose }: Props) {
   const { t } = useTranslation('billing')
@@ -102,7 +103,7 @@ export function CreateInvoiceDrawer({ patientId, appointmentTypeId, onClose }: P
 
   return (
     <Drawer title={t('create.title')} onClose={onClose} width="w-[520px]">
-      <form onSubmit={handleSubmit((v) => createMutation.mutate(v))} className="space-y-4">
+      <form noValidate onSubmit={handleSubmit((v) => createMutation.mutate(v))} className="space-y-4">
         {!patientId && (
           <div>
             <label className={LABEL_CLASS}>{t('create.patientId')}</label>
@@ -112,7 +113,7 @@ export function CreateInvoiceDrawer({ patientId, appointmentTypeId, onClose }: P
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
             />
             {errors.patientId && (
-              <p className="text-xs text-red-500 mt-1">Required</p>
+              <p className="text-xs text-red-500 mt-1">{tc('feedback.required')}</p>
             )}
           </div>
         )}
@@ -155,6 +156,9 @@ export function CreateInvoiceDrawer({ patientId, appointmentTypeId, onClose }: P
                           {...register(`lineItems.${idx}.description`, { required: true })}
                           className={INPUT_CLASS}
                         />
+                        {errors.lineItems?.[idx]?.description && (
+                          <p className="text-xs text-red-500 mt-1">{tc('feedback.required')}</p>
+                        )}
                       </div>
                     ) : (
                       <div>
@@ -184,14 +188,17 @@ export function CreateInvoiceDrawer({ patientId, appointmentTypeId, onClose }: P
                               {tp.name}{tp.defaultFee != null ? ` — ${Number(tp.defaultFee).toFixed(2)} KM` : ''}
                             </option>
                           ))}
-                          <option value="__other__">Ostalo (ručni unos)</option>
+                          <option value="__other__">{t('otherItem.option')}</option>
                         </select>
                         {(lineItems[idx]?.source === 'other' || lineItems[idx]?.appointmentTypeId === '') && (
                           <input
                             {...register(`lineItems.${idx}.description`, { required: true })}
                             className={`${INPUT_CLASS} mt-2`}
-                            placeholder="Custom description"
+                            placeholder={t('otherItem.placeholder')}
                           />
+                        )}
+                        {errors.lineItems?.[idx]?.description && (
+                          <p className="text-xs text-red-500 mt-1">{tc('feedback.required')}</p>
                         )}
                       </div>
                     )}

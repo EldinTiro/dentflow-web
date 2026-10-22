@@ -43,5 +43,54 @@
   "toast": {
     "deleted": "Mitarbeiter entfernt",
     "deleteFailed": "Entfernen fehlgeschlagen"
+  },
+  "absence": {
+    "type": {
+      "Vacation": "Urlaub",
+      "Sickness": "Krankheit",
+      "SpecialLeave": "Freier Tag",
+      "ReligiousHoliday": "Religiöser Feiertag",
+      "PublicHoliday": "Gesetzlicher Feiertag",
+      "Education": "Fortbildung / Kurs"
+    },
+    "part": {
+      "morning": "Morgen",
+      "noon": "Mittag",
+      "evening": "Abend"
+    },
+    "boundary": {
+      "morning": "Morgen (08:00)",
+      "lunchtime": "Mittag (13:00)",
+      "evening": "Abend (17:00)"
+    },
+    "showPast": "Vergangene Abwesenheiten anzeigen",
+    "add": "Abwesenheit hinzufügen",
+    "loading": "Wird geladen…",
+    "noneUpcoming": "Keine bevorstehenden Abwesenheiten.",
+    "none": "Keine Abwesenheiten.",
+    "colType": "Art",
+    "colPeriod": "Zeitraum",
+    "colDuration": "Dauer",
+    "colNote": "Notiz",
+    "modalTitle": "Abwesenheitsantrag",
+    "typeLabel": "Art der Abwesenheit",
+    "from": "Von",
+    "to": "Bis",
+    "note": "Notiz",
+    "optional": "(optional)",
+    "notePlaceholder": "Weitere Informationen…",
+    "invalidPeriod": "Ungültiger Zeitraum",
+    "close": "Schließen",
+    "saving": "Wird gespeichert…",
+    "confirm": "Abwesenheit bestätigen",
+    "endBeforeStart": "Das Ende muss nach dem Beginn liegen.",
+    "added": "Abwesenheit hinzugefügt.",
+    "addFailed": "Abwesenheit konnte nicht hinzugefügt werden.",
+    "removed": "Abwesenheit entfernt.",
+    "removeTitle": "Abwesenheit entfernen?",
+    "removeBody": "Diese Abwesenheit wird entfernt.",
+    "remove": "Entfernen",
+    "days_one": "{{value}} Tag",
+    "days_other": "{{value}} Tage"
   }
 }

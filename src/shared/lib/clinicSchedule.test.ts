@@ -1,0 +1,57 @@
+import { describe, it, expect } from 'vitest'
+import { DEFAULT_WEEKLY_SCHEDULE, daySchedule, busySlotLabels, nextBookableStart } from './clinicSchedule'
+
+describe('daySchedule', () => {
+  // QA-018: Settings showed Mon–Fri 08–17 (an unsaved default) while the slot check used 08:00–22:30
+  it('falls back to the same default the settings screen shows', () => {
+    expect(daySchedule(null, '2026-10-22')).toEqual(DEFAULT_WEEKLY_SCHEDULE.thursday)
+    expect(daySchedule(null, '2026-10-25')).toEqual({ isOpen: false, start: '08:00', end: '12:00' }) // Sunday
+  })
+
+  it('uses the saved schedule when there is one', () => {
+    const saved = JSON.stringify({ ...DEFAULT_WEEKLY_SCHEDULE, thursday: { isOpen: true, start: '10:00', end: '14:00' } })
+    expect(daySchedule(saved, '2026-10-22')).toEqual({ isOpen: true, start: '10:00', end: '14:00' })
+  })
+})
+
+describe('busySlotLabels', () => {
+  const slots = [{ label: '09:00' }, { label: '09:30' }]
+  const appt = (providerId: string, start: string, end: string, status = 'Scheduled') =>
+    ({ providerId, startAt: `2026-10-22T${start}:00`, endAt: `2026-10-22T${end}:00`, status })
+
+  // QA-018: with "All providers" a slot turned red as soon as one of five providers was busy
+  it('marks a slot busy for "all" only when every provider is booked', () => {
+    const appointments = [appt('p1', '09:00', '09:30'), appt('p1', '09:30', '10:00'), appt('p2', '09:30', '10:00')]
+
+    const busy = busySlotLabels(appointments, slots, '2026-10-22', 30, ['p1', 'p2'])
+
+    expect([...busy]).toEqual(['09:30'])
+  })
+
+  it('marks a slot busy for a single provider when they are booked', () => {
+    const busy = busySlotLabels([appt('p1', '09:00', '09:30')], slots, '2026-10-22', 30, ['p1'])
+    expect([...busy]).toEqual(['09:00'])
+  })
+
+  it('ignores cancelled and completed appointments', () => {
+    const busy = busySlotLabels([appt('p1', '09:00', '09:30', 'Cancelled')], slots, '2026-10-22', 30, ['p1'])
+    expect(busy.size).toBe(0)
+  })
+})
+
+describe('nextBookableStart', () => {
+  const at = (local: string) => new Date(local) // local wall time (tests run in Europe/Sarajevo)
+
+  // QA-018: "+ Book Appointment" pre-filled 01:15, outside opening hours
+  it("moves a night-time now to that day's opening time", () => {
+    expect(nextBookableStart(at('2026-10-22T01:15:00'), null)).toBe('2026-10-22T08:00')
+  })
+
+  it('rounds up to the next quarter hour during opening hours', () => {
+    expect(nextBookableStart(at('2026-10-22T10:07:00'), null)).toBe('2026-10-22T10:15')
+  })
+
+  it('skips to the next open day after closing time and over the weekend', () => {
+    expect(nextBookableStart(at('2026-10-23T17:30:00'), null)).toBe('2026-10-26T08:00') // Fri evening → Mon
+  })
+})
