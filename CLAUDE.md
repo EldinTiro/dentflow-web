@@ -98,13 +98,12 @@ All HTTP calls go through the shared Axios instance at `src/shared/api/client.ts
 import { apiClient } from '@/shared/api/client';
 
 export const getPatient = (id: string) =>
-  apiClient.get<PatientResponse>(`/patients/${id}`).then(r => r.data);
+  apiClient.get<PatientResponse>(`/api/v1/patients/${id}`).then(r => r.data);
 ```
 
-- `Authorization: Bearer {token}` is injected automatically by the interceptor
-- On 401: interceptor calls `/api/v1/auth/refresh` automatically, then retries the original request
-- On refresh failure: user is redirected to `/login` — no manual handling needed
-- Base URL is `VITE_API_URL` + `/api/v1`
+- `apiClient` has **`baseURL: ''`** — always write the full `/api/v1/...` path in the service. Vite proxies `/api` in dev, nginx proxies it in prod
+- `Authorization: Bearer {token}` and `Accept-Language` are injected automatically by the request interceptor
+- ⚠️ **On 401 the interceptor calls `clearAuth()` and nothing else.** There is no refresh call and no retry — the user is simply logged out. Token refresh is Faza 1.2; do not write code that assumes a retry happens
 
 ## Server State (TanStack Query)
 
@@ -157,12 +156,13 @@ const { register, handleSubmit, formState: { errors } } = useForm<z.infer<typeof
 ```typescript
 import { useAuthStore } from '@/features/auth/store/authStore';
 
-const { user, token, setToken, logout } = useAuthStore();
+// Actual store surface — there is no `token`, `setToken` or `logout` member
+const { accessToken, user, isAuthenticated, setAuth, clearAuth, hasRole } = useAuthStore();
 ```
 
-- Access token lives only in Zustand (memory) — never in `localStorage` or `sessionStorage`
-- Refresh token is in an HttpOnly cookie — never accessible from JS
-- Use `useAuthStore` to read current user role for conditional rendering
+- ⚠️ **The access token is currently in `localStorage`**, not memory. The store wraps `persist` with no custom storage, so it writes to `localStorage` under the key `pearldesk-auth`. Moving it to memory is Faza 1.3 — until then, treat any XSS as full token compromise
+- ⚠️ **There is no refresh token.** No HttpOnly cookie, no rotation, no `/auth/logout`. `logout()` in `authService` only clears local state; the server is never told
+- Use `hasRole(...)` to read the current user's role for conditional rendering
 
 ## Routing & Route Guards
 
@@ -192,10 +192,10 @@ const { t } = useTranslation();
 
 ## Multi-Tenancy (Frontend)
 
-- In dev: tenant slug sent via `X-Tenant` header, controlled by `VITE_DEV_TENANT_SLUG` env var
-- In prod: resolved by subdomain — frontend does not manage this
-- The Axios client handles tenant header injection automatically in dev mode
+- In prod: resolved by subdomain on the API side — the frontend does not manage this
 - Never hardcode tenant IDs anywhere
+- ⚠️ **There is no `X-Tenant` header.** The axios client injects only `Authorization` and `Accept-Language`. `getTenantSlug()` in `shared/lib/tenant.ts` reads `VITE_DEV_TENANT_SLUG` but **is never called from anywhere** — it is dead code
+- ⚠️ Tenant resolution is broken end to end right now (see root `CLAUDE.md` divergences). Don't build tenant-dependent UI assuming isolation works until Faza 1.1 lands
 
 ## UI Components
 
@@ -207,11 +207,26 @@ const { t } = useTranslation();
 ## Environment Variables
 
 ```
-VITE_API_URL=http://localhost:5199    # Backend base URL
-VITE_DEV_TENANT_SLUG=demo            # Tenant slug injected as header in dev
+VITE_API_URL=http://localhost:5199    # Vite proxy target for /api (dev only)
+VITE_DEV_TENANT_SLUG=demo             # Read by getTenantSlug(), which nothing calls — currently inert
 ```
 
 All env vars must be prefixed with `VITE_` to be accessible in the browser.
+
+## Testing
+
+**TDD is mandatory** — write the failing test first. See root `CLAUDE.md` and `documentation/STRATEGY.md`.
+
+⚠️ **There is no test runner installed yet.** `package.json` has no test script and there are zero test files. Setting up Vitest + React Testing Library is Faza 2.8 — do that before writing the first frontend test rather than improvising a different framework.
+
+`npm run lint` is also **broken**: ESLint 9 is installed but `eslint.config.js` does not exist, so the script fails on a migration error. This means `eslint-plugin-react-hooks` has never run over this codebase — expect latent hook violations. Creating the flat config is part of Faza 2.8.
+
+Working checks today:
+
+```bash
+npm run build    # tsc -b && vite build — real type checking, used by CI
+npm run dev      # dev server on :5173
+```
 
 ## TypeScript Rules
 
