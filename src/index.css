@@ -99,6 +99,11 @@
   --color-primary-950: var(--p-950);
 }
 
+/* Brand display face for the wordmark only; loaded by shared/components/Wordmark. */
+@theme {
+  --font-brand: 'Sora', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
 @layer base {
   html {
     font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
@@ -113,6 +118,41 @@
   }
   :where(.dark) :where(a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
     outline-color: var(--p-400);
+  }
+}
+
+/* ── Entrance motion ──────────────────────────────────────────────────────────
+   One-shot load animations. Opt-in per element; set the stagger with an
+   arbitrary property, e.g. class="enter-up [--enter-delay:120ms]".
+   Only runs when the user has not asked for reduced motion — otherwise the
+   elements simply render in place.
+   ───────────────────────────────────────────────────────────────────────── */
+
+@keyframes enter-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes enter-pop {
+  0%   { opacity: 0; transform: scale(0.6) rotate(-8deg); }
+  60%  { opacity: 1; transform: scale(1.06) rotate(2deg); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes enter-glow {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .enter-up {
+    animation: enter-up 600ms cubic-bezier(0.16, 1, 0.3, 1) var(--enter-delay, 0ms) both;
+  }
+  .enter-pop {
+    animation: enter-pop 700ms cubic-bezier(0.34, 1.56, 0.64, 1) var(--enter-delay, 0ms) both;
+  }
+  .enter-glow {
+    animation: enter-glow 1200ms cubic-bezier(0.16, 1, 0.3, 1) var(--enter-delay, 0ms) both;
   }
 }
 
