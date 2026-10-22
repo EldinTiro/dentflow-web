@@ -107,15 +107,15 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
     },
   })
 
-  const inputClass = 'w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-  const labelClass = 'block text-xs font-medium text-gray-600 mb-1'
+  const inputClass = 'w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600'
+  const labelClass = 'block text-xs font-medium text-gray-600 mb-1 dark:text-gray-300'
   const errorClass = 'text-xs text-red-500 mt-0.5'
-  const sectionClass = 'pt-4 border-t border-gray-100'
-  const sectionTitle = 'text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3'
+  const sectionClass = 'pt-4 border-t border-gray-100 dark:border-gray-800'
+  const sectionTitle = 'text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 dark:text-gray-400'
 
   return (
     <Drawer title={t('drawer.editTitle', { name: patient.fullName })} onClose={onClose}>
-      <form onSubmit={handleSubmit((v) => update.mutate(v))} className="space-y-4">
+      <form noValidate onSubmit={handleSubmit((v) => update.mutate(v))} className="space-y-4">
         {/* Demographics */}
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -239,11 +239,11 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
               <input {...register('occupation')} className={inputClass} />
             </div>
             <div className="flex gap-5">
-              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer dark:text-gray-300">
                 <input type="checkbox" {...register('smsOptIn')} className="rounded" />
                 {t('drawer.smsOptIn')}
               </label>
-              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer dark:text-gray-300">
                 <input type="checkbox" {...register('emailOptIn')} className="rounded" />
                 {t('drawer.emailOptIn')}
               </label>
@@ -267,14 +267,14 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
           <button
             type="submit"
             disabled={update.isPending}
-            className="flex-1 bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+            className="flex-1 bg-primary-600 text-white py-2 rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
           >
             {update.isPending ? t('drawer.saving') : t('drawer.saveChanges')}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-md text-sm font-medium hover:bg-gray-50"
+            className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-300"
           >
             {tc('button.cancel')}
           </button>

@@ -89,17 +89,75 @@
   "boolean": { "yes": "Da", "no": "Ne" },
   "lastLogin": { "never": "Nikad" },
   "expiry": { "expired": "Isteklo" },
-  "role": { "staff": "Osoblje" },
+  "role": { "staff": "Osoblje", "SuperAdmin": "Super admin", "ClinicOwner": "Vlasnik klinike", "ClinicAdmin": "Administrator klinike", "Dentist": "Stomatolog", "Hygienist": "Higijeničar", "Receptionist": "Recepcioner", "BillingStaff": "Naplata", "ReadOnly": "Samo pregled" },
   "pagination": {
     "pageOfTotal": "Stranica {{page}} od {{totalPages}} ({{totalCount}} ukupno)",
     "showingRange": "Prikaz {{from}}–{{to}} od {{total}}"
   },
   "aria": {
+    "language": "Promijeni jezik",
+    "expand": "Proširi",
+    "collapse": "Skupi",
+    "editPlan": "Uredi plan",
+    "deletePlan": "Obriši plan",
+    "editItem": "Uredi stavku",
+    "deleteItem": "Obriši stavku",
     "closeSidebar": "Zatvori bočnu traku",
     "openSidebar": "Otvori bočnu traku",
     "toggleDarkMode": "Prebaci tamni režim",
     "close": "Zatvori",
     "hidePassword": "Sakrij lozinku",
     "showPassword": "Prikaži lozinku"
+  },
+  "errorBoundary": {
+    "title": "Nešto je pošlo po zlu",
+    "description": "Na ovoj stranici je došlo do neočekivane greške. Ostatak aplikacije i dalje radi.",
+    "retry": "Pokušaj ponovo",
+    "reload": "Ponovo učitaj stranicu"
+  },
+  "confirmAction": {
+    "deactivateTenantTitle": "Deaktivirati {{name}}?",
+    "deactivateTenantBody": "Svi korisnici ove klinike bit će odjavljeni i neće se moći prijaviti dok se klinika ponovo ne aktivira. Podaci se ne brišu.",
+    "deactivateUserTitle": "Deaktivirati korisnika {{name}}?",
+    "deactivateUserBody": "Više se neće moći prijaviti.",
+    "resetPasswordTitle": "Resetovati lozinku korisnika {{name}}?",
+    "resetPasswordBody": "Trenutna lozinka odmah prestaje važiti. Pri sljedećoj prijavi korisnik mora odabrati novu.",
+    "changeRoleTitle": "Promijeniti ulogu korisnika {{name}}?",
+    "changeRoleBody": "{{from}} → {{to}}. Ovo odmah mijenja šta korisnik može vidjeti i raditi.",
+    "resetPassword": "Resetuj lozinku",
+    "changeRole": "Promijeni ulogu"
+  },
+  "feedback": {
+    "saved": "Sačuvano",
+    "required": "Obavezno polje",
+    "minLength": "Najmanje {{count}} znaka"
+  },
+  "accessDenied": {
+    "title": "Nemate pristup ovoj stranici",
+    "description": "Vaša uloga ne uključuje ovaj dio aplikacije. Ako vam treba, obratite se vlasniku ili administratoru klinike.",
+    "back": "Nazad na početnu"
+  },
+  "tempPassword": {
+    "copy": "Kopiraj",
+    "copied": "Kopirano",
+    "mustChange": "Pri prvoj prijavi morat će odabrati vlastitu lozinku."
+  },
+  "validation": {
+    "required": "Obavezno polje",
+    "email": "Unesite ispravnu email adresu",
+    "minLength": "Najmanje {{count}} znaka",
+    "maxLength": "Najviše {{count}} znakova",
+    "min": "Mora biti najmanje {{min}}",
+    "max": "Može biti najviše {{max}}",
+    "slug": "Samo mala slova, brojevi i crtice",
+    "hexColour": "Boja mora biti u obliku #3B82F6",
+    "passwordRequired": "Lozinka je obavezna",
+    "nameRequired": "Naziv je obavezan",
+    "passwordLength": "Najmanje 12 znakova",
+    "passwordUpper": "Mora sadržavati veliko slovo",
+    "passwordLower": "Mora sadržavati malo slovo",
+    "passwordDigit": "Mora sadržavati broj",
+    "passwordSpecial": "Mora sadržavati poseban znak",
+    "passwordsMismatch": "Lozinke se ne podudaraju"
   }
 }

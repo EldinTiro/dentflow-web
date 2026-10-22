@@ -2,7 +2,7 @@
   "team": {
     "title": "Team",
     "memberCount": "{{count}} members",
-    "button": { "invite": "+ Invite Member" },
+    "button": { "invite": "+ Add Member" },
     "search": { "placeholder": "Search by name or email…" },
     "emptyState": "No team members found.",
     "table": {
@@ -15,8 +15,8 @@
     "resetPwd": { "title": "Temporary Password" }
   },
   "invite": {
-    "title": "Invite Team Member",
-    "successTitle": "User Invited",
+    "title": "Add Team Member",
+    "successTitle": "Account created",
     "successMessage": "Account created successfully. Share the credentials below with the new team member.",
     "email": "Email",
     "tempPassword": "Temporary Password",
@@ -25,8 +25,8 @@
     "lastName": "Last Name *",
     "emailLabel": "Email *",
     "roleLabel": "Role *",
-    "sendButton": "Send Invite",
-    "sending": "Inviting…",
+    "sendButton": "Create account",
+    "sending": "Creating…",
     "error": "Failed to invite user. They may already have an account."
   },
   "adminUsers": {

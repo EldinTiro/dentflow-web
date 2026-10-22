@@ -4,8 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import i18n from 'i18next'
 import axios from 'axios'
 import { tenantService, type TenantCreatedResponse } from '../services/tenantService'
+import { TempPasswordBox } from '@/shared/components/TempPasswordBox'
+import { useEscapeKey } from '@/shared/lib/useEscapeKey'
 
 function extractApiError(error: unknown): string {
   if (axios.isAxiosError(error)) {
@@ -29,7 +32,7 @@ const schema = z.object({
     .string()
     .min(2)
     .max(63)
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Lowercase letters, numbers, hyphens only'),
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'common:validation.slug'),
   name: z.string().min(1).max(200),
   plan: z.enum(['Free', 'Pro', 'Enterprise']),
   ownerEmail: z.string().email(),
@@ -45,6 +48,7 @@ interface Props {
 
 export function CreateTenantModal({ onClose }: Props) {
   const { t } = useTranslation('admin')
+  useEscapeKey(onClose) // QA-027
   const { t: tc } = useTranslation('common')
   const queryClient = useQueryClient()
   const [created, setCreated] = useState<TenantCreatedResponse | null>(null)
@@ -88,18 +92,14 @@ export function CreateTenantModal({ onClose }: Props) {
     return (
       <ModalShell title={t('tenants.create.successTitle')} onClose={onClose}>
         <div className="space-y-3 text-sm">
-          <p className="text-gray-600" dangerouslySetInnerHTML={{ __html: t('tenants.create.successMessage', { name: created.name }) }} />
-          <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
+          <p className="text-gray-600 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: t('tenants.create.successMessage', { name: created.name }) }} />
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-3 dark:bg-amber-400/10 dark:border-amber-400/30">
             <p className="font-semibold text-amber-800 mb-1">{t('tenants.create.savePassword')}</p>
-            <p className="text-gray-700 text-xs mb-1">
+            <p className="text-gray-700 text-xs mb-1 dark:text-gray-300">
               {t('tenants.create.ownerEmail')} <span className="font-mono font-medium">{created.ownerEmail}</span>
             </p>
-            <p className="text-gray-700 text-xs">
-              {t('tenants.create.tempPassword')}{' '}
-              <span className="font-mono font-medium bg-white px-1 rounded border border-amber-200">
-                {created.tempPassword}
-              </span>
-            </p>
+            <p className="text-gray-700 text-xs mb-1 dark:text-gray-300">{t('tenants.create.tempPassword')}</p>
+            <TempPasswordBox password={created.tempPassword} />
             <p className="text-amber-700 text-xs mt-2">
               {t('tenants.create.tempPasswordWarning')}
             </p>
@@ -117,7 +117,7 @@ export function CreateTenantModal({ onClose }: Props) {
 
   return (
     <ModalShell title={t('tenants.create.title')} onClose={onClose}>
-      <form
+      <form noValidate
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 text-sm"
       >
@@ -151,12 +151,12 @@ export function CreateTenantModal({ onClose }: Props) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">{t('tenants.create.logo')}</label>
+          <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">{t('tenants.create.logo')}</label>
           <div className="flex items-center gap-3">
             {logoBase64 && (
-              <img src={logoBase64} alt="Logo preview" className="h-12 w-12 object-contain rounded border border-gray-200 bg-gray-50" />
+              <img src={logoBase64} alt="Logo preview" className="h-12 w-12 object-contain rounded border border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700" />
             )}
-            <label className="cursor-pointer inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-xs text-gray-600 hover:bg-gray-50">
+            <label className="cursor-pointer inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-xs text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600">
               {logoBase64 ? t('tenants.create.logoChange') : t('tenants.create.logoUpload')}
               <input type="file" accept="image/*" className="sr-only" onChange={handleLogoChange} />
             </label>
@@ -166,7 +166,7 @@ export function CreateTenantModal({ onClose }: Props) {
               </button>
             )}
           </div>
-          <p className="text-xs text-gray-400 mt-1">{t('tenants.create.logoHint')}</p>
+          <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">{t('tenants.create.logoHint')}</p>
         </div>
 
         {mutation.isError && (
@@ -177,7 +177,7 @@ export function CreateTenantModal({ onClose }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm"
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm dark:text-gray-300"
           >
             {tc('button.cancel')}
           </button>
@@ -205,10 +205,10 @@ function ModalShell({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md dark:bg-gray-900">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-600 text-xl leading-none dark:text-gray-400">
             ×
           </button>
         </div>
@@ -229,9 +229,12 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
-      {children}
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {/* Wrapping the control in the <label> associates the two (QA-028). */}
+      <label className="block">
+        <span className="block text-xs font-medium text-gray-700 mb-1 dark:text-gray-300">{label}</span>
+        {children}
+      </label>
+      {error && <p className="mt-1 text-xs text-red-500">{i18n.t(error)}</p>}
     </div>
   )
 }

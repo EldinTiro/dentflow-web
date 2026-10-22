@@ -13,17 +13,18 @@ import { RecordPaymentModal } from '../components/RecordPaymentModal'
 import { AddLineItemModal } from '../components/AddLineItemModal'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
+import { formatDate, formatMoney } from '@/shared/lib/format'
 
 const STATUS_STYLES: Record<InvoiceStatus, string> = {
-  Draft: 'bg-gray-100 text-gray-600',
-  Sent: 'bg-blue-100 text-blue-700',
-  PartiallyPaid: 'bg-yellow-100 text-yellow-700',
-  Paid: 'bg-green-100 text-green-700',
-  Void: 'bg-red-100 text-red-500',
+  Draft: 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
+  Sent: 'bg-blue-100 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300',
+  PartiallyPaid: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-400/10 dark:text-yellow-300',
+  Paid: 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300',
+  Void: 'bg-red-100 text-red-700 dark:bg-red-400/10 dark:text-red-300',
 }
 
-const fmt = (n: number) =>
-  n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+// Always with the currency (QA-032).
+const fmt = (n: number) => formatMoney(n)
 
 export function InvoiceDetailPage() {
   const { t } = useTranslation('billing')
@@ -57,7 +58,11 @@ export function InvoiceDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['patient-invoices'] })
       setConfirmVoid(false)
     },
-    onError: (err) => toast.error(getApiErrorMessage(err)),
+    // Close the dialog either way; the toast explains why nothing changed (QA-036).
+    onError: (err) => {
+      toast.error(getApiErrorMessage(err))
+      setConfirmVoid(false)
+    },
   })
 
   const deleteItemMutation = useMutation({
@@ -70,7 +75,7 @@ export function InvoiceDetailPage() {
     onError: (err) => toast.error(getApiErrorMessage(err)),
   })
 
-  if (isLoading) return <div className="p-8 text-gray-400 text-sm">{tc('loading')}</div>
+  if (isLoading) return <div className="p-8 text-gray-500 text-sm dark:text-gray-400">{tc('loading')}</div>
   if (isError || !invoice) return (
     <div className="p-8">
       <p className="text-red-500 text-sm mb-3">Invoice not found.</p>
@@ -82,6 +87,8 @@ export function InvoiceDetailPage() {
 
   const isVoid = invoice.status === 'Void'
   const isPaid = invoice.status === 'Paid'
+  // The API refuses line-item changes once an invoice is fully paid (QA-004).
+  const lineItemsLocked = isVoid || isPaid
 
   return (
     <div className="p-6 max-w-4xl">
@@ -110,10 +117,10 @@ export function InvoiceDetailPage() {
               {patient.fullName}
             </Link>
           )}
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            {t('detail.issuedAt')} {new Date(invoice.issuedAt).toLocaleDateString()}
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {t('detail.issuedAt')} {formatDate(invoice.issuedAt)}
             {invoice.dueDate && (
-              <> · {t('detail.dueDate')} {new Date(invoice.dueDate).toLocaleDateString()}</>
+              <> · {t('detail.dueDate')} {formatDate(invoice.dueDate)}</>
             )}
           </p>
         </div>
@@ -122,19 +129,20 @@ export function InvoiceDetailPage() {
             <button
               onClick={() => setShowPayment(true)}
               disabled={isPaid}
-              className="bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="bg-primary-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {t('button.recordPayment')}
             </button>
             <button
               onClick={() => setShowAddItem(true)}
-              className="bg-primary-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-700"
+              disabled={lineItemsLocked}
+              className="bg-primary-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {t('button.addLineItem')}
             </button>
             <button
               onClick={() => setConfirmVoid(true)}
-              className="border border-red-200 text-red-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-50 dark:hover:bg-red-950/20"
+              className="border border-red-200 text-red-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-50 dark:hover:bg-red-950/20 dark:border-red-400/30 dark:text-red-300"
             >
               {t('button.void')}
             </button>
@@ -145,7 +153,7 @@ export function InvoiceDetailPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">
             {t('detail.subTotal')}
           </p>
           <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1 tabular-nums">
@@ -153,15 +161,15 @@ export function InvoiceDetailPage() {
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">
             {t('detail.paidAmount')}
           </p>
-          <p className="text-2xl font-semibold text-green-600 dark:text-green-400 mt-1 tabular-nums">
+          <p className="text-2xl font-semibold text-green-700 dark:text-green-400 mt-1 tabular-nums">
             {fmt(invoice.paidAmount)}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <p className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">
             {t('detail.balanceDue')}
           </p>
           <p
@@ -191,7 +199,7 @@ export function InvoiceDetailPage() {
           </h2>
         </div>
         {invoice.lineItems.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-gray-400 text-center">{t('detail.noLineItems')}</p>
+          <p className="px-5 py-8 text-sm text-gray-500 text-center dark:text-gray-400">{t('detail.noLineItems')}</p>
         ) : (
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
@@ -200,7 +208,7 @@ export function InvoiceDetailPage() {
                 <th className="px-4 py-2 text-center">{t('lineItem.qty')}</th>
                 <th className="px-4 py-2 text-right">{t('lineItem.unitFee')}</th>
                 <th className="px-4 py-2 text-right">{t('lineItem.total')}</th>
-                {!isVoid && <th className="px-4 py-2 text-center">{t('lineItem.actions')}</th>}
+                {!lineItemsLocked && <th className="px-4 py-2 text-center">{t('lineItem.actions')}</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -216,7 +224,7 @@ export function InvoiceDetailPage() {
                   <td className="px-4 py-2 text-right tabular-nums font-medium text-gray-900 dark:text-gray-100">
                     {fmt(item.lineTotal)}
                   </td>
-                  {!isVoid && (
+                  {!lineItemsLocked && (
                     <td className="px-4 py-2 text-center">
                       <div className="flex items-center justify-center gap-3">
                         <button
@@ -249,7 +257,7 @@ export function InvoiceDetailPage() {
           </h2>
         </div>
         {invoice.payments.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-gray-400 text-center">{t('detail.noPayments')}</p>
+          <p className="px-5 py-8 text-sm text-gray-500 text-center dark:text-gray-400">{t('detail.noPayments')}</p>
         ) : (
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
@@ -265,12 +273,12 @@ export function InvoiceDetailPage() {
               {invoice.payments.map((p) => (
                 <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
-                    {new Date(p.paidAt).toLocaleDateString()}
+                    {formatDate(p.paidAt)}
                   </td>
                   <td className="px-4 py-2 text-gray-500 dark:text-gray-400">
                     {t(`paymentMethod.${p.method}`)}
                   </td>
-                  <td className="px-4 py-2 text-right tabular-nums font-medium text-green-600 dark:text-green-400">
+                  <td className="px-4 py-2 text-right tabular-nums font-medium text-green-700 dark:text-green-400">
                     {fmt(p.amount)}
                   </td>
                   <td className="px-4 py-2 text-gray-500 dark:text-gray-400 font-mono text-xs">

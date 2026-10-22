@@ -21,6 +21,7 @@
     "overview": "Pregled",
     "appointments": "Termini",
     "treatments": "Tretmani",
+    "medical": "Medicinsko",
     "files": "Datoteke"
   },
   "section": {
@@ -30,6 +31,7 @@
     "notes": "Bilješke"
   },
   "field": {
+    "email": "Email",
     "dateOfBirth": "Datum rođenja",
     "gender": "Spol",
     "preferredContact": "Preferirani kontakt",
@@ -94,7 +96,7 @@
     "saving": "Čuvanje…",
     "saveChanges": "Sačuvaj promjene"
   },
-  "validation": { "required": "Obavezno" },
+  "validation": { "required": "Obavezno", "phone": "Unesite ispravan broj telefona, npr. 61 123 456." },
   "error": {
     "createFailed": "Kreiranje pacijenta nije uspjelo. Pokušajte ponovo.",
     "updateFailed": "Čuvanje promjena nije uspjelo. Pokušajte ponovo."
@@ -121,5 +123,116 @@
     "deleteFailed": "Brisanje nije uspjelo",
     "couldNotOpenFile": "Nije moguće otvoriti datoteku",
     "deleted": "Pacijent obrisan"
+  },
+  "allergyAlert": {
+    "label": "Alergije"
+  },
+  "allergySeverity": {
+    "Mild": "Blaga",
+    "Moderate": "Umjerena",
+    "Severe": "Teška",
+    "LifeThreatening": "Životno ugrožavajuća"
+  },
+  "medical": {
+    "emergencyContacts": "Hitni kontakti",
+    "allergies": "Alergije",
+    "medicalHistory": "Medicinska historija",
+    "add": "Dodaj",
+    "edit": "Uredi",
+    "cancel": "Odustani",
+    "save": "Sačuvaj",
+    "saving": "Čuvam…",
+    "contactName": "Ime *",
+    "contactNamePlaceholder": "Ime i prezime",
+    "relationship": "Srodstvo",
+    "relationshipPlaceholder": "Npr. Majka, Suprug",
+    "phone": "Telefon",
+    "primaryContact": "Primarni kontakt",
+    "primary": "Primarni",
+    "noContacts": "Nema hitnih kontakata.",
+    "allergen": "Alergen *",
+    "allergenPlaceholder": "Npr. Penicilin, Latex",
+    "severity": "Ozbiljnost",
+    "reaction": "Reakcija",
+    "reactionPlaceholder": "Npr. Osip, Anafilaksa",
+    "note": "Napomena",
+    "noAllergies": "Nema evidentiranih alergija.",
+    "conditions": "Medicinska stanja",
+    "noConditions": "Nema aktivnih medicinskih stanja.",
+    "bloodType": "Krvna grupa",
+    "pregnancy": "Trudnoća",
+    "yes": "Da",
+    "no": "Ne",
+    "physicianName": "Ime doktora",
+    "physicianPhone": "Telefon doktora",
+    "physician": "Doktor",
+    "currentMedications": "Trenutni lijekovi",
+    "medications": "Lijekovi",
+    "generalNotes": "Opće napomene",
+    "notes": "Napomene",
+    "noHistory": "Medicinska historija nije unesena.",
+    "condition": {
+      "isSmoker": "Pušač",
+      "isDiabetic": "Dijabetes",
+      "hasHeartCondition": "Srčano oboljenje",
+      "hasHypertension": "Hipertenzija",
+      "hasBleedingDisorder": "Poremećaj krvarenja",
+      "isOnBloodThinners": "Antikoagulansi",
+      "hasPacemaker": "Pejsmejker",
+      "hasArtificialJoints": "Vještački zglobovi",
+      "hasLatexAllergy": "Alergija na latex"
+    }
+  },
+  "treatmentPlans": {
+    "newPlan": "Novi plan",
+    "newPlanTitle": "Novi plan liječenja",
+    "titlePlaceholder": "Naziv plana (npr. Početni plan liječenja)",
+    "notesOptional": "Napomene (opciono)",
+    "notesPlaceholder": "Napomene…",
+    "creating": "Kreiranje…",
+    "createPlan": "Kreiraj plan",
+    "cancel": "Odustani",
+    "tooth": "Zub #",
+    "surface": "Površina",
+    "cdtCode": "CDT kod",
+    "fee": "Cijena (KM)",
+    "description": "Opis *",
+    "descriptionPlaceholder": "Kompozitna ispuna, 2 površine…",
+    "status": "Status",
+    "saving": "Čuvam…",
+    "save": "Sačuvaj",
+    "addItem": "Dodaj stavku",
+    "noItems": "Još nema stavki.",
+    "total": "Ukupno: {{amount}}",
+    "createInvoice": "Kreiraj fakturu",
+    "invoiceCreated": "Faktura kreirana",
+    "invoiceFailed": "Greška pri kreiranju fakture",
+    "deleteTitle": "Obrisati plan liječenja?",
+    "deleteBody": "<strong>{{title}}</strong> i sve njegove stavke bit će uklonjeni.",
+    "delete": "Obriši",
+    "loading": "Učitavanje…",
+    "none": "Još nema planova liječenja.",
+    "count_one": "{{count}} plan",
+    "count_other": "{{count}} planova",
+    "planStatus": {
+      "Draft": "Nacrt",
+      "Active": "Aktivan",
+      "Completed": "Završen",
+      "Declined": "Odbijen"
+    },
+    "itemStatus": {
+      "Planned": "Planirano",
+      "Accepted": "Prihvaćeno",
+      "Completed": "Završeno",
+      "Declined": "Odbijeno"
+    },
+    "count_few": "{{count}} plana"
+  },
+  "recallBanner": {
+    "overdue": "🔴 Recall prošao rok",
+    "dueSoon": "🟡 Recall uskoro",
+    "patients_one": "{{count}} pacijent",
+    "patients_few": "{{count}} pacijenta",
+    "patients_other": "{{count}} pacijenata"
   }
 }

@@ -43,5 +43,54 @@
   "toast": {
     "deleted": "Staff member removed",
     "deleteFailed": "Failed to remove staff member"
+  },
+  "absence": {
+    "type": {
+      "Vacation": "Vacation",
+      "Sickness": "Sick leave",
+      "SpecialLeave": "Day off",
+      "ReligiousHoliday": "Religious holiday",
+      "PublicHoliday": "Public holiday",
+      "Education": "Training / course"
+    },
+    "part": {
+      "morning": "Morning",
+      "noon": "Noon",
+      "evening": "Evening"
+    },
+    "boundary": {
+      "morning": "Morning (08:00)",
+      "lunchtime": "Noon (13:00)",
+      "evening": "Evening (17:00)"
+    },
+    "showPast": "Show past absences",
+    "add": "Add absence",
+    "loading": "Loading…",
+    "noneUpcoming": "No upcoming absences.",
+    "none": "No absences.",
+    "colType": "Type",
+    "colPeriod": "Period",
+    "colDuration": "Duration",
+    "colNote": "Note",
+    "modalTitle": "Absence request",
+    "typeLabel": "Absence type",
+    "from": "From",
+    "to": "To",
+    "note": "Note",
+    "optional": "(optional)",
+    "notePlaceholder": "Additional information…",
+    "invalidPeriod": "Invalid period",
+    "close": "Close",
+    "saving": "Saving…",
+    "confirm": "Confirm absence",
+    "endBeforeStart": "The end must be after the start.",
+    "added": "Absence added.",
+    "addFailed": "Could not add the absence.",
+    "removed": "Absence removed.",
+    "removeTitle": "Remove absence?",
+    "removeBody": "This absence will be removed.",
+    "remove": "Remove",
+    "days_one": "{{value}} day",
+    "days_other": "{{value}} days"
   }
 }

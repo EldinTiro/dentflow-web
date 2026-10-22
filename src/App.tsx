@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/shared/context/ThemeContext'
 import { restoreSession } from '@/features/auth/services/authService'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { AppRouter } from '@/routes'
+import { ErrorBoundary } from '@/shared/components/ErrorBoundary'
 
 /**
  * StrictMode mounts effects twice in development. Each call would rotate the
@@ -29,7 +30,9 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <AppRouter />
+      <ErrorBoundary>
+        <AppRouter />
+      </ErrorBoundary>
       <Toaster position="top-right" richColors closeButton />
     </ThemeProvider>
   )

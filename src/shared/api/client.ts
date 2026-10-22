@@ -36,6 +36,7 @@ interface RefreshResponse {
   email: string
   fullName: string
   roles: string[]
+  mustChangePassword: boolean
 }
 
 /**
@@ -54,6 +55,7 @@ async function requestNewAccessToken(): Promise<string> {
     email: data.email,
     fullName: data.fullName,
     roles: data.roles,
+    mustChangePassword: data.mustChangePassword,
   })
 
   return data.accessToken

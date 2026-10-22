@@ -11,14 +11,14 @@ import {
   type AppointmentStatus,
 } from '../services/appointmentService';
 import { staffService } from '@/features/staff/services/staffService';
-import { patientService } from '@/features/patients/services/patientService';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { BookAppointmentDrawer } from '../components/BookAppointmentDrawer';
 import { RescheduleModal } from '../components/RescheduleModal';
 import { WeekCalendar } from '../components/WeekCalendar';
 import { AppointmentDetailPanel } from '../components/AppointmentDetailPanel';
-import { useAuthStore } from '@/features/auth/store/authStore';
+import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
 import { Search, X, Download } from 'lucide-react';
+import { toLocalIsoDate } from '@/shared/lib/dates';
 
 type Tab = 'list' | 'calendar';
 
@@ -29,10 +29,6 @@ function getMondayOfWeek(date: Date): Date {
   d.setDate(d.getDate() + diff);
   d.setHours(0, 0, 0, 0);
   return d;
-}
-
-function toLocalDateStr(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function formatDate(isoStr: string) {
@@ -62,7 +58,7 @@ function SortBtn({ label, col, sort, onClick }: {
     <button
       onClick={onClick}
       className={`flex items-center gap-0.5 font-medium whitespace-nowrap hover:text-gray-900 ${
-        active ? 'text-primary-600' : 'text-gray-600'
+        active ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-gray-300'
       }`}
     >
       {label}
@@ -74,7 +70,7 @@ function SortBtn({ label, col, sort, onClick }: {
 export function AppointmentsPage() {
   const { t } = useTranslation('appointments')
   const { t: tc } = useTranslation('common')
-  const roles = useAuthStore((s) => s.user?.roles ?? []);
+  const roles = useAuthStore(selectRoles);
   const canManage =
     roles.includes('ClinicOwner') ||
     roles.includes('ClinicAdmin') ||
@@ -86,8 +82,8 @@ export function AppointmentsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = (searchParams.get('tab') ?? 'list') as Tab;
   const statusFilter = (searchParams.get('status') ?? '') as AppointmentStatus | '';
-  const dateFrom = searchParams.get('from') ?? toLocalDateStr(new Date());
-  const dateTo = searchParams.get('to') ?? toLocalDateStr(new Date());
+  const dateFrom = searchParams.get('from') ?? toLocalIsoDate(new Date());
+  const dateTo = searchParams.get('to') ?? toLocalIsoDate(new Date());
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
   const providerFilter = searchParams.get('provider') ?? '';
   const showPast = searchParams.get('past') === '1';
@@ -150,7 +146,7 @@ export function AppointmentsPage() {
 
   const effectiveDateFrom = showPast
     ? (dateFrom || undefined)
-    : (dateFrom || toLocalDateStr(new Date()));
+    : (dateFrom || toLocalIsoDate(new Date()));
 
   const listParams = {
     status: statusFilter || undefined,
@@ -162,8 +158,8 @@ export function AppointmentsPage() {
   };
 
   const calendarParams = {
-    dateFrom: toLocalDateStr(weekStart),
-    dateTo: toLocalDateStr(weekEnd),
+    dateFrom: toLocalIsoDate(weekStart),
+    dateTo: toLocalIsoDate(weekEnd),
     pageSize: 200,
   };
 
@@ -188,11 +184,6 @@ export function AppointmentsPage() {
     queryFn: () => staffService.list({ pageSize: 100 }),
   });
 
-  const { data: patientsData } = useQuery({
-    queryKey: ['patients-all'],
-    queryFn: () => patientService.list({ pageSize: 500 }),
-  });
-
   const providerColors = useMemo(() => {
     const map: Record<string, string> = {};
     for (const s of staffData?.items ?? []) {
@@ -207,11 +198,14 @@ export function AppointmentsPage() {
     return map;
   }, [staffData]);
 
+  // The appointment lists carry the names; no need to download every patient (QA-033).
   const patientNames = useMemo(() => {
     const map: Record<string, string> = {};
-    for (const p of patientsData?.items ?? []) map[p.id] = p.fullName;
+    for (const a of [...(listData?.items ?? []), ...(calData?.items ?? [])]) {
+      if (a.patientName) map[a.patientId] = a.patientName;
+    }
     return map;
-  }, [patientsData]);
+  }, [listData, calData]);
 
   const appointmentTypeNames = useMemo(() => {
     const map: Record<string, string> = {};
@@ -251,7 +245,7 @@ export function AppointmentsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `appointments-${toLocalDateStr(new Date())}.csv`;
+    link.download = `appointments-${toLocalIsoDate(new Date())}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -302,8 +296,8 @@ export function AppointmentsPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 pt-6 pb-4">
-        <div>
+      <div className="flex flex-col gap-3 px-4 pt-6 pb-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="min-w-0">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t('title')}</h1>
           {tab === 'list' && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
@@ -313,19 +307,20 @@ export function AppointmentsPage() {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Tab switcher */}
           <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-0.5">
             {(['list', 'calendar'] as Tab[]).map((tabKey) => (
               <button
                 key={tabKey}
+                aria-pressed={tab === tabKey}
                 onClick={() => {
                   setTab(tabKey);
                   if (tabKey === 'calendar') refetchCal();
                 }}
                 className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
                   tab === tabKey
-                    ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white'
+                    ? 'bg-white dark:bg-gray-700 shadow-sm ring-1 ring-primary-500 text-primary-700 dark:text-white'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }`}
               >
@@ -336,7 +331,7 @@ export function AppointmentsPage() {
           {canManage && (
             <button
               onClick={() => setShowBook(true)}
-              className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
+              className="flex-1 sm:flex-none whitespace-nowrap px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
             >
               {t('button.bookAppointment')}
             </button>
@@ -345,15 +340,16 @@ export function AppointmentsPage() {
       </div>
 
       {tab === 'list' ? (
-        <div className="flex-1 overflow-auto px-6 space-y-4 pb-6">
+        <div className="flex-1 overflow-auto px-4 sm:px-6 space-y-4 pb-6">
           {/* Filters */}
           <div className="space-y-2">
             {/* Row 1: Search + Export */}
             <div className="flex items-center gap-3">
               <div className="relative flex-1 max-w-sm">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none dark:text-gray-400" />
                 <input
                   type="text"
+                  aria-label={t('filter.search')}
                   placeholder={t('search.placeholder')}
                   value={searchTerm}
                   onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
@@ -361,8 +357,9 @@ export function AppointmentsPage() {
                 />
                 {searchTerm && (
                   <button
+                    aria-label={t('filter.clearSearch')}
                     onClick={() => { setSearchTerm(''); setPage(1); }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600 dark:text-gray-400"
                   >
                     <X size={14} />
                   </button>
@@ -382,15 +379,15 @@ export function AppointmentsPage() {
               {/* Date presets */}
               {(() => {
                 const now = new Date();
-                const todayS = toLocalDateStr(now);
+                const todayS = toLocalIsoDate(now);
                 const mon = getMondayOfWeek(now);
                 const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
                 const fom = new Date(now.getFullYear(), now.getMonth(), 1);
                 const lom = new Date(now.getFullYear(), now.getMonth() + 1, 0);
                 return ([
                   { label: t('preset.today'), from: todayS, to: todayS },
-                  { label: t('preset.thisWeek'), from: toLocalDateStr(mon), to: toLocalDateStr(sun) },
-                  { label: t('preset.thisMonth'), from: toLocalDateStr(fom), to: toLocalDateStr(lom) },
+                  { label: t('preset.thisWeek'), from: toLocalIsoDate(mon), to: toLocalIsoDate(sun) },
+                  { label: t('preset.thisMonth'), from: toLocalIsoDate(fom), to: toLocalIsoDate(lom) },
                 ] as const).map((p) => (
                   <button
                     key={p.label}
@@ -410,13 +407,15 @@ export function AppointmentsPage() {
 
               <input
                 type="date"
+                aria-label={t('filter.from')}
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
-              <span className="text-gray-400 dark:text-gray-500 text-xs">→</span>
+              <span className="text-gray-500 dark:text-gray-400 text-xs">→</span>
               <input
                 type="date"
+                aria-label={t('filter.to')}
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -425,6 +424,7 @@ export function AppointmentsPage() {
               <div className="h-4 w-px bg-gray-200" />
 
               <select
+                aria-label={t('filter.status')}
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as AppointmentStatus | '')}
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -436,6 +436,7 @@ export function AppointmentsPage() {
               </select>
 
               <select
+                aria-label={t('filter.provider')}
                 value={providerFilter}
                 onChange={(e) => setProviderFilter(e.target.value)}
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -451,7 +452,7 @@ export function AppointmentsPage() {
                   type="checkbox"
                   checked={showPast}
                   onChange={(e) => setShowPast(e.target.checked)}
-                  className="rounded border-gray-300"
+                  className="rounded border-gray-300 dark:border-gray-600"
                 />
                 {t('filter.showPast')}
               </label>
@@ -459,7 +460,7 @@ export function AppointmentsPage() {
           </div>
 
           {/* Table */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                 <tr>
@@ -474,11 +475,11 @@ export function AppointmentsPage() {
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {listLoading ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-10 text-gray-400">{tc('loading')}</td>
+                    <td colSpan={6} className="text-center py-10 text-gray-500 dark:text-gray-400">{tc('loading')}</td>
                   </tr>
                 ) : appointments.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-10 text-gray-400">{t('emptyState')}</td>
+                    <td colSpan={6} className="text-center py-10 text-gray-500 dark:text-gray-400">{t('emptyState')}</td>
                   </tr>
                 ) : (
                   appointments.map((a: AppointmentResponse) => {
@@ -546,7 +547,7 @@ export function AppointmentsPage() {
         </div>
       ) : (
         /* Calendar view */
-        <div className="flex-1 overflow-hidden flex flex-col px-6 pb-6">
+        <div className="flex-1 overflow-hidden flex flex-col px-4 sm:px-6 pb-6">
           {/* Week nav */}
           <div className="flex items-center gap-4 py-2">
             <button onClick={prevWeek} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.prev')}</button>

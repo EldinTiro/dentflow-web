@@ -12,6 +12,9 @@ import { useTheme, type ColorTheme } from '@/shared/context/ThemeContext'
 import { tenantService } from '@/features/admin/services/tenantService'
 import type { WeeklySchedule, NotificationConfig } from '@/features/admin/services/tenantService'
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { passwordSchema, type PasswordForm } from '../lib/passwordSchema'
+import { DEFAULT_WEEKLY_SCHEDULE } from '@/shared/lib/clinicSchedule'
+import { EditNameForm } from '../components/EditNameForm'
 
 // ── Schemas ────────────────────────────────────────────────────────────────
 
@@ -22,24 +25,6 @@ const prefsSchema = z.object({
   defaultCalendarView: z.enum(['day', 'week', 'month']),
 })
 type PrefsForm = z.infer<typeof prefsSchema>
-
-const passwordSchema = z
-  .object({
-    currentPassword: z.string().min(1, 'Required'),
-    newPassword: z
-      .string()
-      .min(12, 'At least 12 characters')
-      .regex(/[A-Z]/, 'Must contain uppercase')
-      .regex(/[a-z]/, 'Must contain lowercase')
-      .regex(/[0-9]/, 'Must contain a digit')
-      .regex(/[^a-zA-Z0-9]/, 'Must contain a special character'),
-    confirmPassword: z.string(),
-  })
-  .refine((d) => d.newPassword === d.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  })
-type PasswordForm = z.infer<typeof passwordSchema>
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -52,19 +37,7 @@ const PLAN_STYLES: Record<string, string> = {
 const SLOT_DURATION_OPTIONS = [15, 20, 30, 45, 60]
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
-const DAY_LABELS: Record<string, string> = {
-  monday: 'Ponedjeljak', tuesday: 'Utorak', wednesday: 'Srijeda',
-  thursday: 'Četvrtak', friday: 'Petak', saturday: 'Subota', sunday: 'Nedjelja',
-}
-const DEFAULT_SCHEDULE: WeeklySchedule = {
-  monday:    { isOpen: true,  start: '08:00', end: '17:00' },
-  tuesday:   { isOpen: true,  start: '08:00', end: '17:00' },
-  wednesday: { isOpen: true,  start: '08:00', end: '17:00' },
-  thursday:  { isOpen: true,  start: '08:00', end: '17:00' },
-  friday:    { isOpen: true,  start: '08:00', end: '17:00' },
-  saturday:  { isOpen: false, start: '08:00', end: '12:00' },
-  sunday:    { isOpen: false, start: '08:00', end: '12:00' },
-}
+const DEFAULT_SCHEDULE = DEFAULT_WEEKLY_SCHEDULE
 
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
 const MINUTES = ['00', '15', '30', '45']
@@ -79,7 +52,7 @@ function TimePicker24({ value, onChange, disabled }: { value: string; onChange: 
       <select value={h} disabled={disabled} onChange={e => onChange(`${e.target.value}:${m}`)} className={cls}>
         {HOURS.map(hh => <option key={hh} value={hh}>{hh}</option>)}
       </select>
-      <span className="text-gray-400 select-none font-bold text-xs">:</span>
+      <span className="text-gray-500 select-none font-bold text-xs dark:text-gray-400">:</span>
       <select value={m} disabled={disabled} onChange={e => onChange(`${h}:${e.target.value}`)} className={cls}>
         {MINUTES.map(mm => <option key={mm} value={mm}>{mm}</option>)}
       </select>
@@ -107,10 +80,10 @@ const notifSchema = z.object({
   reminder2HoursBefore: z.number().min(1).max(168).nullable(),
 }).refine(
   (d) => !d.smsEnabled || (d.reminder1HoursBefore !== null && d.reminder1HoursBefore >= 1),
-  { message: 'Podsjetnik 1 je obavezan kada je SMS aktivan', path: ['reminder1HoursBefore'] },
+  { message: 'profile.clinicSettings.reminder1Required', path: ['reminder1HoursBefore'] },
 ).refine(
   (d) => d.reminder2HoursBefore === null || (d.reminder1HoursBefore !== null && d.reminder2HoursBefore < d.reminder1HoursBefore),
-  { message: 'Podsjetnik 2 mora biti manji od Podsjetnika 1', path: ['reminder2HoursBefore'] },
+  { message: 'profile.clinicSettings.reminder2Order', path: ['reminder2HoursBefore'] },
 )
 type NotifForm = z.infer<typeof notifSchema>
 
@@ -118,6 +91,7 @@ type Tab = 'profile' | 'appearance' | 'clinic' | 'notifications'
 
 export function ProfilePage() {
   const { t, i18n } = useTranslation('auth')
+  const { t: tc } = useTranslation('common')
   const { setTheme, colorTheme, setColorTheme } = useTheme()
   const queryClient = useQueryClient()
   const isSuperAdmin = useAuthStore((s) => s.user?.roles?.includes('SuperAdmin') ?? false)
@@ -185,9 +159,9 @@ export function ProfilePage() {
     }),
     onSuccess: (updated) => {
       queryClient.setQueryData(['clinic-settings'], updated)
-      toast.success('Radno vrijeme sačuvano')
+      toast.success(t('profile.clinicSettings.hoursSaved'))
     },
-    onError: () => toast.error('Greška pri čuvanju radnog vremena'),
+    onError: () => toast.error(t('profile.clinicSettings.hoursFailed')),
   })
 
   // ── Notification config ───────────────────────────────────────────────────
@@ -228,9 +202,9 @@ export function ProfilePage() {
     }),
     onSuccess: (updated: NotificationConfig) => {
       queryClient.setQueryData(['notification-config'], updated)
-      toast.success('Postavke notifikacija sačuvane')
+      toast.success(t('profile.clinicSettings.notifSaved'))
     },
-    onError: () => toast.error('Greška pri čuvanju postavki notifikacija'),
+    onError: () => toast.error(t('profile.clinicSettings.notifFailed')),
   })
 
   // ── Preferences ───────────────────────────────────────────────────────────
@@ -292,10 +266,10 @@ export function ProfilePage() {
   // ── Tab definitions ───────────────────────────────────────────────────────
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'profile',    label: 'Profil',   icon: <User size={15} /> },
-    { id: 'appearance', label: 'Izgled',   icon: <Palette size={15} /> },
-    ...(canManageClinic ? [{ id: 'clinic' as Tab, label: 'Klinika', icon: <Building2 size={15} /> }] : []),
-    ...(canManageClinic ? [{ id: 'notifications' as Tab, label: 'Notifikacije', icon: <Bell size={15} /> }] : []),
+    { id: 'profile',    label: t('profile.tab.profile'),    icon: <User size={15} /> },
+    { id: 'appearance', label: t('profile.tab.appearance'), icon: <Palette size={15} /> },
+    ...(canManageClinic ? [{ id: 'clinic' as Tab, label: t('profile.tab.clinic'), icon: <Building2 size={15} /> }] : []),
+    ...(canManageClinic ? [{ id: 'notifications' as Tab, label: t('profile.tab.notifications'), icon: <Bell size={15} /> }] : []),
   ]
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -340,6 +314,7 @@ export function ProfilePage() {
                 <p className="text-sm text-gray-500 dark:text-gray-400">{profile?.email ?? '—'}</p>
               </div>
             </div>
+            {profile && <EditNameForm firstName={profile.firstName} lastName={profile.lastName} />}
           </section>
 
           {/* Subscription plan */}
@@ -351,7 +326,7 @@ export function ProfilePage() {
                 <span className={`px-3 py-1 rounded-full text-sm font-semibold ${PLAN_STYLES[tenant.plan] ?? PLAN_STYLES.Free}`}>
                   {tenant.plan}
                 </span>
-                <span className="text-xs text-gray-400 dark:text-gray-500">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   {tenant.planExpiresAt
                     ? t('profile.plan.expiresOn', { date: new Date(tenant.planExpiresAt).toLocaleDateString(i18n.language) })
                     : t('profile.plan.noExpiry')}
@@ -361,7 +336,7 @@ export function ProfilePage() {
               {features && (
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg bg-gray-50 dark:bg-gray-800 px-4 py-3">
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">{t('profile.plan.staff')}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{t('profile.plan.staff')}</p>
                     <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                       {(features.quotas['MaxStaffCount'] ?? 0) === -1
                         ? t('profile.plan.unlimited')
@@ -369,7 +344,7 @@ export function ProfilePage() {
                     </p>
                   </div>
                   <div className="rounded-lg bg-gray-50 dark:bg-gray-800 px-4 py-3">
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">{t('profile.plan.storage')}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{t('profile.plan.storage')}</p>
                     <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                       {(features.quotas['StorageLimitGb'] ?? 0) === -1
                         ? t('profile.plan.unlimited')
@@ -384,25 +359,25 @@ export function ProfilePage() {
           {/* Change password */}
           <section className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">{t('profile.sectionChangePassword')}</h2>
-            <form onSubmit={passwordForm.handleSubmit(handleChangePassword)} className="space-y-4">
+            <form noValidate onSubmit={passwordForm.handleSubmit(handleChangePassword)} className="space-y-4">
               <FieldRow label={t('profile.pwd.currentPassword')}>
                 <input type="password" className={INPUT_CLS} {...passwordForm.register('currentPassword')} />
                 {passwordForm.formState.errors.currentPassword && (
-                  <p className="text-xs text-red-500 mt-1">{passwordForm.formState.errors.currentPassword.message}</p>
+                  <p className="text-xs text-red-500 mt-1">{t(passwordForm.formState.errors.currentPassword.message ?? '')}</p>
                 )}
               </FieldRow>
 
               <FieldRow label={t('profile.pwd.newPassword')}>
                 <input type="password" className={INPUT_CLS} {...passwordForm.register('newPassword')} />
                 {passwordForm.formState.errors.newPassword && (
-                  <p className="text-xs text-red-500 mt-1">{passwordForm.formState.errors.newPassword.message}</p>
+                  <p className="text-xs text-red-500 mt-1">{t(passwordForm.formState.errors.newPassword.message ?? '')}</p>
                 )}
               </FieldRow>
 
               <FieldRow label={t('profile.pwd.confirmNewPassword')}>
                 <input type="password" className={INPUT_CLS} {...passwordForm.register('confirmPassword')} />
                 {passwordForm.formState.errors.confirmPassword && (
-                  <p className="text-xs text-red-500 mt-1">{passwordForm.formState.errors.confirmPassword.message}</p>
+                  <p className="text-xs text-red-500 mt-1">{t(passwordForm.formState.errors.confirmPassword.message ?? '')}</p>
                 )}
               </FieldRow>
 
@@ -421,7 +396,7 @@ export function ProfilePage() {
       {activeTab === 'appearance' && (
         <section className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">{t('profile.sectionPreferences')}</h2>
-          <form onSubmit={prefsForm.handleSubmit(handleSavePrefs)} className="space-y-4">
+          <form noValidate onSubmit={prefsForm.handleSubmit(handleSavePrefs)} className="space-y-4">
             <FieldRow label={t('profile.pref.theme')}>
               <select className={SELECT_CLS} {...prefsForm.register('theme')}>
                 <option value="light">{t('profile.pref.light')}</option>
@@ -462,8 +437,8 @@ export function ProfilePage() {
 
           {/* Color theme picker */}
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Tema boja</h3>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">Primarna boja sučelja.</p>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('profile.clinicSettings.colorTheme')}</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{t('profile.clinicSettings.colorThemeHint')}</p>
             <div className="flex flex-wrap gap-3">
               {([
                 { id: 'indigo', label: 'Indigo',  hex: '#4f46e5' },
@@ -495,23 +470,23 @@ export function ProfilePage() {
       {/* ── Tab: Notifikacije ────────────────────────────────────────────── */}
       {activeTab === 'notifications' && canManageClinic && (
         <section className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">SMS podsjetnici</h2>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-5">
-            Automatski SMS podsjetnici šalju se pacijentima koji su dali pristanak.
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('profile.clinicSettings.smsTitle')}</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">
+            {t('profile.clinicSettings.smsHint')}
           </p>
 
           {!hasSms && (
             <div className="mb-5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
-              SMS podsjetnici su dostupni na Pro i Enterprise planovima.
+              {t('profile.clinicSettings.smsUpgrade')}
             </div>
           )}
 
-          <form onSubmit={notifForm.handleSubmit((v) => saveNotifConfig.mutate(v))} className="space-y-5">
+          <form noValidate onSubmit={notifForm.handleSubmit((v) => saveNotifConfig.mutate(v))} className="space-y-5">
             {/* SMS toggle */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Aktiviraj SMS podsjetnike</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Šalje podsjetnike pacijentima koji imaju SMS pristanak</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('profile.clinicSettings.smsEnable')}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('profile.clinicSettings.smsEnableHint')}</p>
               </div>
               <button
                 type="button"
@@ -529,9 +504,9 @@ export function ProfilePage() {
             <div className={`space-y-3 transition-opacity ${!smsEnabled ? 'opacity-40 pointer-events-none' : ''}`}>
               {/* Reminder 1 */}
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Podsjetnik 1</p>
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">{t('profile.clinicSettings.reminder1')}</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Pošalji</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('profile.clinicSettings.send')}</span>
                   <input
                     type="number"
                     min={1}
@@ -539,10 +514,10 @@ export function ProfilePage() {
                     className="w-20 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-center text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500"
                     {...notifForm.register('reminder1HoursBefore', { valueAsNumber: true })}
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">sati prije termina</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('profile.clinicSettings.hoursBefore')}</span>
                 </div>
                 {notifForm.formState.errors.reminder1HoursBefore && (
-                  <p className="text-xs text-red-500 mt-1">{notifForm.formState.errors.reminder1HoursBefore.message}</p>
+                  <p className="text-xs text-red-500 mt-1">{t(notifForm.formState.errors.reminder1HoursBefore.message ?? '')}</p>
                 )}
               </div>
 
@@ -553,22 +528,22 @@ export function ProfilePage() {
                   onClick={() => notifForm.setValue('reminder2HoursBefore', 2, { shouldValidate: true })}
                   className="flex items-center gap-1.5 text-sm text-primary-600 dark:text-primary-400 hover:underline"
                 >
-                  <Plus size={14} /> Dodaj drugi podsjetnik
+                  <Plus size={14} /> {t('profile.clinicSettings.addReminder2')}
                 </button>
               ) : (
                 <div className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Podsjetnik 2</p>
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('profile.clinicSettings.reminder2')}</p>
                     <button
                       type="button"
                       onClick={() => notifForm.setValue('reminder2HoursBefore', null, { shouldValidate: true })}
-                      className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+                      className="text-xs text-gray-500 hover:text-red-500 transition-colors dark:text-gray-400"
                     >
-                      Ukloni
+                      {t('profile.clinicSettings.remove')}
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Pošalji</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{t('profile.clinicSettings.send')}</span>
                     <input
                       type="number"
                       min={1}
@@ -576,10 +551,10 @@ export function ProfilePage() {
                       className="w-20 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-center text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500"
                       {...notifForm.register('reminder2HoursBefore', { valueAsNumber: true })}
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">sati prije termina</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{t('profile.clinicSettings.hoursBefore')}</span>
                   </div>
                   {notifForm.formState.errors.reminder2HoursBefore && (
-                    <p className="text-xs text-red-500 mt-1">{notifForm.formState.errors.reminder2HoursBefore.message}</p>
+                    <p className="text-xs text-red-500 mt-1">{t(notifForm.formState.errors.reminder2HoursBefore.message ?? '')}</p>
                   )}
                 </div>
               )}
@@ -591,7 +566,7 @@ export function ProfilePage() {
                 disabled={saveNotifConfig.isPending}
                 className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-60"
               >
-                {saveNotifConfig.isPending ? 'Čuvam…' : 'Sačuvaj'}
+                {saveNotifConfig.isPending ? t('profile.clinicSettings.saving') : t('profile.clinicSettings.save')}
               </button>
             </div>
           </form>
@@ -601,17 +576,17 @@ export function ProfilePage() {
       {/* ── Tab: Klinika ─────────────────────────────────────────────────── */}
       {activeTab === 'clinic' && canManageClinic && (
         <section className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Radno vrijeme klinike</h2>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-5">
-            Radno vrijeme po danima. Termini se generišu samo za otvorene dane.
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('profile.clinicSettings.hoursTitle')}</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">
+            {t('profile.clinicSettings.hoursHint')}
           </p>
 
           {/* Per-day schedule */}
           <div className="space-y-2 mb-5">
             <div className="grid grid-cols-[130px_1fr_1fr_1fr] gap-2 mb-1">
               <span />
-              <span className="text-xs font-medium text-gray-400 dark:text-gray-500 text-center">Početak</span>
-              <span className="text-xs font-medium text-gray-400 dark:text-gray-500 text-center">Kraj</span>
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 text-center">{t('profile.clinicSettings.start')}</span>
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 text-center">{t('profile.clinicSettings.end')}</span>
               <span />
             </div>
             {DAYS.map(day => {
@@ -625,12 +600,12 @@ export function ProfilePage() {
                       onChange={e => updateDay(day, { isOpen: e.target.checked })}
                       className="rounded accent-primary-600"
                     />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{DAY_LABELS[day]}</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{tc(`day.${day}`)}</span>
                   </label>
                   <TimePicker24 value={d.start} disabled={!d.isOpen} onChange={v => updateDay(day, { start: v })} />
                   <TimePicker24 value={d.end}   disabled={!d.isOpen} onChange={v => updateDay(day, { end: v })} />
                   {!d.isOpen
-                    ? <span className="text-xs text-gray-400 dark:text-gray-500">Zatvoreno</span>
+                    ? <span className="text-xs text-gray-500 dark:text-gray-400">{t('profile.clinicSettings.closed')}</span>
                     : <span />
                   }
                 </div>
@@ -641,7 +616,7 @@ export function ProfilePage() {
           {/* Slot duration + save */}
           <div className="flex items-center gap-3 border-t border-gray-100 dark:border-gray-800 pt-4">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-              Trajanje termina
+              {t('profile.clinicSettings.slotDuration')}
             </label>
             <select
               value={localDuration}
@@ -659,7 +634,7 @@ export function ProfilePage() {
               disabled={saveClinicSettings.isPending}
               className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-60"
             >
-              {saveClinicSettings.isPending ? 'Čuvam…' : 'Sačuvaj'}
+              {saveClinicSettings.isPending ? t('profile.clinicSettings.saving') : t('profile.clinicSettings.save')}
             </button>
           </div>
         </section>

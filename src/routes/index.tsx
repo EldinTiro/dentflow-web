@@ -17,6 +17,7 @@ import { StaffDetailPage } from '@/features/staff/pages/StaffDetailPage'
 import { AppointmentsPage } from '@/features/appointments/pages/AppointmentsPage'
 import { AppointmentTypesPage } from '@/features/appointments/pages/AppointmentTypesPage'
 import { ProfilePage } from '@/features/auth/pages/ProfilePage'
+import { ChangePasswordRequiredPage } from '@/features/auth/pages/ChangePasswordRequiredPage'
 import { InvoicesPage } from '@/features/billing/pages/InvoicesPage'
 import { InvoiceDetailPage } from '@/features/billing/pages/InvoiceDetailPage'
 import { useAuthStore } from '@/features/auth/store/authStore'
@@ -33,6 +34,8 @@ export function AppRouter() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route element={<ProtectedRoute />}>
+        <Route path="change-password" element={<ChangePasswordRequiredPage />} />
+
         {/* Admin area — SuperAdmin only */}
         <Route element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
           <Route path="admin" element={<AdminLayout />}>
@@ -55,8 +58,10 @@ export function AppRouter() {
           <Route path="appointments" element={<AppointmentsPage />} />
           <Route path="invoices" element={<InvoicesPage />} />
           <Route path="invoices/:id" element={<InvoiceDetailPage />} />
-          <Route path="settings/users" element={<UsersPage />} />
-          <Route path="settings/appointment-types" element={<AppointmentTypesPage />} />
+          <Route element={<RoleGuard allowedRoles={['ClinicOwner', 'ClinicAdmin']} />}>
+            <Route path="settings/users" element={<UsersPage />} />
+            <Route path="settings/appointment-types" element={<AppointmentTypesPage />} />
+          </Route>
           <Route path="settings/profile" element={<ProfilePage />} />
         </Route>
       </Route>

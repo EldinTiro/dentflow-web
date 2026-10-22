@@ -3,20 +3,19 @@ import { useState, useRef, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown } from 'lucide-react'
-import axios from 'axios'
 import { Drawer } from '@/shared/components/Drawer'
+import { getApiErrorMessage } from '@/shared/utils/apiError'
 import { patientService, type CreatePatientRequest, type Gender, type PatientStatus } from '../services/patientService'
 
-function getApiError(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error)) {
-    const data = error.response?.data
-    if (data?.errors) {
-      const messages = Object.values(data.errors).flat() as string[]
-      if (messages.length > 0) return messages[0]
-    }
-    if (data?.message) return data.message as string
-  }
-  return fallback
+/**
+ * The dial code is picked separately, so this is the local part: digits (spaces,
+ * dashes, brackets allowed), 6–12 of them after a leading trunk 0 (QA-019).
+ */
+function isPlausibleLocalNumber(value: string): boolean {
+  if (!value) return true
+  if (!/^[\d\s\-()]+$/.test(value)) return false
+  const digits = value.replace(/\D/g, '').replace(/^0/, '')
+  return digits.length >= 6 && digits.length <= 12
 }
 
 function countryFlag(code: string): string {
@@ -89,27 +88,27 @@ function DialPicker({ value, onChange }: DialPickerProps) {
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1.5 h-full border border-gray-300 rounded-md px-2.5 py-1.5 text-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-nowrap"
+        className="flex items-center gap-1.5 h-full border border-gray-300 rounded-md px-2.5 py-1.5 text-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 whitespace-nowrap dark:bg-gray-900 dark:hover:bg-gray-800 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-gray-100"
       >
         <span className="text-base leading-none">{countryFlag(selected.code)}</span>
-        <span className="text-gray-700">{selected.dial}</span>
-        <ChevronDown size={13} className="text-gray-400" />
+        <span className="text-gray-700 dark:text-gray-300">{selected.dial}</span>
+        <ChevronDown size={13} className="text-gray-500 dark:text-gray-400" />
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1 left-0 w-64 max-h-60 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+        <div className="absolute z-50 mt-1 left-0 w-64 max-h-60 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-900 dark:border-gray-700">
           {COUNTRY_CODES.map(c => (
             <button
               key={`${c.code}-${c.dial}`}
               type="button"
               onClick={() => { onChange(c.dial); setOpen(false) }}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-gray-50 ${
-                c.dial === value && c.code === selected.code ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+              className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800${
+                c.dial === value && c.code === selected.code ? 'bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'
               }`}
             >
               <span className="text-base leading-none w-6 shrink-0">{countryFlag(c.code)}</span>
               <span className="font-medium w-12 shrink-0">{c.dial}</span>
-              <span className="truncate text-gray-500">{c.label}</span>
+              <span className="truncate text-gray-500 dark:text-gray-400">{c.label}</span>
             </button>
           ))}
         </div>
@@ -150,7 +149,7 @@ export function CreatePatientDrawer({ onClose }: Props) {
       status: 'Active',
       gender: '',
       phoneDialCode: '+387',
-      dateOfBirth: '2000-01-01',
+      dateOfBirth: '',
       smsOptIn: false,
       emailOptIn: false,
     },
@@ -184,17 +183,17 @@ export function CreatePatientDrawer({ onClose }: Props) {
     },
   })
 
-  const inputClass = 'w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-  const labelClass = 'block text-xs font-medium text-gray-600 mb-1'
+  const inputClass = 'w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+  const labelClass = 'block text-xs font-medium text-gray-600 mb-1 dark:text-gray-300'
   const errorClass = 'text-xs text-red-500 mt-0.5'
 
   return (
     <Drawer title={t('drawer.createTitle')} onClose={onClose}>
-      <form onSubmit={handleSubmit((v) => create.mutate(v))} className="space-y-4">
+      <form noValidate onSubmit={handleSubmit((v) => create.mutate(v))} className="space-y-4">
         {/* Patient Number (optional override) */}
         <div>
-          <label className={labelClass}>{t('drawer.patientNumber')} <span className="text-gray-400 font-normal">{t('drawer.autoGenerate')}</span></label>
-          <input
+          <label htmlFor="patient-patientNumber" className={labelClass}>{t('drawer.patientNumber')} <span className="text-gray-500 font-normal dark:text-gray-400">{t('drawer.autoGenerate')}</span></label>
+          <input id="patient-patientNumber"
             {...register('patientNumber')}
             className={inputClass}
             placeholder={t('drawer.patientNumberPlaceholder')}
@@ -204,8 +203,8 @@ export function CreatePatientDrawer({ onClose }: Props) {
         {/* Name row */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>{t('drawer.firstName')}</label>
-            <input
+            <label htmlFor="patient-firstName" className={labelClass}>{t('drawer.firstName')}</label>
+            <input id="patient-firstName"
               {...register('firstName', { required: t('validation.required') })}
               className={inputClass}
               placeholder="Jane"
@@ -213,8 +212,8 @@ export function CreatePatientDrawer({ onClose }: Props) {
             {errors.firstName && <p className={errorClass}>{errors.firstName.message}</p>}
           </div>
           <div>
-            <label className={labelClass}>{t('drawer.lastName')}</label>
-            <input
+            <label htmlFor="patient-lastName" className={labelClass}>{t('drawer.lastName')}</label>
+            <input id="patient-lastName"
               {...register('lastName', { required: t('validation.required') })}
               className={inputClass}
               placeholder="Doe"
@@ -224,24 +223,24 @@ export function CreatePatientDrawer({ onClose }: Props) {
         </div>
 
         <div>
-          <label className={labelClass}>{t('drawer.preferredName')}</label>
-          <input {...register('preferredName')} className={inputClass} placeholder={t('drawer.nicknamePlaceholder')} />
+          <label htmlFor="patient-preferredName" className={labelClass}>{t('drawer.preferredName')}</label>
+          <input id="patient-preferredName" {...register('preferredName')} className={inputClass} placeholder={t('drawer.nicknamePlaceholder')} />
         </div>
 
         <div>
-          <label className={labelClass}>{t('drawer.parentName')}</label>
-          <input {...register('parentName')} className={inputClass} placeholder={t('drawer.parentNamePlaceholder')} />
+          <label htmlFor="patient-parentName" className={labelClass}>{t('drawer.parentName')}</label>
+          <input id="patient-parentName" {...register('parentName')} className={inputClass} placeholder={t('drawer.parentNamePlaceholder')} />
         </div>
 
         {/* DOB + Gender */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>{t('drawer.dateOfBirth')}</label>
-            <input type="date" {...register('dateOfBirth')} className={inputClass} />
+            <label htmlFor="patient-dateOfBirth" className={labelClass}>{t('drawer.dateOfBirth')}</label>
+            <input id="patient-dateOfBirth" type="date" {...register('dateOfBirth')} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>{t('field.gender')}</label>
-            <select {...register('gender')} className={inputClass}>
+            <label htmlFor="patient-gender" className={labelClass}>{t('field.gender')}</label>
+            <select id="patient-gender" {...register('gender')} className={inputClass}>
               <option value="">{tc('gender.select')}</option>
               <option value="Male">{tc('gender.male')}</option>
               <option value="Female">{tc('gender.female')}</option>
@@ -253,28 +252,32 @@ export function CreatePatientDrawer({ onClose }: Props) {
 
         {/* Contact */}
         <div>
-          <label className={labelClass}>{t('drawer.email')}</label>
-          <input type="email" {...register('email')} className={inputClass} placeholder={t('drawer.emailPlaceholder')} />
+          <label htmlFor="patient-email" className={labelClass}>{t('drawer.email')}</label>
+          <input id="patient-email" type="email" {...register('email')} className={inputClass} placeholder={t('drawer.emailPlaceholder')} />
         </div>
         <div>
-          <label className={labelClass}>{t('drawer.mobilePhone')}</label>
+          <label htmlFor="patient-phoneMobile" className={labelClass}>{t('drawer.mobilePhone')}</label>
           <div className="flex gap-2">
             <DialPicker value={dialField.value} onChange={dialField.onChange} />
             <input
-              {...register('phoneMobile')}
+              id="patient-phoneMobile"
+              {...register('phoneMobile', {
+                validate: (v) => isPlausibleLocalNumber(v) || t('validation.phone'),
+              })}
               className={inputClass}
               placeholder={t('drawer.phonePlaceholder')}
             />
           </div>
+          {errors.phoneMobile && <p className={errorClass}>{errors.phoneMobile.message}</p>}
         </div>
 
         {/* Opt-ins */}
         <div className="flex gap-5">
-          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer dark:text-gray-300">
             <input type="checkbox" {...register('smsOptIn')} className="rounded" />
             {t('drawer.smsOptIn')}
           </label>
-          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer dark:text-gray-300">
             <input type="checkbox" {...register('emailOptIn')} className="rounded" />
             {t('drawer.emailOptIn')}
           </label>
@@ -282,8 +285,8 @@ export function CreatePatientDrawer({ onClose }: Props) {
 
         {/* Notes */}
         <div>
-          <label className={labelClass}>Notes</label>
-          <textarea
+          <label htmlFor="patient-notes" className={labelClass}>Notes</label>
+          <textarea id="patient-notes"
             {...register('notes')}
             rows={3}
             className={inputClass + ' resize-none'}
@@ -292,21 +295,21 @@ export function CreatePatientDrawer({ onClose }: Props) {
         </div>
 
         {create.isError && (
-          <p className="text-sm text-red-600">{getApiError(create.error, t('error.createFailed'))}</p>
+          <p className="text-sm text-red-600">{getApiErrorMessage(create.error, t('error.createFailed'))}</p>
         )}
 
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
             disabled={create.isPending}
-            className="flex-1 bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+            className="flex-1 bg-primary-600 text-white py-2 rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
           >
             {create.isPending ? t('drawer.creating') : t('drawer.createButton')}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-md text-sm font-medium hover:bg-gray-50"
+            className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
           >
             {tc('button.cancel')}
           </button>

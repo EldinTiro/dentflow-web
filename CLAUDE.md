@@ -103,7 +103,7 @@ export const getPatient = (id: string) =>
 
 - `apiClient` has **`baseURL: ''`** — always write the full `/api/v1/...` path in the service. Vite proxies `/api` in dev, nginx proxies it in prod
 - `Authorization: Bearer {token}` and `Accept-Language` are injected automatically by the request interceptor
-- ⚠️ **On 401 the interceptor calls `clearAuth()` and nothing else.** There is no refresh call and no retry — the user is simply logged out. Token refresh is Faza 1.2; do not write code that assumes a retry happens
+- **On 401 the interceptor refreshes once and retries.** It calls `refreshAccessToken()` (single-flight: concurrent 401s share one `/auth/refresh`, because a second rotation would look like token reuse and revoke the family), then replays the request. Only if the refresh fails does it `clearAuth()`. Calls to `/api/v1/auth/*` are never retried
 
 ## Server State (TanStack Query)
 
@@ -160,8 +160,10 @@ import { useAuthStore } from '@/features/auth/store/authStore';
 const { accessToken, user, isAuthenticated, setAuth, clearAuth, hasRole } = useAuthStore();
 ```
 
-- ⚠️ **The access token is currently in `localStorage`**, not memory. The store wraps `persist` with no custom storage, so it writes to `localStorage` under the key `pearldesk-auth`. Moving it to memory is Faza 1.3 — until then, treat any XSS as full token compromise
-- ⚠️ **There is no refresh token.** No HttpOnly cookie, no rotation, no `/auth/logout`. `logout()` in `authService` only clears local state; the server is never told
+- **The access token lives in memory only** (Zustand store, no `persist`). A cold load restores the session from the HttpOnly refresh cookie (`restoreSession()` in `App.tsx`); the legacy `pearldesk-auth` localStorage key is deleted on boot
+- **Refresh token**: HttpOnly cookie scoped to `/api/v1/auth`, rotated on every refresh, family revoked on reuse. `logout()` calls `/auth/logout` so the server revokes it too
+- **Select roles with `useAuthStore(selectRoles)`**, never `s.user?.roles ?? []` — a fresh `[]` per call makes Zustand 5 re-render forever when nobody is signed in
+- `user.mustChangePassword` is set after signing in with a temporary password; `ProtectedRoute` then sends the user to `/change-password` (the API refuses everything else until it is changed)
 - Use `hasRole(...)` to read the current user's role for conditional rendering
 
 ## Routing & Route Guards

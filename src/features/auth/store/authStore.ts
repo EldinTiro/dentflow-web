@@ -5,6 +5,8 @@ interface AuthUser {
   email: string
   fullName: string
   roles: string[]
+  /** The password was set by someone else and must be replaced before using the app (QA-011). */
+  mustChangePassword?: boolean
 }
 
 interface AuthState {
@@ -42,3 +44,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
   hasRole: (role) => get().user?.roles.includes(role) ?? false,
 }))
+
+const NO_ROLES: string[] = []
+
+/**
+ * Use this instead of `s.user?.roles ?? []`: a fresh [] on every call makes Zustand 5
+ * re-render forever whenever nobody is signed in (e.g. right after logout).
+ */
+export const selectRoles = (s: AuthState): string[] => s.user?.roles ?? NO_ROLES

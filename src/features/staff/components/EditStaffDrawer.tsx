@@ -10,7 +10,7 @@ import {
   type StaffMemberResponse,
   type UpdateStaffRequest,
 } from '../services/staffService';
-import { useAuthStore } from '@/features/auth/store/authStore';
+import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
 
 interface Props {
   staff: StaffMemberResponse;
@@ -18,7 +18,7 @@ interface Props {
 }
 
 export function EditStaffDrawer({ staff, onClose }: Props) {
-  const roles = useAuthStore((s) => s.user?.roles ?? []);
+  const roles = useAuthStore(selectRoles);
   const canDelete = roles.includes('ClinicOwner') || roles.includes('SuperAdmin');
   const queryClient = useQueryClient();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -68,30 +68,30 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
 
   return (
     <Drawer title={`Edit — ${staff.fullName}`} onClose={onClose}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-6">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-6">
         {/* Name */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="staff-edit-firstName" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">
               First Name <span className="text-red-500">*</span>
             </label>
-            <input
+            <input id="staff-edit-firstName"
               type="text"
               {...register('firstName', { required: 'Required' })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             />
             {errors.firstName && (
               <p className="mt-1 text-xs text-red-600">{errors.firstName.message}</p>
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="staff-edit-lastName" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">
               Last Name <span className="text-red-500">*</span>
             </label>
-            <input
+            <input id="staff-edit-lastName"
               type="text"
               {...register('lastName', { required: 'Required' })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             />
             {errors.lastName && (
               <p className="mt-1 text-xs text-red-600">{errors.lastName.message}</p>
@@ -101,108 +101,108 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
 
         {/* Email */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input
+          <label htmlFor="staff-edit-email" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Email</label>
+          <input id="staff-edit-email"
             type="email"
             {...register('email')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
         </div>
 
         {/* Phone */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-          <input
+          <label htmlFor="staff-edit-phone" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Phone</label>
+          <input id="staff-edit-phone"
             type="tel"
             {...register('phone')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
         </div>
 
         {/* Specialty */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Specialty</label>
-          <input
+          <label htmlFor="staff-edit-specialty" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Specialty</label>
+          <input id="staff-edit-specialty"
             type="text"
             {...register('specialty')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
         </div>
 
         {/* Color */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Calendar Color</label>
-          <input
+          <label htmlFor="staff-edit-colorHex" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Calendar Color</label>
+          <input id="staff-edit-colorHex"
             type="color"
             {...register('colorHex')}
-            className="h-9 w-20 border border-gray-300 rounded-lg px-1 py-1 cursor-pointer"
+            className="h-9 w-20 border border-gray-300 rounded-lg px-1 py-1 cursor-pointer dark:border-gray-600"
           />
         </div>
 
         {/* License + NPI */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">License #</label>
-            <input
+            <label htmlFor="staff-edit-licenseNumber" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">License #</label>
+            <input id="staff-edit-licenseNumber"
               type="text"
               {...register('licenseNumber')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">License Expiry</label>
-            <input
+            <label htmlFor="staff-edit-licenseExpiry" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">License Expiry</label>
+            <input id="staff-edit-licenseExpiry"
               type="date"
               {...register('licenseExpiry')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">NPI Number</label>
-          <input
+          <label htmlFor="staff-edit-npiNumber" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">NPI Number</label>
+          <input id="staff-edit-npiNumber"
             type="text"
             {...register('npiNumber')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
         </div>
 
         {/* Biography */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Biography</label>
-          <textarea
+          <label htmlFor="staff-edit-biography" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Biography</label>
+          <textarea id="staff-edit-biography"
             {...register('biography')}
             rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
         </div>
 
         {/* Address */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-          <input
+          <label htmlFor="staff-edit-address" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Address</label>
+          <input id="staff-edit-address"
             type="text"
             {...register('address')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-            <input
+            <label htmlFor="staff-edit-city" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">City</label>
+            <input id="staff-edit-city"
               type="text"
               {...register('city')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
-            <input
+            <label htmlFor="staff-edit-postalCode" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Postal Code</label>
+            <input id="staff-edit-postalCode"
               type="text"
               {...register('postalCode')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             />
           </div>
         </div>
@@ -224,7 +224,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
             >
               Cancel
             </button>

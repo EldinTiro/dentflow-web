@@ -89,17 +89,75 @@
   "boolean": { "yes": "Ja", "no": "Nein" },
   "lastLogin": { "never": "Nie" },
   "expiry": { "expired": "Abgelaufen" },
-  "role": { "staff": "Personal" },
+  "role": { "staff": "Personal", "SuperAdmin": "Super-Admin", "ClinicOwner": "Praxisinhaber", "ClinicAdmin": "Praxisadministrator", "Dentist": "Zahnarzt", "Hygienist": "Dentalhygieniker", "Receptionist": "Empfang", "BillingStaff": "Abrechnung", "ReadOnly": "Nur Lesen" },
   "pagination": {
     "pageOfTotal": "Seite {{page}} von {{totalPages}} ({{totalCount}} gesamt)",
     "showingRange": "Zeige {{from}}–{{to}} von {{total}}"
   },
   "aria": {
+    "language": "Sprache ändern",
+    "expand": "Aufklappen",
+    "collapse": "Zuklappen",
+    "editPlan": "Plan bearbeiten",
+    "deletePlan": "Plan löschen",
+    "editItem": "Eintrag bearbeiten",
+    "deleteItem": "Eintrag löschen",
     "closeSidebar": "Seitenleiste schließen",
     "openSidebar": "Seitenleiste öffnen",
     "toggleDarkMode": "Dunkelmodus umschalten",
     "close": "Schließen",
     "hidePassword": "Passwort ausblenden",
     "showPassword": "Passwort anzeigen"
+  },
+  "errorBoundary": {
+    "title": "Etwas ist schiefgelaufen",
+    "description": "Auf dieser Seite ist ein unerwarteter Fehler aufgetreten. Der Rest der App funktioniert weiterhin.",
+    "retry": "Erneut versuchen",
+    "reload": "Seite neu laden"
+  },
+  "confirmAction": {
+    "deactivateTenantTitle": "{{name}} deaktivieren?",
+    "deactivateTenantBody": "Alle Benutzer dieser Praxis werden abgemeldet und können sich erst nach der Reaktivierung wieder anmelden. Es werden keine Daten gelöscht.",
+    "deactivateUserTitle": "{{name}} deaktivieren?",
+    "deactivateUserBody": "Die Person kann sich nicht mehr anmelden.",
+    "resetPasswordTitle": "Passwort von {{name}} zurücksetzen?",
+    "resetPasswordBody": "Das aktuelle Passwort ist sofort ungültig. Bei der nächsten Anmeldung muss ein neues gewählt werden.",
+    "changeRoleTitle": "Rolle von {{name}} ändern?",
+    "changeRoleBody": "{{from}} → {{to}}. Das ändert sofort, was die Person sehen und tun kann.",
+    "resetPassword": "Passwort zurücksetzen",
+    "changeRole": "Rolle ändern"
+  },
+  "feedback": {
+    "saved": "Gespeichert",
+    "required": "Pflichtfeld",
+    "minLength": "Mindestens {{count}} Zeichen"
+  },
+  "accessDenied": {
+    "title": "Kein Zugriff auf diese Seite",
+    "description": "Ihre Rolle umfasst diesen Bereich nicht. Wenden Sie sich bei Bedarf an die Praxisinhaberin oder den Administrator.",
+    "back": "Zurück zum Dashboard"
+  },
+  "tempPassword": {
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "mustChange": "Bei der ersten Anmeldung muss ein eigenes Passwort gewählt werden."
+  },
+  "validation": {
+    "required": "Pflichtfeld",
+    "email": "Bitte eine gültige E-Mail-Adresse eingeben",
+    "minLength": "Mindestens {{count}} Zeichen",
+    "maxLength": "Höchstens {{count}} Zeichen",
+    "min": "Muss mindestens {{min}} sein",
+    "max": "Darf höchstens {{max}} sein",
+    "slug": "Nur Kleinbuchstaben, Ziffern und Bindestriche",
+    "hexColour": "Farbe im Format #3B82F6",
+    "passwordRequired": "Passwort ist erforderlich",
+    "nameRequired": "Name ist erforderlich",
+    "passwordLength": "Mindestens 12 Zeichen",
+    "passwordUpper": "Muss einen Großbuchstaben enthalten",
+    "passwordLower": "Muss einen Kleinbuchstaben enthalten",
+    "passwordDigit": "Muss eine Ziffer enthalten",
+    "passwordSpecial": "Muss ein Sonderzeichen enthalten",
+    "passwordsMismatch": "Passwörter stimmen nicht überein"
   }
 }

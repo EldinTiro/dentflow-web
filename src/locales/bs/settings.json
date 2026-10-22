@@ -2,7 +2,7 @@
   "team": {
     "title": "Tim",
     "memberCount": "{{count}} članova",
-    "button": { "invite": "+ Pozovi člana" },
+    "button": { "invite": "+ Dodaj člana" },
     "search": { "placeholder": "Pretraži po imenu ili emailu…" },
     "emptyState": "Nema članova tima.",
     "table": {
@@ -15,8 +15,8 @@
     "resetPwd": { "title": "Privremena lozinka" }
   },
   "invite": {
-    "title": "Pozovi člana tima",
-    "successTitle": "Korisnik pozvan",
+    "title": "Dodaj člana tima",
+    "successTitle": "Nalog kreiran",
     "successMessage": "Račun uspješno kreiran. Podijelite pristupne podatke sa novim članom tima.",
     "email": "Email",
     "tempPassword": "Privremena lozinka",
@@ -25,8 +25,8 @@
     "lastName": "Prezime *",
     "emailLabel": "Email *",
     "roleLabel": "Uloga *",
-    "sendButton": "Pošalji poziv",
-    "sending": "Slanje poziva…",
+    "sendButton": "Kreiraj nalog",
+    "sending": "Kreiranje…",
     "error": "Pozivanje korisnika nije uspjelo. Možda već imaju račun."
   },
   "adminUsers": {
