@@ -1,7 +1,7 @@
 {
   "title": "Pacijenti",
   "totalCount": "{{count}} ukupno",
-  "button": { "newPatient": "+ Novi pacijent" },
+  "button": { "bookAppointment": "Zakaži termin", "newPatient": "+ Novi pacijent" },
   "search": { "placeholder": "Pretraži po imenu, emailu, telefonu…" },
   "emptyState": "Nema pronađenih pacijenata.",
   "table": {

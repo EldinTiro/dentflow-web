@@ -11,6 +11,7 @@ import {
   STATUS_COLORS,
 } from '@/features/appointments/services/appointmentService'
 import { AppointmentDetailPanel } from '@/features/appointments/components/AppointmentDetailPanel'
+import { BookAppointmentDrawer } from '@/features/appointments/components/BookAppointmentDrawer'
 import { RescheduleModal } from '@/features/appointments/components/RescheduleModal'
 import { StatusBadge } from '@/shared/components/StatusBadge'
 import type { AppointmentResponse } from '@/features/appointments/services/appointmentService'
@@ -18,7 +19,7 @@ import { TreatmentPlanTab } from '@/features/treatments/components/TreatmentPlan
 import { PatientFilesTab } from '../components/PatientFilesTab'
 import { PatientBillingTab } from '@/features/billing/components/PatientBillingTab'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
-import { Trash2, Plus, AlertTriangle, Phone, User, Heart } from 'lucide-react'
+import { Trash2, Plus, AlertTriangle, Phone, User, Heart, CalendarPlus } from 'lucide-react'
 import { AllergyAlert } from '../components/AllergyAlert'
 import { formatDate } from '@/shared/lib/format'
 
@@ -58,6 +59,7 @@ export function PatientDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showEdit, setShowEdit] = useState(false)
+  const [showBook, setShowBook] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   // The active tab lives in ?tab= so a reload or a shared link keeps it (QA-028).
   const [searchParams, setSearchParams] = useSearchParams()
@@ -128,9 +130,18 @@ export function PatientDetailPage() {
           )}
         </div>
         <div className="flex gap-2">
+          {canManage && (
+            <button
+              onClick={() => setShowBook(true)}
+              className="inline-flex items-center gap-1.5 bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700"
+            >
+              <CalendarPlus size={16} aria-hidden="true" />
+              {t('button.bookAppointment')}
+            </button>
+          )}
           <button
             onClick={() => setShowEdit(true)}
-            className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700"
+            className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             {tc('button.edit')}
           </button>
@@ -239,6 +250,18 @@ export function PatientDetailPage() {
 
       {showEdit && (
         <EditPatientDrawer patient={patient} onClose={() => setShowEdit(false)} />
+      )}
+      {showBook && (
+        <BookAppointmentDrawer
+          onClose={() => setShowBook(false)}
+          initialPatient={{
+            id: patient.id,
+            patientNumber: patient.patientNumber,
+            fullName: patient.fullName,
+            phoneMobile: patient.phoneMobile ?? null,
+            email: patient.email ?? null,
+          }}
+        />
       )}
 
       {selectedAppt && (

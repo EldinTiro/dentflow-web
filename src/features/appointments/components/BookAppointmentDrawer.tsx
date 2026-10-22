@@ -17,6 +17,8 @@ import { tenantService } from '@/features/admin/services/tenantService';
 interface Props {
   onClose: () => void;
   initialPatientId?: string;
+  /** Pre-selects and displays this patient (booking from a patient chart). */
+  initialPatient?: PatientSearchResult;
   initialDate?: string;
   initialStartAt?: string;
   initialProviderId?: string;
@@ -46,7 +48,7 @@ function toDateOnly(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, initialStartAt, initialProviderId }: Props) {
+export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatient, initialDate, initialStartAt, initialProviderId }: Props) {
   const { t } = useTranslation('appointments');
   const uid = useId();
   const fid = (name: string) => `${uid}-${name}`;
@@ -69,7 +71,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
   })();
 
   const [patientSearch, setPatientSearch] = useState('');
-  const [selectedPatient, setSelectedPatient] = useState<PatientSearchResult | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<PatientSearchResult | null>(initialPatient ?? null);
   const [patientOpen, setPatientOpen] = useState(false);
   const [showSlotPicker, setShowSlotPicker] = useState(false);
   const patientRef = useRef<HTMLDivElement>(null);
@@ -92,7 +94,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
-      patientId: initialPatientId ?? '',
+      patientId: initialPatient?.id ?? initialPatientId ?? '',
       providerId: initialProviderId ?? '',
       startAt: defaultStartAt,
       durationMinutes: 30,

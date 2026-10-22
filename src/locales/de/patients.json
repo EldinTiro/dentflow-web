@@ -1,7 +1,7 @@
 {
   "title": "Patienten",
   "totalCount": "{{count}} gesamt",
-  "button": { "newPatient": "+ Neuer Patient" },
+  "button": { "bookAppointment": "Termin buchen", "newPatient": "+ Neuer Patient" },
   "search": { "placeholder": "Nach Name, E-Mail, Telefon suchen…" },
   "emptyState": "Keine Patienten gefunden.",
   "table": {

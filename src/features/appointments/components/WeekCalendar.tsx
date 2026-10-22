@@ -11,6 +11,8 @@ interface Props {
   patientNames: Record<string, string>;
   appointmentTypeNames: Record<string, string>;
   onAppointmentClick?: (appt: AppointmentResponse) => void;
+  /** Click on empty time: local "YYYY-MM-DDTHH:mm", rounded down to the half hour. */
+  onSlotClick?: (startAt: string) => void;
 }
 
 type TooltipState = { appt: AppointmentResponse; x: number; y: number } | null;
@@ -82,7 +84,10 @@ function layoutDay(appts: AppointmentResponse[]): Map<string, { col: number; col
   return layout;
 }
 
-export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick }: Props) {
+const HOUR_PX = 56;
+const SLOT_MINUTES = 30;
+
+export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick }: Props) {
   const [tooltip, setTooltip] = useState<TooltipState>(null);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -167,9 +172,18 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
               return (
                 <div
                   key={colIdx}
+                  data-day={dateStr}
+                  onClick={onSlotClick ? (e) => {
+                    const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
+                    const slot = Math.floor((y / HOUR_PX) * (60 / SLOT_MINUTES));
+                    const minutes = Math.min(Math.max(HOUR_START * 60 + slot * SLOT_MINUTES, HOUR_START * 60), HOUR_END * 60 - SLOT_MINUTES);
+                    const hh = String(Math.floor(minutes / 60)).padStart(2, '0');
+                    const mm = String(minutes % 60).padStart(2, '0');
+                    onSlotClick(`${dateStr}T${hh}:${mm}`);
+                  } : undefined}
                   className={`relative flex-1 border-l border-gray-100 dark:border-gray-700/50 ${
                     isToday ? 'bg-primary-50/20 dark:bg-primary-900/10' : ''
-                  }`}
+                  } ${onSlotClick ? 'cursor-copy hover:bg-gray-50/60 dark:hover:bg-gray-800/40' : ''}`}
                 >
                   {/* Hour lines */}
                   {Array.from({ length: HOURS }, (_, i) => (
@@ -200,7 +214,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                     return (
                       <button
                         key={appt.id}
-                        onClick={() => onAppointmentClick?.(appt)}
+                        onClick={(e) => { e.stopPropagation(); onAppointmentClick?.(appt); }}
                         onMouseEnter={(e) => {
                           const rect = e.currentTarget.getBoundingClientRect();
                           setTooltip({ appt, x: rect.right + 8, y: rect.top });

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
@@ -6,7 +6,10 @@ import {
   CalendarDays, Users, UserCog, Clock, TrendingUp, TrendingDown,
   CheckCircle2, CalendarPlus, UserPlus, DollarSign, Wallet, Bell,
 } from 'lucide-react'
-import { appointmentService, AppointmentStatus, STATUS_COLORS, APPOINTMENT_STATUS_LABELS } from '@/features/appointments/services/appointmentService'
+import { appointmentService, AppointmentStatus, STATUS_COLORS, APPOINTMENT_STATUS_LABELS, type AppointmentResponse } from '@/features/appointments/services/appointmentService'
+import { AppointmentDetailPanel } from '@/features/appointments/components/AppointmentDetailPanel'
+import { RescheduleModal } from '@/features/appointments/components/RescheduleModal'
+import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
 import { patientService } from '@/features/patients/services/patientService'
 import { staffService } from '@/features/staff/services/staffService'
 import { dashboardService } from './dashboardService'
@@ -48,15 +51,20 @@ interface RecentApptRowProps {
   duration: number
   patientName?: string
   providerName?: string
+  onOpen: () => void
 }
 
-function RecentApptRow({ time, status, complaint, duration, patientName, providerName }: RecentApptRowProps) {
+function RecentApptRow({ time, status, complaint, duration, patientName, providerName, onOpen }: RecentApptRowProps) {
   const rowBg =
     status === 'Completed' ? 'bg-gray-50/80 dark:bg-gray-800/50 opacity-70' :
     status === 'Cancelled' ? 'bg-red-50/60 dark:bg-red-950/20' :
     status === 'NoShow'    ? 'bg-red-50/40 dark:bg-red-950/10' : ''
   return (
-    <div className={`flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0 ${rowBg}`}>
+    <button
+      type="button"
+      onClick={onOpen}
+      className={`w-full text-left flex items-center justify-between py-3 px-2 -mx-2 rounded-lg border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer ${rowBg}`}
+    >
       <div className="flex items-center gap-3 min-w-0">
         <div className="text-sm font-medium text-gray-800 dark:text-gray-200 shrink-0">{time}</div>
         <StatusBadge status={status} colorMap={STATUS_COLORS} labelMap={APPOINTMENT_STATUS_LABELS} className="shrink-0" />
@@ -71,12 +79,17 @@ function RecentApptRow({ time, status, complaint, duration, patientName, provide
         {complaint && <span className="truncate max-w-[120px] hidden md:block">{complaint}</span>}
         <span>{duration} min</span>
       </div>
-    </div>
+    </button>
   )
 }
 
 
 export function DashboardPage() {
+  const [selected, setSelected] = useState<AppointmentResponse | null>(null)
+  const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null)
+  const roles = useAuthStore(selectRoles)
+  // Same rule as AppointmentsPage: who may change an appointment's status.
+  const canManage = ['ClinicOwner', 'ClinicAdmin', 'Receptionist', 'Dentist', 'Hygienist', 'SuperAdmin'].some((r) => roles.includes(r))
   const { t, i18n } = useTranslation('dashboard')
 
   const localeMap: Record<string, string> = { bs: 'hr', en: 'en', de: 'de' }
@@ -269,7 +282,7 @@ export function DashboardPage() {
           iconBg="bg-orange-50 dark:bg-orange-400/10"
           iconColor="text-orange-500"
           sub={t('stat.unpaidInvoices')}
-          to="/billing"
+          to="/invoices"
         />
         <StatCard
           label={t('stat.newPatientsThisMonth')}
@@ -377,6 +390,7 @@ export function DashboardPage() {
                 duration={a.durationMinutes}
                 patientName={patientNames[a.patientId]}
                 providerName={providerNames[a.providerId]}
+                onOpen={() => setSelected(a)}
               />
             ))}
             {todayCount > 8 && (
@@ -431,6 +445,17 @@ export function DashboardPage() {
 
       {/* Quick slot availability check */}
       <SlotCheckerWidget />
+
+      {/* Act on today's visits without leaving the dashboard */}
+      {selected && (
+        <AppointmentDetailPanel
+          appointment={selected}
+          onClose={() => setSelected(null)}
+          onReschedule={(a) => { setRescheduling(a); setSelected(null) }}
+          canManage={canManage}
+        />
+      )}
+      {rescheduling && <RescheduleModal appointment={rescheduling} onClose={() => setRescheduling(null)} />}
     </div>
   )
 }

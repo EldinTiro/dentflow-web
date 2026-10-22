@@ -588,6 +588,7 @@ export function AppointmentsPage() {
               patientNames={patientNames}
               appointmentTypeNames={appointmentTypeNames}
               onAppointmentClick={setSelected}
+              onSlotClick={canManage ? (startAt) => { setBookingInitial({ startAt }); setShowBook(true); } : undefined}
             />
           </div>
         </div>

@@ -1,7 +1,7 @@
 {
   "title": "Patients",
   "totalCount": "{{count}} total",
-  "button": { "newPatient": "+ New Patient" },
+  "button": { "bookAppointment": "Book appointment", "newPatient": "+ New Patient" },
   "search": { "placeholder": "Search by name, email, phone…" },
   "emptyState": "No patients found.",
   "table": {
