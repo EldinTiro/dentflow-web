@@ -7,7 +7,7 @@
   "stat": {
     "todaysAppointments": "Današnji termini",
     "pendingConfirmation": "Čekaju potvrdu",
-    "scheduledPlusConfirmed": "Zakazani + Potvrđeni",
+    "upcomingScheduled": "Predstojeći, još zakazani",
     "totalPatients": "Ukupno pacijenata",
     "activeRecords": "Aktivni kartoni",
     "activeStaff": "Aktivno osoblje",
@@ -44,6 +44,7 @@
   },
   "slotChecker": {
     "title": "Brza provjera slobodnih termina",
+    "closedDay": "Klinika je zatvorena ovog dana",
     "todayBadge": "Danas",
     "allProviders": "Svi doktori",
     "freeCount": "{{count}} slobodno",

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router'
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/features/auth/store/authStore'
@@ -19,20 +19,23 @@ import { PatientFilesTab } from '../components/PatientFilesTab'
 import { PatientBillingTab } from '@/features/billing/components/PatientBillingTab'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
 import { Trash2, Plus, AlertTriangle, Phone, User, Heart } from 'lucide-react'
+import { AllergyAlert } from '../components/AllergyAlert'
+import { formatDate } from '@/shared/lib/format'
 
 type Tab = 'overview' | 'appointments' | 'treatments' | 'files' | 'billing' | 'medical'
+const TABS: Tab[] = ['overview', 'appointments', 'treatments', 'medical', 'files', 'billing']
 
 const STATUS_STYLES: Record<PatientStatus, string> = {
-  Active: 'bg-green-100 text-green-700',
-  Inactive: 'bg-gray-100 text-gray-500',
-  Transferred: 'bg-blue-100 text-blue-700',
+  Active: 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300',
+  Inactive: 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300',
+  Transferred: 'bg-blue-100 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300',
 }
 
 function Field({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div>
-      <dt className="text-xs text-gray-400 dark:text-gray-500 font-medium">{label}</dt>
-      <dd className="text-sm text-gray-800 dark:text-gray-200 mt-0.5">{value ?? <span className="text-gray-300 dark:text-gray-600">—</span>}</dd>
+      <dt className="text-xs text-gray-500 dark:text-gray-400 font-medium">{label}</dt>
+      <dd className="text-sm text-gray-800 dark:text-gray-200 mt-0.5">{value ?? <span className="text-gray-500 dark:text-gray-400">—</span>}</dd>
     </div>
   )
 }
@@ -56,7 +59,15 @@ export function PatientDetailPage() {
   const queryClient = useQueryClient()
   const [showEdit, setShowEdit] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [tab, setTab] = useState<Tab>('overview')
+  // The active tab lives in ?tab= so a reload or a shared link keeps it (QA-028).
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = (TABS.includes(searchParams.get('tab') as Tab) ? searchParams.get('tab') : 'overview') as Tab
+  const setTab = (next: Tab) =>
+    setSearchParams((p) => {
+      const n = new URLSearchParams(p)
+      if (next === 'overview') n.delete('tab'); else n.set('tab', next)
+      return n
+    }, { replace: true })
   const [selectedAppt, setSelectedAppt] = useState<AppointmentResponse | null>(null)
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null)
 
@@ -84,16 +95,13 @@ export function PatientDetailPage() {
     },
   })
 
-  if (isLoading) return <div className="p-8 text-gray-400 text-sm">{tc('loading')}</div>
+  if (isLoading) return <div className="p-8 text-gray-500 text-sm dark:text-gray-400">{tc('loading')}</div>
   if (isError || !patient) return (
     <div className="p-8">
       <p className="text-red-500 text-sm mb-3">{t('notFound')}</p>
       <Link to="/patients" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">{t('backToPatients')}</Link>
     </div>
   )
-
-  const formatDate = (d: string | null) =>
-    d ? new Date(d + 'T00:00:00').toLocaleDateString() : null
 
   return (
     <div className="p-6 max-w-4xl">
@@ -110,10 +118,11 @@ export function PatientDetailPage() {
               {patient.status}
             </span>
           </div>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 font-mono">{patient.patientNumber}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-mono">{patient.patientNumber}</p>
           {patient.preferredName && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t('goesBy', { name: patient.preferredName })}</p>
           )}
+          <AllergyAlert patientId={patient.id} className="mt-2" />
           {patient.parentName && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t('parentGuardian')} <span className="font-medium text-gray-700 dark:text-gray-300">{patient.parentName}</span></p>
           )}
@@ -121,14 +130,14 @@ export function PatientDetailPage() {
         <div className="flex gap-2">
           <button
             onClick={() => setShowEdit(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+            className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700"
           >
             {tc('button.edit')}
           </button>
           {canManage && (
             <button
               onClick={() => setConfirmDelete(true)}
-              className="border border-red-200 text-red-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-red-50"
+              className="border border-red-200 text-red-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-red-50 dark:border-red-400/30 dark:hover:bg-red-400/10 dark:text-red-300"
             >
               {tc('button.delete')}
             </button>
@@ -137,21 +146,23 @@ export function PatientDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700 mb-4">
+      <div role="tablist" aria-label={patient.fullName} className="flex gap-1 border-b border-gray-200 dark:border-gray-700 mb-4">
         {([
           { key: 'overview', label: t('tab.overview') },
           { key: 'appointments', label: t('tab.appointments') },
           { key: 'treatments', label: t('tab.treatments') },
-          { key: 'medical', label: 'Medicinsko' },
+          { key: 'medical', label: t('tab.medical') },
           { key: 'files', label: t('tab.files') },
           { key: 'billing', label: t('tab.billing') },
         ] as { key: Tab; label: string }[]).map(({ key, label }) => (
           <button
             key={key}
+            role="tab"
+            aria-selected={tab === key}
             onClick={() => setTab(key)}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               tab === key
-                ? 'border-primary-600 text-primary-600'
+                ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
             }`}
           >
@@ -217,10 +228,10 @@ export function PatientDetailPage() {
         )}
 
         {/* Meta */}
-        <div className="text-xs text-gray-400 dark:text-gray-500 flex gap-6 pt-1">
-          <span>{t('meta.created')} {new Date(patient.createdAt).toLocaleDateString()}</span>
+        <div className="text-xs text-gray-500 dark:text-gray-400 flex gap-6 pt-1">
+          <span>{t('meta.created')} {formatDate(patient.createdAt)}</span>
           {patient.updatedAt && (
-            <span>{t('meta.updated')} {new Date(patient.updatedAt).toLocaleDateString()}</span>
+            <span>{t('meta.updated')} {formatDate(patient.updatedAt)}</span>
           )}
         </div>
       </div>
@@ -270,7 +281,7 @@ function AppointmentHistoryTab({
   if (appointments.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-10 text-center">
-        <p className="text-sm text-gray-400">{t('appointments.emptyState')}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('appointments.emptyState')}</p>
       </div>
     )
   }
@@ -286,7 +297,7 @@ function AppointmentHistoryTab({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-700 text-xs text-gray-400 dark:text-gray-500 font-medium">
+      <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 font-medium">
         {totalCount} appointment{totalCount !== 1 ? 's' : ''} {tc('total')}
       </div>
       <ul className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -299,11 +310,11 @@ function AppointmentHistoryTab({
             <div>
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{formatDT(a.startAt)}</p>
               {a.chiefComplaint && (
-                <p className="text-xs text-gray-400 mt-0.5 truncate max-w-xs">{a.chiefComplaint}</p>
+                <p className="text-xs text-gray-500 mt-0.5 truncate max-w-xs dark:text-gray-400">{a.chiefComplaint}</p>
               )}
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-gray-400">{a.durationMinutes} min</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{a.durationMinutes} min</span>
               <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={APPOINTMENT_STATUS_LABELS} />
             </div>
           </li>
@@ -314,6 +325,7 @@ function AppointmentHistoryTab({
 }
 
 function MedicalTab({ patientId, canManage }: { patientId: string; canManage: boolean }) {
+  const { t } = useTranslation('patients')
   const qc = useQueryClient()
 
   // — Emergency contacts —
@@ -395,10 +407,10 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
   const labelCls = 'text-xs text-gray-500 dark:text-gray-400 font-medium'
 
   const SEVERITY_COLORS: Record<string, string> = {
-    Mild: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
-    Moderate: 'bg-orange-50 text-orange-700 border border-orange-200',
-    Severe: 'bg-red-50 text-red-700 border border-red-200',
-    LifeThreatening: 'bg-red-100 text-red-800 border border-red-300',
+    Mild: 'bg-yellow-50 text-yellow-700 border border-yellow-200 dark:bg-yellow-400/10 dark:border-yellow-400/30 dark:text-yellow-300',
+    Moderate: 'bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-400/10 dark:border-orange-400/30 dark:text-orange-300',
+    Severe: 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-400/10 dark:border-red-400/30 dark:text-red-300',
+    LifeThreatening: 'bg-red-100 text-red-800 border border-red-300 dark:bg-red-400/10 dark:border-red-400/30 dark:text-red-300',
   }
 
   return (
@@ -407,11 +419,11 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
       <div className={cardCls}>
         <div className="flex items-center justify-between p-5 pb-3">
           <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide flex items-center gap-2">
-            <Phone size={13} /> Hitni kontakti
+            <Phone size={13} /> {t('medical.emergencyContacts')}
           </h2>
           {canManage && (
-            <button onClick={() => setShowAddContact(!showAddContact)} className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1">
-              <Plus size={13} /> Dodaj
+            <button onClick={() => setShowAddContact(!showAddContact)} className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1 dark:text-primary-400">
+              <Plus size={13} /> {t('medical.add')}
             </button>
           )}
         </div>
@@ -420,55 +432,55 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
           <div className="mx-5 mb-4 p-4 bg-gray-50 dark:bg-gray-900/40 rounded-lg border border-gray-200 dark:border-gray-700 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Ime *</label>
-                <input className={inputCls} value={contactForm.name} onChange={e => setContactForm(f => ({ ...f, name: e.target.value }))} placeholder="Ime i prezime" />
+                <label className={labelCls}>{t('medical.contactName')}</label>
+                <input className={inputCls} value={contactForm.name} onChange={e => setContactForm(f => ({ ...f, name: e.target.value }))} placeholder={t('medical.contactNamePlaceholder')} />
               </div>
               <div>
-                <label className={labelCls}>Srodstvo</label>
-                <input className={inputCls} value={contactForm.relationship ?? ''} onChange={e => setContactForm(f => ({ ...f, relationship: e.target.value }))} placeholder="Npr. Majka, Suprug" />
+                <label className={labelCls}>{t('medical.relationship')}</label>
+                <input className={inputCls} value={contactForm.relationship ?? ''} onChange={e => setContactForm(f => ({ ...f, relationship: e.target.value }))} placeholder={t('medical.relationshipPlaceholder')} />
               </div>
               <div>
-                <label className={labelCls}>Telefon</label>
+                <label className={labelCls}>{t('medical.phone')}</label>
                 <input className={inputCls} value={contactForm.phonePrimary ?? ''} onChange={e => setContactForm(f => ({ ...f, phonePrimary: e.target.value }))} placeholder="+387..." />
               </div>
               <div className="flex items-end pb-1.5">
                 <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                   <input type="checkbox" checked={contactForm.isPrimary} onChange={e => setContactForm(f => ({ ...f, isPrimary: e.target.checked }))} className="rounded" />
-                  Primarni kontakt
+                  {t('medical.primaryContact')}
                 </label>
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setShowAddContact(false)} className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5">Odustani</button>
+              <button onClick={() => setShowAddContact(false)} className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 dark:text-gray-400">{t('medical.cancel')}</button>
               <button
                 disabled={!contactForm.name.trim() || addContactMutation.isPending}
                 onClick={() => addContactMutation.mutate()}
                 className="bg-primary-600 text-white text-sm px-4 py-1.5 rounded-lg hover:bg-primary-700 disabled:opacity-50"
               >
-                {addContactMutation.isPending ? 'Čuvam…' : 'Sačuvaj'}
+                {addContactMutation.isPending ? t('medical.saving') : t('medical.save')}
               </button>
             </div>
           </div>
         )}
 
         {contacts.length === 0 ? (
-          <p className="px-5 pb-5 text-sm text-gray-400">Nema hitnih kontakata.</p>
+          <p className="px-5 pb-5 text-sm text-gray-500 dark:text-gray-400">{t('medical.noContacts')}</p>
         ) : (
           <ul className="divide-y divide-gray-100 dark:divide-gray-700">
             {contacts.map(c => (
               <li key={c.id} className="flex items-center justify-between px-5 py-3">
                 <div className="flex items-center gap-3">
-                  <User size={15} className="text-gray-400 shrink-0" />
+                  <User size={15} className="text-gray-500 shrink-0 dark:text-gray-400" />
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
                       {c.name}
-                      {c.isPrimary && <span className="text-[10px] bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-400 px-1.5 py-0.5 rounded-full font-medium">Primarni</span>}
+                      {c.isPrimary && <span className="text-[10px] bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-400 px-1.5 py-0.5 rounded-full font-medium">{t('medical.primary')}</span>}
                     </p>
-                    <p className="text-xs text-gray-400">{c.relationship}{c.phonePrimary ? ` · ${c.phonePrimary}` : ''}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{c.relationship}{c.phonePrimary ? ` · ${c.phonePrimary}` : ''}</p>
                   </div>
                 </div>
                 {canManage && (
-                  <button onClick={() => deleteContactMutation.mutate(c.id)} className="text-gray-300 hover:text-red-500 transition-colors">
+                  <button onClick={() => deleteContactMutation.mutate(c.id)} className="text-gray-500 hover:text-red-500 transition-colors dark:text-gray-400">
                     <Trash2 size={14} />
                   </button>
                 )}
@@ -482,11 +494,11 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
       <div className={cardCls}>
         <div className="flex items-center justify-between p-5 pb-3">
           <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide flex items-center gap-2">
-            <AlertTriangle size={13} /> Alergije
+            <AlertTriangle size={13} /> {t('medical.allergies')}
           </h2>
           {canManage && (
-            <button onClick={() => setShowAddAllergy(!showAddAllergy)} className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1">
-              <Plus size={13} /> Dodaj
+            <button onClick={() => setShowAddAllergy(!showAddAllergy)} className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1 dark:text-primary-400">
+              <Plus size={13} /> {t('medical.add')}
             </button>
           )}
         </div>
@@ -495,43 +507,43 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
           <div className="mx-5 mb-4 p-4 bg-gray-50 dark:bg-gray-900/40 rounded-lg border border-gray-200 dark:border-gray-700 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Alergen *</label>
-                <input className={inputCls} value={allergyForm.allergen} onChange={e => setAllergyForm(f => ({ ...f, allergen: e.target.value }))} placeholder="Npr. Penicilin, Latex" />
+                <label className={labelCls}>{t('medical.allergen')}</label>
+                <input className={inputCls} value={allergyForm.allergen} onChange={e => setAllergyForm(f => ({ ...f, allergen: e.target.value }))} placeholder={t('medical.allergenPlaceholder')} />
               </div>
               <div>
-                <label className={labelCls}>Ozbiljnost</label>
+                <label className={labelCls}>{t('medical.severity')}</label>
                 <select className={inputCls} value={allergyForm.severity ?? ''} onChange={e => setAllergyForm(f => ({ ...f, severity: e.target.value || null }))}>
                   <option value="">—</option>
-                  <option value="Mild">Blaga</option>
-                  <option value="Moderate">Umjerena</option>
-                  <option value="Severe">Teška</option>
-                  <option value="LifeThreatening">Životno ugrožavajuća</option>
+                  <option value="Mild">{t('allergySeverity.Mild')}</option>
+                  <option value="Moderate">{t('allergySeverity.Moderate')}</option>
+                  <option value="Severe">{t('allergySeverity.Severe')}</option>
+                  <option value="LifeThreatening">{t('allergySeverity.LifeThreatening')}</option>
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Reakcija</label>
-                <input className={inputCls} value={allergyForm.reaction ?? ''} onChange={e => setAllergyForm(f => ({ ...f, reaction: e.target.value }))} placeholder="Npr. Osip, Anafilaksa" />
+                <label className={labelCls}>{t('medical.reaction')}</label>
+                <input className={inputCls} value={allergyForm.reaction ?? ''} onChange={e => setAllergyForm(f => ({ ...f, reaction: e.target.value }))} placeholder={t('medical.reactionPlaceholder')} />
               </div>
               <div>
-                <label className={labelCls}>Napomena</label>
+                <label className={labelCls}>{t('medical.note')}</label>
                 <input className={inputCls} value={allergyForm.notes ?? ''} onChange={e => setAllergyForm(f => ({ ...f, notes: e.target.value }))} />
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setShowAddAllergy(false)} className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5">Odustani</button>
+              <button onClick={() => setShowAddAllergy(false)} className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 dark:text-gray-400">{t('medical.cancel')}</button>
               <button
                 disabled={!allergyForm.allergen.trim() || addAllergyMutation.isPending}
                 onClick={() => addAllergyMutation.mutate()}
                 className="bg-primary-600 text-white text-sm px-4 py-1.5 rounded-lg hover:bg-primary-700 disabled:opacity-50"
               >
-                {addAllergyMutation.isPending ? 'Čuvam…' : 'Sačuvaj'}
+                {addAllergyMutation.isPending ? t('medical.saving') : t('medical.save')}
               </button>
             </div>
           </div>
         )}
 
         {allergies.length === 0 ? (
-          <p className="px-5 pb-5 text-sm text-gray-400">Nema evidentiranih alergija.</p>
+          <p className="px-5 pb-5 text-sm text-gray-500 dark:text-gray-400">{t('medical.noAllergies')}</p>
         ) : (
           <ul className="divide-y divide-gray-100 dark:divide-gray-700">
             {allergies.map(a => (
@@ -542,16 +554,16 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
                       {a.allergen}
                       {a.severity && (
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${SEVERITY_COLORS[a.severity] ?? 'bg-gray-100 text-gray-600'}`}>
-                          {a.severity === 'Mild' ? 'Blaga' : a.severity === 'Moderate' ? 'Umjerena' : a.severity === 'Severe' ? 'Teška' : 'Životno ugr.'}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${SEVERITY_COLORS[a.severity] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300'}`}>
+                          {t(`allergySeverity.${a.severity}`)}
                         </span>
                       )}
                     </p>
-                    {a.reaction && <p className="text-xs text-gray-400">{a.reaction}</p>}
+                    {a.reaction && <p className="text-xs text-gray-500 dark:text-gray-400">{a.reaction}</p>}
                   </div>
                 </div>
                 {canManage && (
-                  <button onClick={() => deleteAllergyMutation.mutate(a.id)} className="text-gray-300 hover:text-red-500 transition-colors">
+                  <button onClick={() => deleteAllergyMutation.mutate(a.id)} className="text-gray-500 hover:text-red-500 transition-colors dark:text-gray-400">
                     <Trash2 size={14} />
                   </button>
                 )}
@@ -565,11 +577,11 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
       <div className={cardCls}>
         <div className="flex items-center justify-between p-5 pb-3">
           <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide flex items-center gap-2">
-            <Heart size={13} /> Medicinska historija
+            <Heart size={13} /> {t('medical.medicalHistory')}
           </h2>
           {canManage && !editingMed && (
-            <button onClick={() => setEditingMed(true)} className="text-xs text-primary-600 hover:text-primary-700">
-              {medHistory ? 'Uredi' : 'Dodaj'}
+            <button onClick={() => setEditingMed(true)} className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400">
+              {medHistory ? t('medical.edit') : t('medical.add')}
             </button>
           )}
         </div>
@@ -578,18 +590,18 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
           <div className="px-5 pb-5 space-y-4">
             {/* Boolean conditions grid */}
             <div>
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Medicinska stanja</p>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">{t('medical.conditions')}</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {([
-                  ['isSmoker', 'Pušač'],
-                  ['isDiabetic', 'Dijabetes'],
-                  ['hasHeartCondition', 'Srčano oboljenje'],
-                  ['hasHypertension', 'Hipertenzija'],
-                  ['hasBleedingDisorder', 'Poremećaj krvarenja'],
-                  ['isOnBloodThinners', 'Antikoagulansi'],
-                  ['hasPacemaker', 'Pejsmejker'],
-                  ['hasArtificialJoints', 'Vještački zglobovi'],
-                  ['hasLatexAllergy', 'Alergija na latex'],
+                  ['isSmoker', t('medical.condition.isSmoker')],
+                  ['isDiabetic', t('medical.condition.isDiabetic')],
+                  ['hasHeartCondition', t('medical.condition.hasHeartCondition')],
+                  ['hasHypertension', t('medical.condition.hasHypertension')],
+                  ['hasBleedingDisorder', t('medical.condition.hasBleedingDisorder')],
+                  ['isOnBloodThinners', t('medical.condition.isOnBloodThinners')],
+                  ['hasPacemaker', t('medical.condition.hasPacemaker')],
+                  ['hasArtificialJoints', t('medical.condition.hasArtificialJoints')],
+                  ['hasLatexAllergy', t('medical.condition.hasLatexAllergy')],
                 ] as [keyof UpsertMedicalHistoryRequest, string][]).map(([key, label]) => (
                   <label key={key} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                     <input
@@ -606,46 +618,46 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Krvna grupa</label>
+                <label className={labelCls}>{t('medical.bloodType')}</label>
                 <select className={inputCls} value={medForm.bloodType ?? ''} onChange={e => setMedForm(f => ({ ...f, bloodType: e.target.value || null }))}>
                   <option value="">—</option>
                   {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(bt => <option key={bt} value={bt}>{bt}</option>)}
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Trudnoća</label>
+                <label className={labelCls}>{t('medical.pregnancy')}</label>
                 <select className={inputCls} value={medForm.isPregnant === null ? '' : medForm.isPregnant ? 'yes' : 'no'} onChange={e => setMedForm(f => ({ ...f, isPregnant: e.target.value === '' ? null : e.target.value === 'yes' }))}>
                   <option value="">—</option>
-                  <option value="yes">Da</option>
-                  <option value="no">Ne</option>
+                  <option value="yes">{t('medical.yes')}</option>
+                  <option value="no">{t('medical.no')}</option>
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Ime doktora</label>
+                <label className={labelCls}>{t('medical.physicianName')}</label>
                 <input className={inputCls} value={medForm.physicianName ?? ''} onChange={e => setMedForm(f => ({ ...f, physicianName: e.target.value }))} />
               </div>
               <div>
-                <label className={labelCls}>Telefon doktora</label>
+                <label className={labelCls}>{t('medical.physicianPhone')}</label>
                 <input className={inputCls} value={medForm.physicianPhone ?? ''} onChange={e => setMedForm(f => ({ ...f, physicianPhone: e.target.value }))} />
               </div>
               <div className="col-span-2">
-                <label className={labelCls}>Trenutni lijekovi</label>
+                <label className={labelCls}>{t('medical.currentMedications')}</label>
                 <textarea className={inputCls} rows={2} value={medForm.currentMedications ?? ''} onChange={e => setMedForm(f => ({ ...f, currentMedications: e.target.value }))} />
               </div>
               <div className="col-span-2">
-                <label className={labelCls}>Opće napomene</label>
+                <label className={labelCls}>{t('medical.generalNotes')}</label>
                 <textarea className={inputCls} rows={2} value={medForm.generalNotes ?? ''} onChange={e => setMedForm(f => ({ ...f, generalNotes: e.target.value }))} />
               </div>
             </div>
 
             <div className="flex justify-end gap-2">
-              <button onClick={() => setEditingMed(false)} className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5">Odustani</button>
+              <button onClick={() => setEditingMed(false)} className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 dark:text-gray-400">{t('medical.cancel')}</button>
               <button
                 disabled={upsertMedMutation.isPending}
                 onClick={() => upsertMedMutation.mutate()}
                 className="bg-primary-600 text-white text-sm px-4 py-1.5 rounded-lg hover:bg-primary-700 disabled:opacity-50"
               >
-                {upsertMedMutation.isPending ? 'Čuvam…' : 'Sačuvaj'}
+                {upsertMedMutation.isPending ? t('medical.saving') : t('medical.save')}
               </button>
             </div>
           </div>
@@ -654,15 +666,15 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
             {/* Active conditions */}
             {(() => {
               const flags = [
-                medHistory.isSmoker && 'Pušač',
-                medHistory.isDiabetic && 'Dijabetes',
-                medHistory.hasHeartCondition && 'Srčano oboljenje',
-                medHistory.hasHypertension && 'Hipertenzija',
-                medHistory.hasBleedingDisorder && 'Poremećaj krvarenja',
-                medHistory.isOnBloodThinners && 'Antikoagulansi',
-                medHistory.hasPacemaker && 'Pejsmejker',
-                medHistory.hasArtificialJoints && 'Vještački zglobovi',
-                medHistory.hasLatexAllergy && 'Alergija na latex',
+                medHistory.isSmoker && t('medical.condition.isSmoker'),
+                medHistory.isDiabetic && t('medical.condition.isDiabetic'),
+                medHistory.hasHeartCondition && t('medical.condition.hasHeartCondition'),
+                medHistory.hasHypertension && t('medical.condition.hasHypertension'),
+                medHistory.hasBleedingDisorder && t('medical.condition.hasBleedingDisorder'),
+                medHistory.isOnBloodThinners && t('medical.condition.isOnBloodThinners'),
+                medHistory.hasPacemaker && t('medical.condition.hasPacemaker'),
+                medHistory.hasArtificialJoints && t('medical.condition.hasArtificialJoints'),
+                medHistory.hasLatexAllergy && t('medical.condition.hasLatexAllergy'),
               ].filter(Boolean) as string[]
               return flags.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
@@ -671,20 +683,20 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-400 italic">Nema aktivnih medicinskih stanja.</p>
+                <p className="text-sm text-gray-500 italic dark:text-gray-400">{t('medical.noConditions')}</p>
               )
             })()}
 
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
-              {medHistory.bloodType && <div><dt className="text-xs text-gray-400">Krvna grupa</dt><dd className="text-sm font-medium text-gray-800 dark:text-gray-200">{medHistory.bloodType}</dd></div>}
-              {medHistory.isPregnant !== null && <div><dt className="text-xs text-gray-400">Trudnoća</dt><dd className="text-sm text-gray-800 dark:text-gray-200">{medHistory.isPregnant ? 'Da' : 'Ne'}</dd></div>}
-              {medHistory.physicianName && <div><dt className="text-xs text-gray-400">Doktor</dt><dd className="text-sm text-gray-800 dark:text-gray-200">{medHistory.physicianName}{medHistory.physicianPhone ? ` · ${medHistory.physicianPhone}` : ''}</dd></div>}
-              {medHistory.currentMedications && <div className="col-span-2 sm:col-span-3"><dt className="text-xs text-gray-400 mb-0.5">Lijekovi</dt><dd className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{medHistory.currentMedications}</dd></div>}
-              {medHistory.generalNotes && <div className="col-span-2 sm:col-span-3"><dt className="text-xs text-gray-400 mb-0.5">Napomene</dt><dd className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{medHistory.generalNotes}</dd></div>}
+              {medHistory.bloodType && <div><dt className="text-xs text-gray-500 dark:text-gray-400">{t('medical.bloodType')}</dt><dd className="text-sm font-medium text-gray-800 dark:text-gray-200">{medHistory.bloodType}</dd></div>}
+              {medHistory.isPregnant !== null && <div><dt className="text-xs text-gray-500 dark:text-gray-400">{t('medical.pregnancy')}</dt><dd className="text-sm text-gray-800 dark:text-gray-200">{medHistory.isPregnant ? t('medical.yes') : t('medical.no')}</dd></div>}
+              {medHistory.physicianName && <div><dt className="text-xs text-gray-500 dark:text-gray-400">{t('medical.physician')}</dt><dd className="text-sm text-gray-800 dark:text-gray-200">{medHistory.physicianName}{medHistory.physicianPhone ? ` · ${medHistory.physicianPhone}` : ''}</dd></div>}
+              {medHistory.currentMedications && <div className="col-span-2 sm:col-span-3"><dt className="text-xs text-gray-500 mb-0.5 dark:text-gray-400">{t('medical.medications')}</dt><dd className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{medHistory.currentMedications}</dd></div>}
+              {medHistory.generalNotes && <div className="col-span-2 sm:col-span-3"><dt className="text-xs text-gray-500 mb-0.5 dark:text-gray-400">{t('medical.notes')}</dt><dd className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{medHistory.generalNotes}</dd></div>}
             </dl>
           </div>
         ) : (
-          <p className="px-5 pb-5 text-sm text-gray-400">Medicinska historija nije unesena.</p>
+          <p className="px-5 pb-5 text-sm text-gray-500 dark:text-gray-400">{t('medical.noHistory')}</p>
         )}
       </div>
     </div>

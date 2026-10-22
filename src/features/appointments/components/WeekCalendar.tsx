@@ -15,9 +15,23 @@ interface Props {
 
 type TooltipState = { appt: AppointmentResponse; x: number; y: number } | null;
 
-const HOUR_START = 6;  // 06:00
-const HOUR_END   = 21; // 21:00
-const HOURS      = HOUR_END - HOUR_START; // 15
+const DEFAULT_HOUR_START = 6;  // 06:00
+const DEFAULT_HOUR_END   = 21; // 21:00
+
+/**
+ * Hours the grid shows: 06:00–21:00, stretched to fit anything booked earlier or
+ * later. A fixed 06:00 start hid a 00:30 booking entirely (QA-029).
+ */
+export function calendarHourRange(appointments: { startAt: string; endAt: string }[]) {
+  let start = DEFAULT_HOUR_START;
+  let end = DEFAULT_HOUR_END;
+  for (const a of appointments) {
+    start = Math.min(start, new Date(a.startAt).getHours());
+    const e = new Date(a.endAt);
+    end = Math.max(end, e.getHours() + (e.getMinutes() > 0 ? 1 : 0));
+  }
+  return { start, end: Math.min(end, 24) };
+}
 
 function addDays(date: Date, n: number) {
   const d = new Date(date);
@@ -88,6 +102,8 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
     return map;
   }, [appointments]);
 
+  const { start: HOUR_START, end: HOUR_END } = useMemo(() => calendarHourRange(appointments), [appointments]);
+  const HOURS = HOUR_END - HOUR_START;
   const totalMinutes = HOURS * 60;
   const todayStr = isoDate(new Date());
 
@@ -95,9 +111,11 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
   const chipBgOpacity = isDark ? '55' : '28';
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    // Day columns keep a usable minimum width and the week scrolls sideways instead;
+    // at 1024px overlapping visits had shrunk to 6px slivers (QA-023).
+    <div className="flex flex-col h-full overflow-x-auto overflow-y-hidden">
       {/* Day header */}
-      <div className="grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: '56px repeat(7, 1fr)' }}>
+      <div className="grid min-w-[57rem] border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: '56px repeat(7, 1fr)' }}>
         <div className="border-r border-gray-100 dark:border-gray-700/60" />
         {days.map((d, i) => {
           const dateStr = isoDate(d);
@@ -123,14 +141,14 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
       </div>
 
       {/* Scrollable time grid */}
-      <div className="overflow-y-auto flex-1 bg-white dark:bg-gray-900">
+      <div className="overflow-y-auto flex-1 min-w-[57rem] bg-white dark:bg-gray-900">
         <div className="relative flex" style={{ minHeight: `${HOURS * 56}px` }}>
           {/* Time labels */}
           <div className="w-14 shrink-0">
             {Array.from({ length: HOURS }, (_, i) => (
               <div
                 key={i}
-                className="h-14 border-b border-gray-100 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-400 dark:text-gray-500 pt-0.5"
+                className="h-14 border-b border-gray-100 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5"
                 style={{ lineHeight: '14px' }}
               >
                 {`${String(HOUR_START + i).padStart(2, '0')}:00`}

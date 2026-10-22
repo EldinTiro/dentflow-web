@@ -8,6 +8,8 @@ import {
   type InvoiceSummaryResponse,
 } from '../services/billingService'
 import { CreateInvoiceDrawer } from '../components/CreateInvoiceDrawer'
+import { todayLocal } from '@/shared/lib/dates'
+import { formatDate, formatMoney } from '@/shared/lib/format'
 
 const STATUS_KEYS: { value: InvoiceStatus | ''; labelKey: string }[] = [
   { value: '', labelKey: 'filter.allStatuses' },
@@ -19,11 +21,11 @@ const STATUS_KEYS: { value: InvoiceStatus | ''; labelKey: string }[] = [
 ]
 
 const STATUS_STYLES: Record<InvoiceStatus, string> = {
-  Draft: 'bg-gray-100 text-gray-600',
-  Sent: 'bg-blue-100 text-blue-700',
-  PartiallyPaid: 'bg-yellow-100 text-yellow-700',
-  Paid: 'bg-green-100 text-green-700',
-  Void: 'bg-red-100 text-red-500',
+  Draft: 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
+  Sent: 'bg-blue-100 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300',
+  PartiallyPaid: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-400/10 dark:text-yellow-300',
+  Paid: 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300',
+  Void: 'bg-red-100 text-red-700 dark:bg-red-400/10 dark:text-red-300',
 }
 
 function StatusBadge({ status }: { status: InvoiceStatus }) {
@@ -37,17 +39,16 @@ function StatusBadge({ status }: { status: InvoiceStatus }) {
   )
 }
 
-const fmt = (n: number) =>
-  n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+// Always with the currency (QA-032).
+const fmt = (n: number) => formatMoney(n)
 
-const today = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local time
 
 export function InvoicesPage() {
   const { t } = useTranslation('billing')
   const tc = useTranslation('common').t
   const [status, setStatus] = useState<InvoiceStatus | ''>('')
-  const [from, setFrom] = useState(today)
-  const [to, setTo] = useState(today)
+  const [from, setFrom] = useState(() => todayLocal())
+  const [to, setTo] = useState(() => todayLocal())
   const [page, setPage] = useState(1)
   const [showCreate, setShowCreate] = useState(false)
 
@@ -70,7 +71,7 @@ export function InvoicesPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
           {data && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               {t('totalCount', { count: data.totalCount })}
             </p>
           )}
@@ -118,11 +119,12 @@ export function InvoicesPage() {
         />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
             <tr>
               <th className="px-4 py-3 text-left">{t('table.invoiceNumber')}</th>
+              <th className="px-4 py-3 text-left">{t('table.patient')}</th>
               <th className="px-4 py-3 text-left">{t('table.status')}</th>
               <th className="px-4 py-3 text-left">{t('table.issuedAt')}</th>
               <th className="px-4 py-3 text-left">{t('table.dueDate')}</th>
@@ -135,14 +137,14 @@ export function InvoicesPage() {
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {isLoading && (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={9} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                   {tc('loading')}
                 </td>
               </tr>
             )}
             {!isLoading && data?.items.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={9} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                   {t('emptyState')}
                 </td>
               </tr>
@@ -158,30 +160,42 @@ export function InvoicesPage() {
                   </Link>
                 </td>
                 <td className="px-4 py-3">
-                  <StatusBadge status={inv.status} />
+                  <Link to={`/patients/${inv.patientId}`} className="text-gray-900 dark:text-gray-100 hover:underline">
+                    {inv.patientName ?? '—'}
+                  </Link>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <StatusBadge status={inv.status} />
+                    {inv.isOverdue && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
+                        {t('overdue')}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
-                  {new Date(inv.issuedAt).toLocaleDateString()}
+                  {formatDate(inv.issuedAt)}
                 </td>
                 <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
-                  {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}
+                  {inv.dueDate ? formatDate(inv.dueDate) : '—'}
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums text-gray-900 dark:text-gray-100">
                   {fmt(inv.subTotal)}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums text-green-600 dark:text-green-400">
+                <td className="px-4 py-3 text-right tabular-nums text-green-700 dark:text-green-400">
                   {fmt(inv.paidAmount)}
                 </td>
                 <td
                   className={`px-4 py-3 text-right tabular-nums font-medium ${
                     inv.balanceDue > 0
                       ? 'text-red-600 dark:text-red-400'
-                      : 'text-gray-400 dark:text-gray-500'
+                      : 'text-gray-500 dark:text-gray-400'
                   }`}
                 >
                   {fmt(inv.balanceDue)}
                 </td>
-                <td className="px-4 py-3 text-center text-xs text-gray-400 dark:text-gray-500">
+                <td className="px-4 py-3 text-center text-xs text-gray-500 dark:text-gray-400">
                   {inv.lineItemCount}
                 </td>
               </tr>

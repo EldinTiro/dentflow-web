@@ -5,15 +5,15 @@ import { useTranslation } from 'react-i18next'
 export function LoginPage() {
   const { t } = useTranslation('auth')
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 dark:bg-gray-950">
       {/* Brand mark */}
       <div className="mb-8 flex flex-col items-center gap-3">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-primary-600 shadow-lg shadow-primary-200">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg shadow-primary-200 dark:shadow-none">
           <Gem size={32} className="text-white" strokeWidth={1.5} />
         </div>
         <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">{t('login.brand')}</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{t('login.subtitle')}</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">{t('login.brand')}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t('login.subtitle')}</p>
         </div>
       </div>
       <LoginForm />

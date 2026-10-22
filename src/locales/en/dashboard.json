@@ -7,7 +7,7 @@
   "stat": {
     "todaysAppointments": "Today's Appointments",
     "pendingConfirmation": "Pending Confirmation",
-    "scheduledPlusConfirmed": "Scheduled + Confirmed",
+    "upcomingScheduled": "Upcoming, still Scheduled",
     "totalPatients": "Total Patients",
     "activeRecords": "Active records",
     "activeStaff": "Active Staff",
@@ -44,6 +44,7 @@
   },
   "slotChecker": {
     "title": "Quick Slot Check",
+    "closedDay": "The clinic is closed on this day",
     "todayBadge": "Today",
     "allProviders": "All providers",
     "freeCount": "{{count}} free",

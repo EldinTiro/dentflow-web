@@ -147,6 +147,14 @@ export interface AddBlockedTimeRequest {
 
 const BASE = '/api/v1/staff';
 
+/**
+ * Blank optional inputs arrive as "". The API reads "" as a value — a DateOnly
+ * hire date then fails to parse (QA-016) — so they are left out instead.
+ */
+function withoutEmptyStrings<T extends object>(body: T): T {
+  return Object.fromEntries(Object.entries(body).filter(([, v]) => v !== '')) as T;
+}
+
 export const staffService = {
   list(params?: ListStaffParams) {
     return apiClient
@@ -162,13 +170,13 @@ export const staffService = {
 
   create(body: CreateStaffRequest) {
     return apiClient
-      .post<StaffMemberResponse>(BASE, body)
+      .post<StaffMemberResponse>(BASE, withoutEmptyStrings(body))
       .then((r) => r.data);
   },
 
   update(id: string, body: UpdateStaffRequest) {
     return apiClient
-      .put<StaffMemberResponse>(`${BASE}/${id}`, body)
+      .put<StaffMemberResponse>(`${BASE}/${id}`, withoutEmptyStrings(body))
       .then((r) => r.data);
   },
 

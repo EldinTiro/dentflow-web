@@ -1,4 +1,5 @@
 import apiClient from '@/shared/api/client';
+import { localDayStartUtc, localDayEndUtc } from '@/shared/lib/dates';
 
 export type AppointmentStatus =
   | 'Scheduled'
@@ -18,12 +19,12 @@ export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
 };
 
 export const STATUS_COLORS: Record<AppointmentStatus, string> = {
-  Scheduled:  'bg-blue-100 text-blue-700',
-  CheckedIn:  'bg-yellow-100 text-yellow-700',
-  InProgress: 'bg-orange-100 text-orange-700',
-  Completed:  'bg-gray-100 text-gray-600',
-  Cancelled:  'bg-red-100 text-red-600',
-  NoShow:     'bg-red-50 text-red-400',
+  Scheduled:  'bg-blue-100 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300',
+  CheckedIn:  'bg-yellow-100 text-yellow-700 dark:bg-yellow-400/10 dark:text-yellow-300',
+  InProgress: 'bg-orange-100 text-orange-700 dark:bg-orange-400/10 dark:text-orange-300',
+  Completed:  'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
+  Cancelled:  'bg-red-100 text-red-700 dark:bg-red-400/10 dark:text-red-300',
+  NoShow:     'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-400/10 dark:text-red-300',
 };
 
 export const ALL_STATUSES: AppointmentStatus[] = [
@@ -58,6 +59,8 @@ export interface AppointmentResponse {
   colorHex: string | null;
   createdAt: string;
   updatedAt: string | null;
+  /** Filled by the list endpoint (QA-033). */
+  patientName?: string | null;
 }
 
 export interface AppointmentStatusHistoryResponse {
@@ -93,8 +96,8 @@ export interface PagedResult<T> {
 export interface ListAppointmentsParams {
   patientId?: string;
   providerId?: string;
-  dateFrom?: string; // YYYY-MM-DD
-  dateTo?: string;
+  dateFrom?: string; // local calendar date, YYYY-MM-DD — sent as the UTC start of that day
+  dateTo?: string;   // local calendar date, YYYY-MM-DD — sent as the UTC end of that day
   status?: AppointmentStatus;
   page?: number;
   pageSize?: number;
@@ -133,8 +136,14 @@ export const appointmentService = {
   },
 
   list(params?: ListAppointmentsParams) {
+    // The API compares instants; a bare date would be read as the UTC day (QA-008).
+    const query = params && {
+      ...params,
+      dateFrom: params.dateFrom ? localDayStartUtc(params.dateFrom) : undefined,
+      dateTo: params.dateTo ? localDayEndUtc(params.dateTo) : undefined,
+    };
     return apiClient
-      .get<PagedResult<AppointmentResponse>>(BASE, { params })
+      .get<PagedResult<AppointmentResponse>>(BASE, { params: query })
       .then((r) => r.data);
   },
 

@@ -72,7 +72,7 @@ export function AppointmentTypesPage() {
 
       {/* Search */}
       <div className="relative mb-4 max-w-xs">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none dark:text-gray-400" />
         <input
           type="text"
           value={search}
@@ -81,26 +81,26 @@ export function AppointmentTypesPage() {
           className="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-8 pr-8 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
         {search && (
-          <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600 dark:text-gray-400">
             <X size={14} />
           </button>
         )}
       </div>
 
       {isLoading ? (
-        <div className="text-sm text-gray-400 py-10 text-center">{tc('loading')}</div>
+        <div className="text-sm text-gray-500 py-10 text-center dark:text-gray-400">{tc('loading')}</div>
       ) : filtered.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-10 text-center">
-          <p className="text-sm text-gray-400">{search ? t('types.noResults') : t('types.emptyState')}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{search ? t('types.noResults') : t('types.emptyState')}</p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('types.table.name')}</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('types.table.duration')}</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('types.table.defaultFee')}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide dark:text-gray-400">{t('types.table.name')}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide dark:text-gray-400">{t('types.table.duration')}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide dark:text-gray-400">{t('types.table.defaultFee')}</th>
                 {canManage && <th className="px-4 py-3" />}
               </tr>
             </thead>
@@ -110,7 +110,7 @@ export function AppointmentTypesPage() {
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-900 dark:text-white">{tp.name}</p>
                     {tp.description && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate max-w-xs">{tp.description}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate max-w-xs">{tp.description}</p>
                     )}
                   </td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{tp.defaultDurationMinutes} {tc('unit.min')}</td>
@@ -120,14 +120,14 @@ export function AppointmentTypesPage() {
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => setEditing(tp)}
-                          className="p-1.5 text-gray-400 hover:text-primary-600 rounded hover:bg-primary-50 transition-colors"
+                          className="p-1.5 text-gray-500 hover:text-primary-600 rounded hover:bg-primary-50 transition-colors dark:hover:bg-primary-400/10 dark:text-gray-400"
                           title={t('types.editTooltip')}
                         >
                           <Pencil size={14} />
                         </button>
                         <button
                           onClick={() => setDeletingId(tp.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors"
+                          className="p-1.5 text-gray-500 hover:text-red-600 rounded hover:bg-red-50 transition-colors dark:hover:bg-red-400/10 dark:text-gray-400"
                           title={t('types.deleteTooltip')}
                         >
                           <Trash2 size={14} />

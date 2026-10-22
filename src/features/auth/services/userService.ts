@@ -26,6 +26,9 @@ export const userService = {
   getProfile: () =>
     apiClient.get<UserProfile>('/api/v1/users/me').then((r) => r.data),
 
+  updateProfile: (body: { firstName: string; lastName: string }) =>
+    apiClient.put<UserProfile>('/api/v1/users/me', body).then((r) => r.data),
+
   getPreferences: () =>
     apiClient.get<UserPreferences>('/api/v1/users/me/preferences').then((r) => r.data),
 

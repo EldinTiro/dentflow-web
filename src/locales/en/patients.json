@@ -20,6 +20,7 @@
     "overview": "Overview",
     "appointments": "Appointments",
     "treatments": "Treatments",
+    "medical": "Medical",
     "files": "Files",
     "billing": "Billing"
   },
@@ -30,6 +31,7 @@
     "notes": "Notes"
   },
   "field": {
+    "email": "Email",
     "dateOfBirth": "Date of Birth",
     "gender": "Gender",
     "preferredContact": "Preferred Contact",
@@ -94,7 +96,7 @@
     "saving": "Saving…",
     "saveChanges": "Save Changes"
   },
-  "validation": { "required": "Required" },
+  "validation": { "required": "Required", "phone": "Enter a valid phone number, e.g. 61 123 456." },
   "error": {
     "createFailed": "Failed to create patient. Please try again.",
     "updateFailed": "Failed to save changes. Please try again."
@@ -121,5 +123,114 @@
     "deleteFailed": "Delete failed",
     "couldNotOpenFile": "Could not open file",
     "deleted": "Patient deleted"
+  },
+  "allergyAlert": {
+    "label": "Allergies"
+  },
+  "allergySeverity": {
+    "Mild": "Mild",
+    "Moderate": "Moderate",
+    "Severe": "Severe",
+    "LifeThreatening": "Life-threatening"
+  },
+  "medical": {
+    "emergencyContacts": "Emergency contacts",
+    "allergies": "Allergies",
+    "medicalHistory": "Medical history",
+    "add": "Add",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "contactName": "Name *",
+    "contactNamePlaceholder": "First and last name",
+    "relationship": "Relationship",
+    "relationshipPlaceholder": "e.g. Mother, Spouse",
+    "phone": "Phone",
+    "primaryContact": "Primary contact",
+    "primary": "Primary",
+    "noContacts": "No emergency contacts.",
+    "allergen": "Allergen *",
+    "allergenPlaceholder": "e.g. Penicillin, Latex",
+    "severity": "Severity",
+    "reaction": "Reaction",
+    "reactionPlaceholder": "e.g. Rash, Anaphylaxis",
+    "note": "Note",
+    "noAllergies": "No allergies recorded.",
+    "conditions": "Medical conditions",
+    "noConditions": "No active medical conditions.",
+    "bloodType": "Blood type",
+    "pregnancy": "Pregnancy",
+    "yes": "Yes",
+    "no": "No",
+    "physicianName": "Physician name",
+    "physicianPhone": "Physician phone",
+    "physician": "Physician",
+    "currentMedications": "Current medications",
+    "medications": "Medications",
+    "generalNotes": "General notes",
+    "notes": "Notes",
+    "noHistory": "No medical history recorded.",
+    "condition": {
+      "isSmoker": "Smoker",
+      "isDiabetic": "Diabetes",
+      "hasHeartCondition": "Heart condition",
+      "hasHypertension": "Hypertension",
+      "hasBleedingDisorder": "Bleeding disorder",
+      "isOnBloodThinners": "Blood thinners",
+      "hasPacemaker": "Pacemaker",
+      "hasArtificialJoints": "Artificial joints",
+      "hasLatexAllergy": "Latex allergy"
+    }
+  },
+  "treatmentPlans": {
+    "newPlan": "New Plan",
+    "newPlanTitle": "New treatment plan",
+    "titlePlaceholder": "Plan title (e.g. Initial treatment plan)",
+    "notesOptional": "Notes (optional)",
+    "notesPlaceholder": "Notes…",
+    "creating": "Creating…",
+    "createPlan": "Create plan",
+    "cancel": "Cancel",
+    "tooth": "Tooth #",
+    "surface": "Surface",
+    "cdtCode": "CDT code",
+    "fee": "Fee (KM)",
+    "description": "Description *",
+    "descriptionPlaceholder": "Composite restoration, 2 surfaces…",
+    "status": "Status",
+    "saving": "Saving…",
+    "save": "Save",
+    "addItem": "Add item",
+    "noItems": "No items yet.",
+    "total": "Total: {{amount}}",
+    "createInvoice": "Create invoice",
+    "invoiceCreated": "Invoice created",
+    "invoiceFailed": "Could not create the invoice",
+    "deleteTitle": "Delete treatment plan?",
+    "deleteBody": "<strong>{{title}}</strong> and all its items will be removed.",
+    "delete": "Delete",
+    "loading": "Loading…",
+    "none": "No treatment plans yet.",
+    "count_one": "{{count}} plan",
+    "count_other": "{{count}} plans",
+    "planStatus": {
+      "Draft": "Draft",
+      "Active": "Active",
+      "Completed": "Completed",
+      "Declined": "Declined"
+    },
+    "itemStatus": {
+      "Planned": "Planned",
+      "Accepted": "Accepted",
+      "Completed": "Completed",
+      "Declined": "Declined"
+    }
+  },
+  "recallBanner": {
+    "overdue": "🔴 Recall overdue",
+    "dueSoon": "🟡 Recall due soon",
+    "patients_one": "{{count}} patient",
+    "patients_other": "{{count}} patients"
   }
 }

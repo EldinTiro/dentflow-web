@@ -21,6 +21,7 @@
     "overview": "Übersicht",
     "appointments": "Termine",
     "treatments": "Behandlungen",
+    "medical": "Medizinisch",
     "files": "Dateien"
   },
   "section": {
@@ -30,6 +31,7 @@
     "notes": "Notizen"
   },
   "field": {
+    "email": "E-Mail",
     "dateOfBirth": "Geburtsdatum",
     "gender": "Geschlecht",
     "preferredContact": "Bevorzugter Kontakt",
@@ -94,7 +96,7 @@
     "saving": "Wird gespeichert…",
     "saveChanges": "Änderungen speichern"
   },
-  "validation": { "required": "Pflichtfeld" },
+  "validation": { "required": "Pflichtfeld", "phone": "Geben Sie eine gültige Telefonnummer ein, z. B. 61 123 456." },
   "error": {
     "createFailed": "Patient konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
     "updateFailed": "Änderungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut."
@@ -121,5 +123,114 @@
     "deleteFailed": "Löschen fehlgeschlagen",
     "couldNotOpenFile": "Datei konnte nicht geöffnet werden",
     "deleted": "Patient gelöscht"
+  },
+  "allergyAlert": {
+    "label": "Allergien"
+  },
+  "allergySeverity": {
+    "Mild": "Leicht",
+    "Moderate": "Mittel",
+    "Severe": "Schwer",
+    "LifeThreatening": "Lebensbedrohlich"
+  },
+  "medical": {
+    "emergencyContacts": "Notfallkontakte",
+    "allergies": "Allergien",
+    "medicalHistory": "Krankengeschichte",
+    "add": "Hinzufügen",
+    "edit": "Bearbeiten",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "saving": "Wird gespeichert…",
+    "contactName": "Name *",
+    "contactNamePlaceholder": "Vor- und Nachname",
+    "relationship": "Beziehung",
+    "relationshipPlaceholder": "z. B. Mutter, Ehepartner",
+    "phone": "Telefon",
+    "primaryContact": "Hauptkontakt",
+    "primary": "Haupt",
+    "noContacts": "Keine Notfallkontakte.",
+    "allergen": "Allergen *",
+    "allergenPlaceholder": "z. B. Penicillin, Latex",
+    "severity": "Schweregrad",
+    "reaction": "Reaktion",
+    "reactionPlaceholder": "z. B. Ausschlag, Anaphylaxie",
+    "note": "Notiz",
+    "noAllergies": "Keine Allergien erfasst.",
+    "conditions": "Erkrankungen",
+    "noConditions": "Keine aktiven Erkrankungen.",
+    "bloodType": "Blutgruppe",
+    "pregnancy": "Schwangerschaft",
+    "yes": "Ja",
+    "no": "Nein",
+    "physicianName": "Name des Arztes",
+    "physicianPhone": "Telefon des Arztes",
+    "physician": "Arzt",
+    "currentMedications": "Aktuelle Medikamente",
+    "medications": "Medikamente",
+    "generalNotes": "Allgemeine Notizen",
+    "notes": "Notizen",
+    "noHistory": "Keine Krankengeschichte erfasst.",
+    "condition": {
+      "isSmoker": "Raucher",
+      "isDiabetic": "Diabetes",
+      "hasHeartCondition": "Herzerkrankung",
+      "hasHypertension": "Bluthochdruck",
+      "hasBleedingDisorder": "Blutgerinnungsstörung",
+      "isOnBloodThinners": "Blutverdünner",
+      "hasPacemaker": "Herzschrittmacher",
+      "hasArtificialJoints": "Künstliche Gelenke",
+      "hasLatexAllergy": "Latexallergie"
+    }
+  },
+  "treatmentPlans": {
+    "newPlan": "Neuer Plan",
+    "newPlanTitle": "Neuer Behandlungsplan",
+    "titlePlaceholder": "Planname (z. B. Erstbehandlung)",
+    "notesOptional": "Notizen (optional)",
+    "notesPlaceholder": "Notizen…",
+    "creating": "Wird erstellt…",
+    "createPlan": "Plan erstellen",
+    "cancel": "Abbrechen",
+    "tooth": "Zahn #",
+    "surface": "Fläche",
+    "cdtCode": "CDT-Code",
+    "fee": "Preis (KM)",
+    "description": "Beschreibung *",
+    "descriptionPlaceholder": "Kompositfüllung, 2 Flächen…",
+    "status": "Status",
+    "saving": "Wird gespeichert…",
+    "save": "Speichern",
+    "addItem": "Eintrag hinzufügen",
+    "noItems": "Noch keine Einträge.",
+    "total": "Summe: {{amount}}",
+    "createInvoice": "Rechnung erstellen",
+    "invoiceCreated": "Rechnung erstellt",
+    "invoiceFailed": "Rechnung konnte nicht erstellt werden",
+    "deleteTitle": "Behandlungsplan löschen?",
+    "deleteBody": "<strong>{{title}}</strong> und alle Einträge werden entfernt.",
+    "delete": "Löschen",
+    "loading": "Wird geladen…",
+    "none": "Noch keine Behandlungspläne.",
+    "count_one": "{{count}} Plan",
+    "count_other": "{{count}} Pläne",
+    "planStatus": {
+      "Draft": "Entwurf",
+      "Active": "Aktiv",
+      "Completed": "Abgeschlossen",
+      "Declined": "Abgelehnt"
+    },
+    "itemStatus": {
+      "Planned": "Geplant",
+      "Accepted": "Akzeptiert",
+      "Completed": "Abgeschlossen",
+      "Declined": "Abgelehnt"
+    }
+  },
+  "recallBanner": {
+    "overdue": "🔴 Recall überfällig",
+    "dueSoon": "🟡 Recall bald fällig",
+    "patients_one": "{{count}} Patient",
+    "patients_other": "{{count}} Patienten"
   }
 }

@@ -29,6 +29,7 @@
   },
   "table": {
     "invoiceNumber": "Br. fakture",
+    "patient": "Pacijent",
     "status": "Status",
     "issuedAt": "Datum",
     "dueDate": "Rok plaćanja",
@@ -101,5 +102,13 @@
   "patientTab": {
     "emptyState": "Nema faktura za ovog pacijenta.",
     "newInvoice": "+ Nova faktura"
+  },
+  "overdue": "Dospjelo",
+  "toast": {
+    "paymentRecorded": "Uplata je evidentirana."
+  },
+  "otherItem": {
+    "option": "Ostalo (ručni unos)",
+    "placeholder": "Vlastiti opis"
   }
 }

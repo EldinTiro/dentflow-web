@@ -89,17 +89,75 @@
   "boolean": { "yes": "Yes", "no": "No" },
   "lastLogin": { "never": "Never" },
   "expiry": { "expired": "Expired" },
-  "role": { "staff": "Staff" },
+  "role": { "staff": "Staff", "SuperAdmin": "Super admin", "ClinicOwner": "Clinic owner", "ClinicAdmin": "Clinic admin", "Dentist": "Dentist", "Hygienist": "Hygienist", "Receptionist": "Receptionist", "BillingStaff": "Billing", "ReadOnly": "Read only" },
   "pagination": {
     "pageOfTotal": "Page {{page}} of {{totalPages}} ({{totalCount}} total)",
     "showingRange": "Showing {{from}}–{{to}} of {{total}}"
   },
   "aria": {
+    "language": "Change language",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "editPlan": "Edit plan",
+    "deletePlan": "Delete plan",
+    "editItem": "Edit item",
+    "deleteItem": "Delete item",
     "closeSidebar": "Close sidebar",
     "openSidebar": "Open sidebar",
     "toggleDarkMode": "Toggle dark mode",
     "close": "Close",
     "hidePassword": "Hide password",
     "showPassword": "Show password"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "This page hit an unexpected error. The rest of the app still works.",
+    "retry": "Try again",
+    "reload": "Reload page"
+  },
+  "confirmAction": {
+    "deactivateTenantTitle": "Deactivate {{name}}?",
+    "deactivateTenantBody": "Everyone at this clinic is signed out and cannot sign in until it is re-activated. No data is deleted.",
+    "deactivateUserTitle": "Deactivate {{name}}?",
+    "deactivateUserBody": "They will no longer be able to sign in.",
+    "resetPasswordTitle": "Reset the password of {{name}}?",
+    "resetPasswordBody": "Their current password stops working immediately. They must choose a new one at the next sign-in.",
+    "changeRoleTitle": "Change the role of {{name}}?",
+    "changeRoleBody": "{{from}} → {{to}}. This changes what they can see and do right away.",
+    "resetPassword": "Reset password",
+    "changeRole": "Change role"
+  },
+  "feedback": {
+    "saved": "Saved",
+    "required": "Required",
+    "minLength": "At least {{count}} characters"
+  },
+  "accessDenied": {
+    "title": "You don't have access to this page",
+    "description": "Your role does not include this area. Ask a clinic owner or administrator if you need it.",
+    "back": "Back to the dashboard"
+  },
+  "tempPassword": {
+    "copy": "Copy",
+    "copied": "Copied",
+    "mustChange": "They will be asked to choose their own password at first sign-in."
+  },
+  "validation": {
+    "required": "Required",
+    "email": "Enter a valid email address",
+    "minLength": "At least {{count}} characters",
+    "maxLength": "At most {{count}} characters",
+    "min": "Must be at least {{min}}",
+    "max": "Must be at most {{max}}",
+    "slug": "Lowercase letters, numbers and hyphens only",
+    "hexColour": "Must be a colour like #3B82F6",
+    "passwordRequired": "Password is required",
+    "nameRequired": "Name is required",
+    "passwordLength": "At least 12 characters",
+    "passwordUpper": "Must contain an uppercase letter",
+    "passwordLower": "Must contain a lowercase letter",
+    "passwordDigit": "Must contain a digit",
+    "passwordSpecial": "Must contain a special character",
+    "passwordsMismatch": "Passwords do not match"
   }
 }

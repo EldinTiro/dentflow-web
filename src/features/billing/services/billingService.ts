@@ -1,4 +1,5 @@
 import apiClient from '@/shared/api/client'
+import { localDayStartUtc, localDayEndUtc } from '@/shared/lib/dates'
 
 export type InvoiceStatus = 'Draft' | 'Sent' | 'PartiallyPaid' | 'Paid' | 'Void'
 export type PaymentMethod = 'Cash' | 'Card' | 'Insurance' | 'BankTransfer' | 'Other'
@@ -12,11 +13,11 @@ export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
 }
 
 export const INVOICE_STATUS_COLORS: Record<InvoiceStatus, string> = {
-  Draft: 'bg-gray-100 text-gray-600',
-  Sent: 'bg-blue-100 text-blue-700',
-  PartiallyPaid: 'bg-yellow-100 text-yellow-700',
-  Paid: 'bg-green-100 text-green-700',
-  Void: 'bg-red-100 text-red-500',
+  Draft: 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
+  Sent: 'bg-blue-100 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300',
+  PartiallyPaid: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-400/10 dark:text-yellow-300',
+  Paid: 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300',
+  Void: 'bg-red-100 text-red-700 dark:bg-red-400/10 dark:text-red-300',
 }
 
 export interface InvoiceLineItemResponse {
@@ -70,6 +71,9 @@ export interface InvoiceSummaryResponse {
   balanceDue: number
   lineItemCount: number
   createdAt: string
+  patientName: string | null
+  /** Past the due date with a balance left (QA-025). */
+  isOverdue: boolean
 }
 
 export interface PagedResult<T> {
@@ -128,13 +132,20 @@ export interface RecordPaymentRequest {
 export const billingService = {
   list: (params?: {
     status?: InvoiceStatus | ''
-    from?: string
+    from?: string // local calendar date, YYYY-MM-DD
     to?: string
     page?: number
     pageSize?: number
   }) =>
     apiClient
-      .get<PagedResult<InvoiceSummaryResponse>>('/api/v1/invoices', { params })
+      .get<PagedResult<InvoiceSummaryResponse>>('/api/v1/invoices', {
+        // The API compares instants; a bare date would be read as the UTC day (QA-008).
+        params: params && {
+          ...params,
+          from: params.from ? localDayStartUtc(params.from) : undefined,
+          to: params.to ? localDayEndUtc(params.to) : undefined,
+        },
+      })
       .then((r) => r.data),
 
   listByPatient: (
@@ -177,8 +188,10 @@ export const billingService = {
       .post<InvoiceResponse>(`/api/v1/invoices/${id}/payments`, body)
       .then((r) => r.data),
 
+  // The endpoint binds an (all-optional) JSON body; without one axios drops
+  // Content-Type and the API answers 415 (QA-006).
   createFromTreatmentPlan: (treatmentPlanId: string) =>
     apiClient
-      .post<InvoiceResponse>(`/api/v1/treatment-plans/${treatmentPlanId}/invoice`)
+      .post<InvoiceResponse>(`/api/v1/treatment-plans/${treatmentPlanId}/invoice`, {})
       .then((r) => r.data),
 }

@@ -11,6 +11,7 @@ import {
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
+import { todayLocal } from '@/shared/lib/dates'
 
 interface Props {
   staffId: string
@@ -31,7 +32,7 @@ export function StaffAvailabilityTab({ staffId }: Props) {
   const [form, setForm] = useState({
     startTime: '09:00',
     endTime: '17:00',
-    effectiveFrom: new Date().toISOString().split('T')[0],
+    effectiveFrom: todayLocal(),
     effectiveTo: '',
   })
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -74,7 +75,7 @@ export function StaffAvailabilityTab({ staffId }: Props) {
   }
 
   if (isLoading) {
-    return <div className="py-10 text-center text-sm text-gray-400">Loading availability…</div>
+    return <div className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Loading availability…</div>
   }
 
   return (
@@ -99,7 +100,7 @@ export function StaffAvailabilityTab({ staffId }: Props) {
 
                 <div className="flex flex-wrap gap-2 flex-1">
                   {daySlots.length === 0 ? (
-                    <span className="text-sm text-gray-400 italic">No hours set</span>
+                    <span className="text-sm text-gray-500 italic dark:text-gray-400">No hours set</span>
                   ) : (
                     daySlots.map((slot) => (
                       <span

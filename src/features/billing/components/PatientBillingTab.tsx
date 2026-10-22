@@ -8,17 +8,18 @@ import {
   type InvoiceSummaryResponse,
 } from '../services/billingService'
 import { CreateInvoiceDrawer } from './CreateInvoiceDrawer'
+import { formatDate, formatMoney } from '@/shared/lib/format'
 
 const STATUS_STYLES: Record<InvoiceStatus, string> = {
-  Draft: 'bg-gray-100 text-gray-600',
-  Sent: 'bg-blue-100 text-blue-700',
-  PartiallyPaid: 'bg-yellow-100 text-yellow-700',
-  Paid: 'bg-green-100 text-green-700',
-  Void: 'bg-red-100 text-red-500',
+  Draft: 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
+  Sent: 'bg-blue-100 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300',
+  PartiallyPaid: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-400/10 dark:text-yellow-300',
+  Paid: 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300',
+  Void: 'bg-red-100 text-red-700 dark:bg-red-400/10 dark:text-red-300',
 }
 
-const fmt = (n: number) =>
-  n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+// Always with the currency (QA-032).
+const fmt = (n: number) => formatMoney(n)
 
 interface Props {
   patientId: string
@@ -39,7 +40,7 @@ export function PatientBillingTab({ patientId }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs text-gray-400 dark:text-gray-500">
+        <span className="text-xs text-gray-500 dark:text-gray-400">
           {data ? t('totalCount', { count: data.totalCount }) : ''}
         </span>
         <button
@@ -52,10 +53,10 @@ export function PatientBillingTab({ patientId }: Props) {
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {isLoading && (
-          <p className="px-5 py-8 text-sm text-gray-400 text-center">{tc('loading')}</p>
+          <p className="px-5 py-8 text-sm text-gray-500 text-center dark:text-gray-400">{tc('loading')}</p>
         )}
         {!isLoading && data?.items.length === 0 && (
-          <p className="px-5 py-8 text-sm text-gray-400 text-center">
+          <p className="px-5 py-8 text-sm text-gray-500 text-center dark:text-gray-400">
             {t('patientTab.emptyState')}
           </p>
         )}
@@ -89,7 +90,7 @@ export function PatientBillingTab({ patientId }: Props) {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
-                    {new Date(inv.issuedAt).toLocaleDateString()}
+                    {formatDate(inv.issuedAt)}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-gray-900 dark:text-gray-100">
                     {fmt(inv.subTotal)}
@@ -98,7 +99,7 @@ export function PatientBillingTab({ patientId }: Props) {
                     className={`px-4 py-3 text-right tabular-nums font-medium ${
                       inv.balanceDue > 0
                         ? 'text-red-600 dark:text-red-400'
-                        : 'text-gray-400 dark:text-gray-500'
+                        : 'text-gray-500 dark:text-gray-400'
                     }`}
                   >
                     {fmt(inv.balanceDue)}

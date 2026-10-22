@@ -14,13 +14,13 @@ import {
 import { CreateStaffDrawer } from '../components/CreateStaffDrawer';
 import { EditStaffDrawer } from '../components/EditStaffDrawer';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { useAuthStore } from '@/features/auth/store/authStore';
+import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
 
 export function StaffPage() {
   const { t } = useTranslation('staff')
   const { t: tc } = useTranslation('common')
   const navigate = useNavigate();
-  const roles = useAuthStore((s) => s.user?.roles ?? []);
+  const roles = useAuthStore(selectRoles);
   const canManage =
     roles.includes('ClinicOwner') || roles.includes('ClinicAdmin') || roles.includes('SuperAdmin');
 
@@ -102,7 +102,7 @@ export function StaffPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
             <tr>
@@ -119,13 +119,13 @@ export function StaffPage() {
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {isLoading ? (
               <tr>
-                <td colSpan={canManage ? 8 : 7} className="text-center py-10 text-gray-400">
+                <td colSpan={canManage ? 8 : 7} className="text-center py-10 text-gray-500 dark:text-gray-400">
                   {tc('loading')}
                 </td>
               </tr>
             ) : members.length === 0 ? (
               <tr>
-                <td colSpan={canManage ? 8 : 7} className="text-center py-10 text-gray-400">
+                <td colSpan={canManage ? 8 : 7} className="text-center py-10 text-gray-500 dark:text-gray-400">
                   {t('emptyState')}
                 </td>
               </tr>
@@ -134,9 +134,9 @@ export function StaffPage() {
                 <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" onClick={() => navigate(`/staff/${m.id}`)}>
                   <td className="px-4 py-3 font-medium text-primary-600 dark:text-primary-400 hover:underline">{m.fullName}</td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{STAFF_TYPE_LABELS[m.staffType]}</td>
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.email ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.phone ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.specialty ?? '—'}</td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.email || '—'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{m.phone || '—'}</td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.specialty || '—'}</td>
                   <td className="px-4 py-3">
                     <span
                       className="inline-block w-5 h-5 rounded-full border border-gray-200 dark:border-gray-600"
@@ -147,8 +147,8 @@ export function StaffPage() {
                     <span
                       className={`dot-badge inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                         m.isActive
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-500'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300'
+                          : 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300'
                       }`}
                     >
                       {m.isActive ? tc('status.active') : tc('status.inactive')}
@@ -159,14 +159,14 @@ export function StaffPage() {
                       <div className="flex justify-end gap-1">
                         <button
                           onClick={(e) => { e.stopPropagation(); setEditing(m); }}
-                          className="p-1.5 text-gray-400 hover:text-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                          className="p-1.5 text-gray-500 hover:text-primary-600 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors dark:text-gray-400"
                           title={tc('button.edit')}
                         >
                           <Pencil size={14} />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); setDeletingId(m.id); }}
-                          className="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          className="p-1.5 text-gray-500 hover:text-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors dark:text-gray-400"
                           title={tc('button.delete')}
                         >
                           <Trash2 size={14} />

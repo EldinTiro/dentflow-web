@@ -3,6 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { userAdminService, type UserAdminResponse } from '../services/userAdminService'
 import { tenantService } from '../services/tenantService'
+import { useAuthStore } from '@/features/auth/store/authStore'
+import { toast } from 'sonner'
+import { getApiErrorMessage } from '@/shared/utils/apiError'
+import { useConfirm } from '@/shared/components/ConfirmDialog'
+import { TempPasswordBox } from '@/shared/components/TempPasswordBox'
 
 const ROLES = [
   'SuperAdmin', 'ClinicOwner', 'ClinicAdmin', 'Dentist',
@@ -16,9 +21,7 @@ function ResetPasswordResult({ tempPassword, onClose, t, tc }: { tempPassword: s
         <h3 className="font-semibold text-gray-900 dark:text-white mb-3">{t('adminUsers.resetPwd.title')}</h3>
         <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-md p-3 mb-4 text-sm">
           <p className="text-amber-800 dark:text-amber-300 font-medium mb-1">{t('adminUsers.resetPwd.label')}</p>
-          <p className="font-mono text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 px-2 py-1 rounded border border-amber-200 dark:border-amber-700 text-xs break-all">
-            {tempPassword}
-          </p>
+          <TempPasswordBox password={tempPassword} />
           <p className="text-amber-700 dark:text-amber-400 text-xs mt-2">{t('adminUsers.resetPwd.warning')}</p>
         </div>
         <button
@@ -41,6 +44,7 @@ export function UsersPage() {
   const [tenantFilter, setTenantFilter] = useState('')
   const [page, setPage] = useState(1)
   const [resetResult, setResetResult] = useState<string | null>(null)
+  const currentUserId = useAuthStore((s) => s.user?.userId)
 
   const { data: tenantsData } = useQuery({
     queryKey: ['tenants-for-filter'],
@@ -63,18 +67,26 @@ export function UsersPage() {
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       userAdminService.updateStatus(id, isActive),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+    onError: (err) => toast.error(getApiErrorMessage(err)),
   })
 
   const changeRole = useMutation({
     mutationFn: ({ id, role }: { id: string; role: string }) =>
       userAdminService.changeRole(id, role),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+    // The select keeps the rejected value otherwise; refetch puts the real role back.
+    onError: (err) => {
+      toast.error(getApiErrorMessage(err))
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+    },
   })
 
   const resetPwd = useMutation({
     mutationFn: (id: string) => userAdminService.resetPassword(id),
     onSuccess: (data) => setResetResult(data.tempPassword),
+    onError: (err) => toast.error(getApiErrorMessage(err)),
   })
+  const confirm = useConfirm()
 
   const totalPages = data ? Math.ceil(data.totalCount / data.pageSize) : 0
 
@@ -96,7 +108,7 @@ export function UsersPage() {
         >
           <option value="">{t('adminUsers.filter.allRoles')}</option>
           {ROLES.map((r) => (
-            <option key={r} value={r}>{r}</option>
+            <option key={r} value={r}>{tc(`role.${r}`)}</option>
           ))}
         </select>
         <select
@@ -111,7 +123,7 @@ export function UsersPage() {
         </select>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
             <tr>
@@ -125,39 +137,56 @@ export function UsersPage() {
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {isLoading && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
                   {tc('loading')}
                 </td>
               </tr>
             )}
             {!isLoading && data?.items.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
                   {t('adminUsers.emptyState')}
                 </td>
               </tr>
             )}
-            {data?.items.map((u: UserAdminResponse) => (
+            {data?.items.map((u: UserAdminResponse) => {
+              // The API refuses both on your own account and SuperAdmin for clinic users (QA-012).
+              const isSelf = u.id === currentUserId
+              const roleOptions = u.tenantId ? ROLES.filter((r) => r !== 'SuperAdmin') : ROLES
+              return (
               <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{u.fullName}</td>
                 <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{u.email}</td>
                 <td className="px-4 py-3">
                   <select
+                    key={u.role ?? ''}
                     defaultValue={u.role ?? ''}
-                    onChange={(e) =>
-                      changeRole.mutate({ id: u.id, role: e.target.value })
-                    }
+                    disabled={isSelf}
+                    aria-label={`${t('adminUsers.table.role')}: ${u.fullName}`}
+                    onChange={(e) => {
+                      const select = e.target
+                      const role = select.value
+                      confirm.ask({
+                        title: tc('confirmAction.changeRoleTitle', { name: u.fullName }),
+                        description: tc('confirmAction.changeRoleBody', { from: u.role ? tc(`role.${u.role}`) : '—', to: tc(`role.${role}`) }),
+                        confirmLabel: tc('confirmAction.changeRole'),
+                        cancelLabel: tc('button.cancel'),
+                        onConfirm: () => changeRole.mutate({ id: u.id, role }),
+                      })
+                      // Keep showing the current role until the change is confirmed and saved.
+                      select.value = u.role ?? ''
+                    }}
                     className="border border-gray-200 dark:border-gray-600 rounded px-2 py-0.5 text-xs bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
-                    {ROLES.map((r) => (
-                      <option key={r} value={r}>{r}</option>
+                    {roleOptions.map((r) => (
+                      <option key={r} value={r}>{tc(`role.${r}`)}</option>
                     ))}
                   </select>
                 </td>
                 <td className="px-4 py-3">
                   <span
                     className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                      u.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                      u.isActive ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300'
                     }`}
                   >
                     {u.isActive ? tc('status.active') : tc('status.inactive')}
@@ -165,14 +194,34 @@ export function UsersPage() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3 text-xs">
+                    {!isSelf && (
+                      <button
+                        onClick={() =>
+                          u.isActive
+                            ? confirm.ask({
+                                title: tc('confirmAction.deactivateUserTitle', { name: u.fullName }),
+                                description: tc('confirmAction.deactivateUserBody'),
+                                confirmLabel: tc('button.deactivate'),
+                                cancelLabel: tc('button.cancel'),
+                                onConfirm: () => toggleStatus.mutate({ id: u.id, isActive: false }),
+                              })
+                            : toggleStatus.mutate({ id: u.id, isActive: true })
+                        }
+                        className={u.isActive ? 'text-red-500 hover:text-red-700' : 'text-green-700 hover:text-green-700'}
+                      >
+                        {u.isActive ? tc('button.deactivate') : tc('button.activate')}
+                      </button>
+                    )}
                     <button
-                      onClick={() => toggleStatus.mutate({ id: u.id, isActive: !u.isActive })}
-                      className={u.isActive ? 'text-red-500 hover:text-red-700' : 'text-green-600 hover:text-green-700'}
-                    >
-                      {u.isActive ? tc('button.deactivate') : tc('button.activate')}
-                    </button>
-                    <button
-                      onClick={() => resetPwd.mutate(u.id)}
+                      onClick={() =>
+                        confirm.ask({
+                          title: tc('confirmAction.resetPasswordTitle', { name: u.fullName }),
+                          description: tc('confirmAction.resetPasswordBody'),
+                          confirmLabel: tc('confirmAction.resetPassword'),
+                          cancelLabel: tc('button.cancel'),
+                          onConfirm: () => resetPwd.mutate(u.id),
+                        })
+                      }
                       className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                     >
                       {t('adminUsers.resetPassword')}
@@ -180,7 +229,8 @@ export function UsersPage() {
                   </div>
                 </td>
               </tr>
-            ))}
+              )
+            })}
           </tbody>
         </table>
 
@@ -217,6 +267,7 @@ export function UsersPage() {
           tc={tc}
         />
       )}
+      {confirm.dialog}
     </div>
   )
 }

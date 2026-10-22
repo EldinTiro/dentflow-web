@@ -86,10 +86,10 @@ export function AddLineItemModal({ invoiceId, item, onClose }: Props) {
           {isEdit ? t('addLineItem.titleEdit') : t('addLineItem.titleAdd')}
         </h2>
 
-        <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-4">
+        <form noValidate onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-4">
           <div>
-            <label className={LABEL_CLASS}>{t('addLineItem.description')}</label>
-            <input
+            <label htmlFor="line-item-description" className={LABEL_CLASS}>{t('addLineItem.description')}</label>
+            <input id="line-item-description"
               {...register('description', { required: true })}
               className={INPUT_CLASS}
             />
@@ -100,8 +100,8 @@ export function AddLineItemModal({ invoiceId, item, onClose }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={LABEL_CLASS}>{t('addLineItem.quantity')}</label>
-              <input
+              <label htmlFor="line-item-quantity" className={LABEL_CLASS}>{t('addLineItem.quantity')}</label>
+              <input id="line-item-quantity"
                 type="number"
                 min={1}
                 {...register('quantity', { required: true, min: 1 })}
@@ -109,8 +109,8 @@ export function AddLineItemModal({ invoiceId, item, onClose }: Props) {
               />
             </div>
             <div>
-              <label className={LABEL_CLASS}>{t('addLineItem.unitFee')}</label>
-              <input
+              <label htmlFor="line-item-unitFee" className={LABEL_CLASS}>{t('addLineItem.unitFee')}</label>
+              <input id="line-item-unitFee"
                 type="number"
                 min={0}
                 step="0.01"
@@ -122,16 +122,16 @@ export function AddLineItemModal({ invoiceId, item, onClose }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={LABEL_CLASS}>{t('addLineItem.cdtCode')}</label>
-              <input
+              <label htmlFor="line-item-cdtCode" className={LABEL_CLASS}>{t('addLineItem.cdtCode')}</label>
+              <input id="line-item-cdtCode"
                 {...register('cdtCode')}
                 className={INPUT_CLASS}
                 placeholder="D0120"
               />
             </div>
             <div>
-              <label className={LABEL_CLASS}>{t('addLineItem.toothNumber')}</label>
-              <input
+              <label htmlFor="line-item-toothNumber" className={LABEL_CLASS}>{t('addLineItem.toothNumber')}</label>
+              <input id="line-item-toothNumber"
                 type="number"
                 min={1}
                 max={32}

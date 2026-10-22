@@ -2,7 +2,7 @@
   "team": {
     "title": "Team",
     "memberCount": "{{count}} Mitglieder",
-    "button": { "invite": "+ Mitglied einladen" },
+    "button": { "invite": "+ Mitglied hinzufügen" },
     "search": { "placeholder": "Nach Name oder E-Mail suchen…" },
     "emptyState": "Keine Teammitglieder gefunden.",
     "table": {
@@ -15,8 +15,8 @@
     "resetPwd": { "title": "Temporäres Passwort" }
   },
   "invite": {
-    "title": "Teammitglied einladen",
-    "successTitle": "Benutzer eingeladen",
+    "title": "Teammitglied hinzufügen",
+    "successTitle": "Konto erstellt",
     "successMessage": "Konto erfolgreich erstellt. Teilen Sie die Anmeldedaten mit dem neuen Teammitglied.",
     "email": "E-Mail",
     "tempPassword": "Temporäres Passwort",
@@ -25,8 +25,8 @@
     "lastName": "Nachname *",
     "emailLabel": "E-Mail *",
     "roleLabel": "Rolle *",
-    "sendButton": "Einladung senden",
-    "sending": "Wird eingeladen…",
+    "sendButton": "Konto erstellen",
+    "sending": "Wird erstellt…",
     "error": "Benutzer konnte nicht eingeladen werden. Möglicherweise existiert bereits ein Konto."
   },
   "adminUsers": {

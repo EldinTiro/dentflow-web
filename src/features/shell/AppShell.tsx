@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Outlet, NavLink, Link } from 'react-router'
+import { useEffect, useState } from 'react'
+import { Outlet, NavLink, Link, useLocation } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/features/auth/store/authStore'
@@ -8,6 +8,8 @@ import { tenantService } from '@/features/admin/services/tenantService'
 import { cn } from '@/shared/lib/utils'
 import { useTheme } from '@/shared/context/ThemeContext'
 import { FeatureProvider } from '@/shared/context/FeatureContext'
+import { ErrorBoundary } from '@/shared/components/ErrorBoundary'
+import { useUserPreferences, useUpdateUserPreferences } from '@/features/auth/hooks/useUserPreferences'
 import {
   LayoutDashboard,
   Users,
@@ -23,6 +25,7 @@ import {
   X,
   Globe,
   Receipt,
+  UsersRound,
 } from 'lucide-react'
 
 const langOptions = [
@@ -41,10 +44,23 @@ const navItems = [
 
 export function AppShell() {
   const { t, i18n } = useTranslation()
+  const location = useLocation()
   const user = useAuthStore((s) => s.user)
   const isSuperAdmin = user?.roles?.includes('SuperAdmin') ?? false
   const canManageTeam = user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin'].includes(r)) ?? false
-  const { theme, toggle } = useTheme()
+  const { theme, setTheme } = useTheme()
+  // The saved preference is the one source of truth for light/dark (QA-021): applied
+  // when the shell loads, and the header toggle writes back to it.
+  const { data: preferences } = useUserPreferences()
+  const updatePreferences = useUpdateUserPreferences()
+  useEffect(() => {
+    if (preferences?.theme === 'light' || preferences?.theme === 'dark') setTheme(preferences.theme)
+  }, [preferences?.theme, setTheme])
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    if (preferences) updatePreferences.mutate({ ...preferences, theme: next })
+  }
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
 
@@ -99,6 +115,22 @@ export function AppShell() {
 
       {canManageTeam && (
         <div className="px-3 pb-2 space-y-1">
+          {/* Was reachable only by typing the URL (QA-022). */}
+          <NavLink
+            to="/settings/users"
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                isActive
+                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
+              )
+            }
+          >
+            <UsersRound size={16} className="shrink-0" />
+            {t('nav.team')}
+          </NavLink>
           <NavLink
             to="/settings/appointment-types"
             onClick={() => setSidebarOpen(false)}
@@ -131,7 +163,7 @@ export function AppShell() {
 
       <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-3">
         <p className="truncate text-xs font-medium text-gray-700 dark:text-gray-300">{user?.fullName}</p>
-        <p className="truncate text-xs text-gray-400 dark:text-gray-500">{user?.email}</p>
+        <p className="truncate text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
         <div className="mt-2 space-y-0.5">
           <NavLink
             to="/settings/profile"
@@ -161,7 +193,7 @@ export function AppShell() {
   )
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-950">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
@@ -169,7 +201,7 @@ export function AppShell() {
           <aside className="relative z-50 flex w-64 flex-col bg-white dark:bg-gray-900 h-full shadow-xl">
             <button
               onClick={() => setSidebarOpen(false)}
-              className="absolute top-3 right-3 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="absolute top-3 right-3 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-400"
               aria-label={t('aria.closeSidebar')}
             >
               <X size={18} />
@@ -201,7 +233,10 @@ export function AppShell() {
             <div className="relative">
               <button
                 onClick={() => setLangOpen((p) => !p)}
-                className="flex items-center gap-1.5 rounded-lg px-2 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition-colors text-xs font-medium"
+                aria-label={t('aria.language')}
+                aria-haspopup="menu"
+                aria-expanded={langOpen}
+                className="flex items-center gap-1.5 rounded-lg px-2 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition-colors text-xs font-medium dark:text-gray-400"
               >
                 <Globe size={16} />
                 <span className="hidden sm:inline uppercase">{i18n.language?.substring(0, 2)}</span>
@@ -229,9 +264,9 @@ export function AppShell() {
               )}
             </div>
             <button
-              onClick={toggle}
+              onClick={toggleTheme}
               aria-label={t('aria.toggleDarkMode')}
-              className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition-colors"
+              className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition-colors dark:text-gray-400"
             >
               {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
@@ -240,7 +275,9 @@ export function AppShell() {
 
         <main className="flex-1 overflow-y-auto">
           <FeatureProvider>
-            <Outlet />
+            <ErrorBoundary resetKey={location.pathname}>
+              <Outlet />
+            </ErrorBoundary>
           </FeatureProvider>
         </main>
       </div>
