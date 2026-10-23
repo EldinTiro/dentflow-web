@@ -67,8 +67,9 @@ describe('CreateStaffDrawer', () => {
     expect(onClose).not.toHaveBeenCalled()
   })
 
-  it('shows "email already used" under the email field', async () => {
-    create.mockRejectedValue(fastEndpointsError('A staff member with this email already exists.', 'staff.AlreadyExists', 409))
+  // Staff.AlreadyExists: another profile; Auth.EmailAlreadyExists: an account (any clinic)
+  it.each(['staff.AlreadyExists', 'auth.EmailAlreadyExists'])('shows "email already used" under the email field for %s', async (code) => {
+    create.mockRejectedValue(fastEndpointsError('Email already exists.', code, 409))
     const user = userEvent.setup()
     renderWithProviders(<CreateStaffDrawer onClose={vi.fn()} />)
     await fillName(user)

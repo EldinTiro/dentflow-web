@@ -69,7 +69,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
       await mutation.mutateAsync(values);
     } catch (err) {
       const codes = getApiErrorCodes(err);
-      if (codes.has('Staff.AlreadyExists') || codes.has('DuplicateEmail') || codes.has('DuplicateUserName')) {
+      if (codes.has('Staff.AlreadyExists') || codes.has('Auth.EmailAlreadyExists') || codes.has('DuplicateEmail') || codes.has('DuplicateUserName')) {
         setError('email', { message: t('create.emailTaken') });
       } else if (codes.has('Staff.EmailRequiredForAccess')) {
         setError('email', { message: t('create.emailRequiredForAccess') });

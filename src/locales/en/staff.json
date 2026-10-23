@@ -130,5 +130,46 @@
     "successMessage": "{{name}} can now sign in with this email and temporary password:",
     "tempPasswordWarning": "This password will not be shown again. It must be changed at first sign-in.",
     "done": "Done"
+  },
+  "access": {
+    "title": "App access",
+    "noAccess": "This person can't sign in yet.",
+    "role": "Role",
+    "give": "Give access",
+    "canSignIn": "Can sign in",
+    "disabled": "Sign-in turned off",
+    "waiting": "Waiting for first sign-in",
+    "none": "No access",
+    "mustChange": "Must change password",
+    "lastSignIn": "Last sign-in",
+    "never": "never",
+    "resetPassword": "Reset password",
+    "resetTitle": "Reset password?",
+    "resetBody": "{{name}} gets a new temporary password and has to change it at the next sign-in.",
+    "turnOff": "Turn off sign-in",
+    "turnOffConfirm": "Turn off",
+    "turnOffTitle": "Turn off sign-in?",
+    "turnOffBody": "{{name}} will no longer be able to sign in. The profile and its history stay.",
+    "turnOn": "Turn sign-in back on",
+    "selfHint": "This is you. Change your own account in Profile & Settings.",
+    "tempPassword": "Temporary password",
+    "roleChanged": "Role changed.",
+    "failed": "Could not change access. Please try again.",
+    "errors": {
+      "self": "You can't change your own access here. Use Profile & Settings for your own account.",
+      "lastOwner": "A clinic must keep at least one active owner.",
+      "ownerOnly": "Only a clinic owner can change another owner."
+    }
+  },
+  "status": {
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "deactivateTitle": "Deactivate {{name}}?",
+    "deactivateBody": "They can no longer be booked or sign in. Past appointments keep their name, and you can reactivate them later.",
+    "deactivated": "{{name}} is deactivated.",
+    "reactivated": "{{name}} is active again. Sign-in stays off until you turn it back on.",
+    "upcoming_one": "{{name}} has {{count}} upcoming appointment. Cancel or move it first.",
+    "upcoming_other": "{{name}} has {{count}} upcoming appointments. Cancel or move them first.",
+    "hasHistory": "{{name}} has appointments, so the profile can't be deleted. Deactivate it instead."
   }
 }
