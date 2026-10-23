@@ -1,8 +1,12 @@
 {
   "title": "Osoblje",
   "memberCount": "{{count}} član(ova)",
-  "button": { "addStaff": "+ Dodaj osoblje" },
-  "search": { "placeholder": "Pretraži po imenu ili emailu…" },
+  "button": {
+    "addStaff": "+ Dodaj osoblje"
+  },
+  "search": {
+    "placeholder": "Pretraži po imenu ili emailu…"
+  },
   "emptyState": "Nema pronađenog osoblja.",
   "table": {
     "name": "Ime",
@@ -93,5 +97,39 @@
     "days_one": "{{value}} dan",
     "days_few": "{{value}} dana",
     "days_other": "{{value}} dana"
+  },
+  "staffType": {
+    "Dentist": "Stomatolog",
+    "DentalAssistant": "Stomatološki asistent",
+    "Hygienist": "Higijeničar",
+    "Receptionist": "Recepcioner",
+    "ClinicAdmin": "Administrator klinike",
+    "OfficeManager": "Upravnik ordinacije"
+  },
+  "create": {
+    "title": "Dodaj člana osoblja",
+    "firstName": "Ime",
+    "lastName": "Prezime",
+    "staffType": "Vrsta osoblja",
+    "email": "Email",
+    "phone": "Telefon",
+    "specialty": "Specijalnost",
+    "specialtyPlaceholder": "npr. Ortodoncija",
+    "hireDate": "Datum zaposlenja",
+    "color": "Boja u kalendaru",
+    "canSignIn": "Može se prijaviti",
+    "canSignInHint": "Kreira račun s privremenom lozinkom.",
+    "role": "Uloga",
+    "submit": "Dodaj člana osoblja",
+    "saving": "Spremanje…",
+    "cancel": "Odustani",
+    "required": "Obavezno",
+    "emailRequiredForAccess": "Za prijavu je potreban email.",
+    "emailTaken": "Ovaj email već koristi neko u ovoj klinici.",
+    "failed": "Dodavanje člana osoblja nije uspjelo.",
+    "successTitle": "Član osoblja dodan",
+    "successMessage": "{{name}} se sada može prijaviti ovim emailom i privremenom lozinkom:",
+    "tempPasswordWarning": "Ova lozinka se više neće prikazati. Mora se promijeniti pri prvoj prijavi.",
+    "done": "Gotovo"
   }
 }

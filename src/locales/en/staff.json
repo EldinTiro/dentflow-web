@@ -1,8 +1,12 @@
 {
   "title": "Staff",
   "memberCount": "{{count}} member(s)",
-  "button": { "addStaff": "+ Add Staff" },
-  "search": { "placeholder": "Search by name or email…" },
+  "button": {
+    "addStaff": "+ Add Staff"
+  },
+  "search": {
+    "placeholder": "Search by name or email…"
+  },
   "emptyState": "No staff members found.",
   "table": {
     "name": "Name",
@@ -92,5 +96,39 @@
     "remove": "Remove",
     "days_one": "{{value}} day",
     "days_other": "{{value}} days"
+  },
+  "staffType": {
+    "Dentist": "Dentist",
+    "DentalAssistant": "Dental assistant",
+    "Hygienist": "Hygienist",
+    "Receptionist": "Receptionist",
+    "ClinicAdmin": "Clinic admin",
+    "OfficeManager": "Office manager"
+  },
+  "create": {
+    "title": "Add staff member",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "staffType": "Staff type",
+    "email": "Email",
+    "phone": "Phone",
+    "specialty": "Specialty",
+    "specialtyPlaceholder": "e.g. Orthodontics",
+    "hireDate": "Hire date",
+    "color": "Calendar colour",
+    "canSignIn": "Can sign in",
+    "canSignInHint": "Creates an account with a temporary password.",
+    "role": "Role",
+    "submit": "Add staff member",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "required": "Required",
+    "emailRequiredForAccess": "An email is needed to sign in.",
+    "emailTaken": "This email is already used by someone in this clinic.",
+    "failed": "Could not add the staff member.",
+    "successTitle": "Staff member added",
+    "successMessage": "{{name}} can now sign in with this email and temporary password:",
+    "tempPasswordWarning": "This password will not be shown again. It must be changed at first sign-in.",
+    "done": "Done"
   }
 }

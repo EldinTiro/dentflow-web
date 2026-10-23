@@ -1,8 +1,12 @@
 {
   "title": "Personal",
   "memberCount": "{{count}} Mitglied(er)",
-  "button": { "addStaff": "+ Personal hinzufügen" },
-  "search": { "placeholder": "Nach Name oder E-Mail suchen…" },
+  "button": {
+    "addStaff": "+ Personal hinzufügen"
+  },
+  "search": {
+    "placeholder": "Nach Name oder E-Mail suchen…"
+  },
   "emptyState": "Keine Personalmitglieder gefunden.",
   "table": {
     "name": "Name",
@@ -92,5 +96,39 @@
     "remove": "Entfernen",
     "days_one": "{{value}} Tag",
     "days_other": "{{value}} Tage"
+  },
+  "staffType": {
+    "Dentist": "Zahnarzt",
+    "DentalAssistant": "Zahnmedizinische Assistenz",
+    "Hygienist": "Dentalhygieniker",
+    "Receptionist": "Empfang",
+    "ClinicAdmin": "Praxisadministrator",
+    "OfficeManager": "Praxismanager"
+  },
+  "create": {
+    "title": "Mitarbeiter hinzufügen",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "staffType": "Mitarbeitertyp",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "specialty": "Fachgebiet",
+    "specialtyPlaceholder": "z. B. Kieferorthopädie",
+    "hireDate": "Einstellungsdatum",
+    "color": "Kalenderfarbe",
+    "canSignIn": "Kann sich anmelden",
+    "canSignInHint": "Legt ein Konto mit einem temporären Passwort an.",
+    "role": "Rolle",
+    "submit": "Mitarbeiter hinzufügen",
+    "saving": "Wird gespeichert…",
+    "cancel": "Abbrechen",
+    "required": "Pflichtfeld",
+    "emailRequiredForAccess": "Für die Anmeldung wird eine E-Mail benötigt.",
+    "emailTaken": "Diese E-Mail wird in dieser Praxis bereits verwendet.",
+    "failed": "Mitarbeiter konnte nicht hinzugefügt werden.",
+    "successTitle": "Mitarbeiter hinzugefügt",
+    "successMessage": "{{name}} kann sich jetzt mit dieser E-Mail und dem temporären Passwort anmelden:",
+    "tempPasswordWarning": "Dieses Passwort wird nicht erneut angezeigt. Es muss bei der ersten Anmeldung geändert werden.",
+    "done": "Fertig"
   }
 }

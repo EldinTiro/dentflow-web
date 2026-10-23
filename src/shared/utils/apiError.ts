@@ -53,3 +53,28 @@ export function getApiErrorMessage(
   }
   return fallback;
 }
+
+/** Error codes the API returned, matched case-insensitively. */
+export interface ApiErrorCodes {
+  has(code: string): boolean
+  get(code: string): string | undefined
+  readonly size: number
+}
+
+/**
+ * Every `{ name, reason }` from a FastEndpoints error as a lookup by code. The API sends
+ * names camel-cased ("patient.HasUpcomingAppointments") and error metadata as extra
+ * entries ("….count" → "2"), so lookups ignore case.
+ */
+export function getApiErrorCodes(err: unknown): ApiErrorCodes {
+  const apiErrors = (err as AxiosError<FastEndpointsErrorBody> | undefined)?.response?.data?.errors
+  const map = new Map<string, string>()
+  if (Array.isArray(apiErrors)) {
+    for (const e of apiErrors) if (e.name) map.set(e.name.toLowerCase(), e.reason ?? '')
+  }
+  return {
+    has: (code) => map.has(code.toLowerCase()),
+    get: (code) => map.get(code.toLowerCase()),
+    size: map.size,
+  }
+}
