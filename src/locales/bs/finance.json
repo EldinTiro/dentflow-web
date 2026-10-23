@@ -1,0 +1,86 @@
+{
+  "title": "Finansije",
+  "tab": {
+    "overview": "Pregled",
+    "invoices": "Fakture",
+    "cashUp": "Dnevni promet",
+    "debtors": "Dužnici"
+  },
+  "months": [
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "maj",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "okt",
+    "nov",
+    "dec"
+  ],
+  "period": {
+    "previousMonth": "Prethodni mjesec",
+    "nextMonth": "Sljedeći mjesec",
+    "previousDay": "Prethodni dan",
+    "nextDay": "Sljedeći dan",
+    "today": "Danas",
+    "date": "Datum"
+  },
+  "kpi": {
+    "collected": "Naplaćeno",
+    "invoiced": "Fakturisano",
+    "outstanding": "Neplaćeno",
+    "overdue": "Dospjelo",
+    "vsPrevious": "u odnosu na {{month}}",
+    "noComparison": "Nema poređenja za {{month}}",
+    "patients_one": "{{count}} pacijent",
+    "patients_few": "{{count}} pacijenta",
+    "patients_other": "{{count}} pacijenata",
+    "now": "Trenutno dugovanje"
+  },
+  "chart": {
+    "revenueTitle": "Naplaćeno po mjesecima",
+    "revenueSubtitle": "Posljednjih 12 mjeseci",
+    "tableCaption": "Naplaćeno po mjesecima, posljednjih 12 mjeseci",
+    "month": "Mjesec",
+    "amount": "Iznos"
+  },
+  "methods": {
+    "title": "Način plaćanja",
+    "empty": "Nema uplata ovog mjeseca."
+  },
+  "cashUp": {
+    "total": "Ukupno za dan",
+    "payments_one": "{{count}} uplata",
+    "payments_few": "{{count}} uplate",
+    "payments_other": "{{count}} uplata",
+    "time": "Vrijeme",
+    "patient": "Pacijent",
+    "invoice": "Faktura",
+    "method": "Način",
+    "reference": "Referenca",
+    "amount": "Iznos",
+    "empty": "Nema uplata ovog dana.",
+    "print": "Štampaj"
+  },
+  "debtors": {
+    "total": "Ukupno dugovanje",
+    "patient": "Pacijent",
+    "phone": "Telefon",
+    "openInvoices": "Otvorene fakture",
+    "oldest": "Najstarija otvorena",
+    "days_one": "{{count}} dan",
+    "days_few": "{{count}} dana",
+    "days_other": "{{count}} dana",
+    "overdue": "Dospjelo",
+    "balance": "Saldo",
+    "empty": "Niko ne duguje klinici.",
+    "bucket": {
+      "0-30": "0–30 dana",
+      "31-60": "31–60 dana",
+      "60+": "Preko 60 dana"
+    }
+  }
+}

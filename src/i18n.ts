@@ -14,6 +14,7 @@ import enSettings from './locales/en/settings.json'
 import enAdmin from './locales/en/admin.json'
 import enErrors from './locales/en/errors.json'
 import enBilling from './locales/en/billing.json'
+import enFinance from './locales/en/finance.json'
 
 // BS
 import bsCommon from './locales/bs/common.json'
@@ -26,6 +27,7 @@ import bsSettings from './locales/bs/settings.json'
 import bsAdmin from './locales/bs/admin.json'
 import bsErrors from './locales/bs/errors.json'
 import bsBilling from './locales/bs/billing.json'
+import bsFinance from './locales/bs/finance.json'
 
 // DE
 import deCommon from './locales/de/common.json'
@@ -38,6 +40,7 @@ import deSettings from './locales/de/settings.json'
 import deAdmin from './locales/de/admin.json'
 import deErrors from './locales/de/errors.json'
 import deBilling from './locales/de/billing.json'
+import deFinance from './locales/de/finance.json'
 
 i18n
   .use(LanguageDetector)
@@ -55,6 +58,7 @@ i18n
         admin: enAdmin,
         errors: enErrors,
         billing: enBilling,
+        finance: enFinance,
       },
       bs: {
         common: bsCommon,
@@ -67,6 +71,7 @@ i18n
         admin: bsAdmin,
         errors: bsErrors,
         billing: bsBilling,
+        finance: bsFinance,
       },
       de: {
         common: deCommon,
@@ -79,6 +84,7 @@ i18n
         admin: deAdmin,
         errors: deErrors,
         billing: deBilling,
+        finance: deFinance,
       },
     },
     defaultNS: 'common',

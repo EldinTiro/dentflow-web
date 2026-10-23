@@ -7,6 +7,7 @@ import { invoiceFixture } from '@/test/fixtures/invoice'
 import { fastEndpointsError } from '@/test/render'
 import { InvoiceDetailPage } from './InvoiceDetailPage'
 import { billingService } from '../services/billingService'
+import { useAuthStore } from '@/features/auth/store/authStore'
 
 vi.mock('../services/billingService', async (orig) => {
   const actual = await orig<typeof import('../services/billingService')>()
@@ -58,5 +59,20 @@ describe('InvoiceDetailPage void', () => {
 
     await waitFor(() => expect(billingService.voidInvoice).toHaveBeenCalled())
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+})
+
+describe('InvoiceDetailPage back link', () => {
+  // The clinic-wide invoice list is finance.view; a receptionist who opened the invoice
+  // from a patient was sent back to an "access denied" page
+  it.each([
+    ['ClinicOwner', '/finance/invoices'],
+    ['Receptionist', '/patients/pat-1?tab=billing'],
+  ])('goes back somewhere a %s may open', async (role, href) => {
+    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'x@x', fullName: 'X', roles: [role] })
+    renderInvoice('Draft')
+
+    expect(await screen.findByRole('link', { name: /back to/i })).toHaveAttribute('href', href)
+    useAuthStore.getState().clearAuth()
   })
 })

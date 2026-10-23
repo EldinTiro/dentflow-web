@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { appointmentService, type AppointmentResponse } from '../services/appointmentService';
+import { invalidateAppointmentQueries } from '../services/appointmentQueries';
 import { getApiErrorMessage } from '@/shared/utils/apiError';
 
 interface Props {
@@ -40,7 +41,7 @@ export function RescheduleModal({ appointment, onClose }: Props) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      invalidateAppointmentQueries(queryClient);
       onClose();
     },
     onError: (err: unknown) => {

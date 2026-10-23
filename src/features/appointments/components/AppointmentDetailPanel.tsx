@@ -27,6 +27,7 @@ import {
   type AppointmentResponse,
   type AppointmentStatus,
 } from '../services/appointmentService'
+import { invalidateAppointmentQueries } from '../services/appointmentQueries'
 import { patientService } from '@/features/patients/services/patientService'
 import { staffService } from '@/features/staff/services/staffService'
 import { billingService, INVOICE_STATUS_COLORS, INVOICE_STATUS_LABELS } from '@/features/billing/services/billingService'
@@ -124,10 +125,8 @@ export function AppointmentDetailPanel({
 
   const invalidate = () => {
     // The history query used to be fetched once and never refreshed (QA-017).
-    queryClient.invalidateQueries({ queryKey: ['appointment-history', a.id] })
-    queryClient.invalidateQueries({ queryKey: ['appointments'] })
-    queryClient.invalidateQueries({ queryKey: ['appointments-today'] })
-    queryClient.invalidateQueries({ queryKey: ['appointments-week'] })
+    // Includes ['appointment-history', a.id], the calendar, dashboard and free slots.
+    invalidateAppointmentQueries(queryClient)
   }
 
   const statusMutation = useMutation({

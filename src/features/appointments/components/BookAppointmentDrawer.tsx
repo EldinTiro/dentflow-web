@@ -5,6 +5,7 @@ import { Search, X, Clock, UserPlus } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Drawer } from '@/shared/components/Drawer';
 import { appointmentService, type BookAppointmentRequest } from '../services/appointmentService';
+import { invalidateAppointmentQueries } from '../services/appointmentQueries';
 import { patientService, type PatientSearchResult } from '@/features/patients/services/patientService';
 import { toast } from 'sonner';
 import { staffService, type StaffMemberResponse } from '@/features/staff/services/staffService';
@@ -145,7 +146,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
   const bookMutation = useMutation({
     mutationFn: (data: BookAppointmentRequest) => appointmentService.book(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      invalidateAppointmentQueries(queryClient);
       queryClient.invalidateQueries({ queryKey: ['patients'] });
       queryClient.invalidateQueries({ queryKey: ['patients-all'] });
       onClose();

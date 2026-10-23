@@ -10,6 +10,7 @@ import {
   type AppointmentResponse,
   type AppointmentStatus,
 } from '../services/appointmentService';
+import { invalidateAppointmentQueries } from '../services/appointmentQueries';
 import { staffService } from '@/features/staff/services/staffService';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { BookAppointmentDrawer } from '../components/BookAppointmentDrawer';
@@ -218,8 +219,7 @@ export function AppointmentsPage() {
     mutationFn: ({ id, next }: { id: string; next: AppointmentStatus }) =>
       appointmentService.updateStatus(id, next),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
-      queryClient.invalidateQueries({ queryKey: ['appointments-week'] });
+      invalidateAppointmentQueries(queryClient);
     },
   });
 

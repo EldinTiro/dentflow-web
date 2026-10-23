@@ -14,6 +14,8 @@ import { AddLineItemModal } from '../components/AddLineItemModal'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
 import { formatDate, formatMoney } from '@/shared/lib/format'
+import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
+import { canViewFinance } from '@/shared/lib/permissions'
 
 const STATUS_STYLES: Record<InvoiceStatus, string> = {
   Draft: 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
@@ -30,6 +32,7 @@ export function InvoiceDetailPage() {
   const { t } = useTranslation('billing')
   const tc = useTranslation('common').t
   const { id } = useParams<{ id: string }>()
+  const canFinance = canViewFinance(useAuthStore(selectRoles))
   const queryClient = useQueryClient()
 
   const [showPayment, setShowPayment] = useState(false)
@@ -75,12 +78,17 @@ export function InvoiceDetailPage() {
     onError: (err) => toast.error(getApiErrorMessage(err)),
   })
 
+  // The clinic-wide invoice list is finance.view; everyone else returns to the patient's bills.
+  const backTo = canFinance
+    ? { to: '/finance/invoices', label: t('detail.backToInvoices') }
+    : { to: invoice ? `/patients/${invoice.patientId}?tab=billing` : '/patients', label: t('detail.backToPatient') }
+
   if (isLoading) return <div className="p-8 text-gray-500 text-sm dark:text-gray-400">{tc('loading')}</div>
   if (isError || !invoice) return (
     <div className="p-8">
       <p className="text-red-500 text-sm mb-3">Invoice not found.</p>
-      <Link to="/invoices" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-        {t('detail.backToInvoices')}
+      <Link to={backTo.to} className="text-sm text-primary-700 dark:text-primary-300 hover:underline">
+        {backTo.label}
       </Link>
     </div>
   )
@@ -92,8 +100,8 @@ export function InvoiceDetailPage() {
 
   return (
     <div className="p-6 max-w-4xl">
-      <Link to="/invoices" className="text-sm text-blue-600 dark:text-blue-400 hover:underline mb-4 block">
-        {t('detail.backToInvoices')}
+      <Link to={backTo.to} className="text-sm text-primary-700 dark:text-primary-300 hover:underline mb-4 block">
+        {backTo.label}
       </Link>
 
       {/* Header */}

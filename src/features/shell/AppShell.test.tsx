@@ -61,4 +61,21 @@ describe('AppShell navigation', () => {
     renderAs('ClinicOwner')
     expect(screen.getByRole('button', { name: /language/i })).toBeInTheDocument()
   })
+
+})
+
+describe('AppShell finance link', () => {
+  afterEach(() => useAuthStore.getState().clearAuth())
+
+  // Finance (revenue, ledger, cash-up, debtors) is clinic-level money: finance.view only
+  it('links Finance for the owner', () => {
+    renderAs('ClinicOwner')
+    expect(screen.getByRole('link', { name: 'Finance' })).toHaveAttribute('href', '/finance')
+  })
+
+  it('does not link Finance for a receptionist', () => {
+    renderAs('Receptionist')
+    expect(screen.queryByRole('link', { name: 'Finance' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Billing' })).not.toBeInTheDocument()
+  })
 })

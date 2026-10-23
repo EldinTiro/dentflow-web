@@ -6,6 +6,7 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 import { logout } from '@/features/auth/services/authService'
 import { tenantService } from '@/features/admin/services/tenantService'
 import { cn } from '@/shared/lib/utils'
+import { canViewFinance } from '@/shared/lib/permissions'
 import { useTheme } from '@/shared/context/ThemeContext'
 import { FeatureProvider } from '@/shared/context/FeatureContext'
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary'
@@ -24,7 +25,7 @@ import {
   Menu,
   X,
   Globe,
-  Receipt,
+  Landmark,
   UsersRound,
 } from 'lucide-react'
 
@@ -39,7 +40,8 @@ const navItems = [
   { labelKey: 'nav.patients', to: '/patients', icon: Users },
   { labelKey: 'nav.staff', to: '/staff', icon: UserCog },
   { labelKey: 'nav.appointments', to: '/appointments', icon: CalendarDays },
-  { labelKey: 'nav.billing', to: '/invoices', icon: Receipt },
+  // Clinic-level money; the desk reaches a patient's bill from the patient instead.
+  { labelKey: 'nav.finance', to: '/finance', icon: Landmark, financeOnly: true },
 ]
 
 export function AppShell() {
@@ -48,6 +50,7 @@ export function AppShell() {
   const user = useAuthStore((s) => s.user)
   const isSuperAdmin = user?.roles?.includes('SuperAdmin') ?? false
   const canManageTeam = user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin'].includes(r)) ?? false
+  const canFinance = canViewFinance(user?.roles ?? [])
   const { theme, setTheme } = useTheme()
   // The saved preference is the one source of truth for light/dark (QA-021): applied
   // when the shell loads, and the header toggle writes back to it.
@@ -90,7 +93,7 @@ export function AppShell() {
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <ul className="space-y-1">
-          {navItems.map((item) => (
+          {navItems.filter((item) => !item.financeOnly || canFinance).map((item) => (
             <li key={item.to}>
               <NavLink
                 to={item.to}

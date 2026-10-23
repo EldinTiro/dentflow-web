@@ -10,6 +10,7 @@ import { appointmentService, AppointmentStatus, STATUS_COLORS, APPOINTMENT_STATU
 import { AppointmentDetailPanel } from '@/features/appointments/components/AppointmentDetailPanel'
 import { RescheduleModal } from '@/features/appointments/components/RescheduleModal'
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
+import { canViewFinance } from '@/shared/lib/permissions'
 import { patientService } from '@/features/patients/services/patientService'
 import { staffService } from '@/features/staff/services/staffService'
 import { dashboardService } from './dashboardService'
@@ -135,14 +136,23 @@ export function DashboardPage() {
     staleTime: 60_000,
   })
 
+  // Clinic money is only requested by roles that may see it (finance.view).
+  const canFinance = canViewFinance(roles)
+  const { data: finance } = useQuery({
+    queryKey: ['dashboard-finance'],
+    queryFn: () => dashboardService.getFinance(),
+    enabled: canFinance,
+    staleTime: 60_000,
+  })
+
   const todayCount = todayAppts?.totalCount ?? 0
   const pendingCount = pendingAppts?.totalCount ?? 0
   const patientCount = patients?.totalCount ?? 0
   const staffCount = staff?.totalCount ?? 0
   const tomorrowCount = tomorrowAppts?.totalCount ?? 0
 
-  const revenueThisMonth = kpi?.revenueThisMonth ?? 0
-  const outstandingBalance = kpi?.outstandingBalance ?? 0
+  const revenueThisMonth = finance?.revenueThisMonth ?? 0
+  const outstandingBalance = finance?.outstandingBalance ?? 0
   const newPatientsThisMonth = kpi?.newPatientsThisMonth ?? 0
   const completedThisWeek = kpi?.appointmentsCompletedThisWeek ?? 0
   const completedLastWeek = kpi?.appointmentsCompletedLastWeek ?? 0
@@ -267,6 +277,7 @@ export function DashboardPage() {
 
       {/* KPI cards */}
       <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 xl:grid-cols-4">
+        {canFinance && (<>
         <StatCard
           label={t('stat.revenueThisMonth')}
           value={`${revenueThisMonth.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} KM`}
@@ -274,6 +285,7 @@ export function DashboardPage() {
           iconBg="bg-emerald-50 dark:bg-emerald-400/10"
           iconColor="text-emerald-600"
           sub={t('stat.thisMonth')}
+          to="/finance"
         />
         <StatCard
           label={t('stat.outstandingBalance')}
@@ -282,8 +294,9 @@ export function DashboardPage() {
           iconBg="bg-orange-50 dark:bg-orange-400/10"
           iconColor="text-orange-500"
           sub={t('stat.unpaidInvoices')}
-          to="/invoices"
+          to="/finance/debtors"
         />
+        </>)}
         <StatCard
           label={t('stat.newPatientsThisMonth')}
           value={newPatientsThisMonth}

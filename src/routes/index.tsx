@@ -20,7 +20,12 @@ import { ProfilePage } from '@/features/auth/pages/ProfilePage'
 import { ChangePasswordRequiredPage } from '@/features/auth/pages/ChangePasswordRequiredPage'
 import { InvoicesPage } from '@/features/billing/pages/InvoicesPage'
 import { InvoiceDetailPage } from '@/features/billing/pages/InvoiceDetailPage'
+import { FinanceLayout } from '@/features/finance/pages/FinanceLayout'
+import { FinanceOverviewPage } from '@/features/finance/pages/FinanceOverviewPage'
+import { CashUpPage } from '@/features/finance/pages/CashUpPage'
+import { DebtorsPage } from '@/features/finance/pages/DebtorsPage'
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { FINANCE_ROLES } from '@/shared/lib/permissions'
 
 function RootRedirect() {
   const isSuperAdmin = useAuthStore((s) => s.user?.roles?.includes('SuperAdmin') ?? false)
@@ -56,7 +61,16 @@ export function AppRouter() {
           <Route path="staff" element={<StaffPage />} />
           <Route path="staff/:id" element={<StaffDetailPage />} />
           <Route path="appointments" element={<AppointmentsPage />} />
-          <Route path="invoices" element={<InvoicesPage />} />
+          {/* Finance is clinic-level money (finance.view); single invoices stay open to the desk. */}
+          <Route element={<RoleGuard allowedRoles={[...FINANCE_ROLES]} />}>
+            <Route path="finance" element={<FinanceLayout />}>
+              <Route index element={<FinanceOverviewPage />} />
+              <Route path="invoices" element={<InvoicesPage />} />
+              <Route path="cash-up" element={<CashUpPage />} />
+              <Route path="debtors" element={<DebtorsPage />} />
+            </Route>
+            <Route path="invoices" element={<Navigate to="/finance/invoices" replace />} />
+          </Route>
           <Route path="invoices/:id" element={<InvoiceDetailPage />} />
           <Route element={<RoleGuard allowedRoles={['ClinicOwner', 'ClinicAdmin']} />}>
             <Route path="settings/users" element={<UsersPage />} />
