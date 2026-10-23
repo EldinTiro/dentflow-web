@@ -90,7 +90,7 @@
   "boolean": { "yes": "Da", "no": "Ne" },
   "lastLogin": { "never": "Nikad" },
   "expiry": { "expired": "Isteklo" },
-  "role": { "staff": "Osoblje", "SuperAdmin": "Super admin", "ClinicOwner": "Vlasnik klinike", "ClinicAdmin": "Administrator klinike", "Dentist": "Stomatolog", "Hygienist": "Higijeničar", "Receptionist": "Recepcioner", "BillingStaff": "Naplata", "ReadOnly": "Samo pregled" },
+  "role": { "staff": "Osoblje", "SuperAdmin": "Super admin", "ClinicOwner": "Vlasnik klinike", "Dentist": "Stomatolog", "Receptionist": "Recepcioner", "DentalNurse": "Medicinska sestra / tehničar" },
   "pagination": {
     "pageOfTotal": "Stranica {{page}} od {{totalPages}} ({{totalCount}} ukupno)",
     "showingRange": "Prikaz {{from}}–{{to}} od {{total}}"

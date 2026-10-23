@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
 import { staffService, STAFF_TYPE_LABELS } from '../services/staffService'
 import { EditStaffDrawer } from '../components/EditStaffDrawer'
 import { StaffBlockedTimesTab } from '../components/StaffBlockedTimesTab'
 import { formatDate } from '@/shared/lib/format'
+import { can } from '@/shared/lib/permissions'
 
 type Tab = 'overview' | 'absence'
 
@@ -39,9 +40,7 @@ export function StaffDetailPage() {
   const [showEdit, setShowEdit] = useState(false)
   const [tab, setTab] = useState<Tab>('overview')
 
-  const canManage = useAuthStore((s) =>
-    s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'SuperAdmin'].includes(r)) ?? false
-  )
+  const canManage = can(useAuthStore(selectRoles), 'people.manage')
 
   const { data: staff, isLoading, error } = useQuery({
     queryKey: ['staff', id],

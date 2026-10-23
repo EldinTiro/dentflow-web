@@ -49,7 +49,7 @@ export function AppShell() {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
   const isSuperAdmin = user?.roles?.includes('SuperAdmin') ?? false
-  const canManageTeam = user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin'].includes(r)) ?? false
+  const canManageTeam = user?.roles?.includes('ClinicOwner') ?? false
   const canFinance = canViewFinance(user?.roles ?? [])
   const { theme, setTheme } = useTheme()
   // The saved preference is the one source of truth for light/dark (QA-021): applied

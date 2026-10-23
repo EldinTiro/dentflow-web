@@ -10,6 +10,7 @@ import { EditPatientDrawer } from '../components/EditPatientDrawer'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
 import { formatDate } from '@/shared/lib/format'
+import { can } from '@/shared/lib/permissions'
 
 const STATUS_KEYS: { value: PatientStatus | ''; labelKey: string }[] = [
   { value: '', labelKey: 'status.allStatuses' },
@@ -48,9 +49,7 @@ export function PatientsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const roles = useAuthStore(selectRoles)
-  const canManage = roles.some((r) =>
-    ['ClinicOwner', 'ClinicAdmin', 'Receptionist', 'SuperAdmin'].includes(r)
-  )
+  const canManage = can(roles, 'patients.manage')
 
   const search = searchParams.get('search') ?? ''
   const status = (searchParams.get('status') ?? '') as PatientStatus | ''

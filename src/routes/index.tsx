@@ -72,7 +72,7 @@ export function AppRouter() {
             <Route path="invoices" element={<Navigate to="/finance/invoices" replace />} />
           </Route>
           <Route path="invoices/:id" element={<InvoiceDetailPage />} />
-          <Route element={<RoleGuard allowedRoles={['ClinicOwner', 'ClinicAdmin']} />}>
+          <Route element={<RoleGuard allowedRoles={['ClinicOwner']} />}>
             <Route path="settings/users" element={<UsersPage />} />
             <Route path="settings/appointment-types" element={<AppointmentTypesPage />} />
           </Route>

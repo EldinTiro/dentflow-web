@@ -81,8 +81,9 @@ export function AppointmentDetailPanel({
   // Held locally so the drawer can stay open and reflect each status action (QA-027).
   const [a, setA] = useState(initialAppointment)
   useEffect(() => setA(initialAppointment), [initialAppointment])
+  // Owner-only actions on the API (AppointmentActionEndpoints: ClinicOwner, SuperAdmin).
   const isAdmin = useAuthStore((s) =>
-    s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'SuperAdmin'].includes(r)) ?? false
+    s.user?.roles?.some((r) => r === 'ClinicOwner' || r === 'SuperAdmin') ?? false
   )
   const [confirmCancel, setConfirmCancel] = useState(false)
   const [showHistory, setShowHistory] = useState(true)

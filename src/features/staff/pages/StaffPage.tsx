@@ -15,14 +15,14 @@ import { CreateStaffDrawer } from '../components/CreateStaffDrawer';
 import { EditStaffDrawer } from '../components/EditStaffDrawer';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
+import { can } from '@/shared/lib/permissions'
 
 export function StaffPage() {
   const { t } = useTranslation('staff')
   const { t: tc } = useTranslation('common')
   const navigate = useNavigate();
   const roles = useAuthStore(selectRoles);
-  const canManage =
-    roles.includes('ClinicOwner') || roles.includes('ClinicAdmin') || roles.includes('SuperAdmin');
+  const canManage = can(roles, 'people.manage');
 
   const [search, setSearch] = useState('');
   const [staffTypeFilter, setStaffTypeFilter] = useState<StaffType | ''>('');

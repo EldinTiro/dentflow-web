@@ -19,7 +19,7 @@ export function AppointmentTypesPage() {
   const [search, setSearch] = useState('')
 
   const canManage = useAuthStore((s) =>
-    s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'SuperAdmin'].includes(r)) ?? false
+    s.user?.roles?.some((r) => r === 'ClinicOwner' || r === 'SuperAdmin') ?? false
   )
 
   const { data: types = [], isLoading } = useQuery({

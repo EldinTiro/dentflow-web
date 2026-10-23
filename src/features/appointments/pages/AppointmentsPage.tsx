@@ -20,6 +20,7 @@ import { AppointmentDetailPanel } from '../components/AppointmentDetailPanel';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
 import { Search, X, Download } from 'lucide-react';
 import { toLocalIsoDate } from '@/shared/lib/dates';
+import { isClinicMember } from '@/shared/lib/permissions'
 
 type Tab = 'list' | 'calendar';
 
@@ -72,13 +73,8 @@ export function AppointmentsPage() {
   const { t } = useTranslation('appointments')
   const { t: tc } = useTranslation('common')
   const roles = useAuthStore(selectRoles);
-  const canManage =
-    roles.includes('ClinicOwner') ||
-    roles.includes('ClinicAdmin') ||
-    roles.includes('Receptionist') ||
-    roles.includes('Dentist') ||
-    roles.includes('Hygienist') ||
-    roles.includes('SuperAdmin');
+  // Every clinic role books and moves appointments (the API also lets the platform admin).
+  const canManage = isClinicMember(roles) || roles.includes('SuperAdmin');
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = (searchParams.get('tab') ?? 'list') as Tab;

@@ -8,8 +8,9 @@ import { toast } from 'sonner'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
 import { todayLocal } from '@/shared/lib/dates'
 import { absenceDays, formatAbsenceDays, formatAbsenceDate } from '../lib/absence'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
 import { X, Plus, Trash2, CalendarOff } from 'lucide-react'
+import { can } from '@/shared/lib/permissions'
 
 interface Props {
   staffId: string
@@ -89,9 +90,7 @@ function defaultForm(): FormState {
 export function StaffBlockedTimesTab({ staffId }: Props) {
   const { t } = useTranslation('staff')
   const queryClient = useQueryClient()
-  const canManage = useAuthStore((s) =>
-    s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'SuperAdmin'].includes(r)) ?? false
-  )
+  const canManage = can(useAuthStore(selectRoles), 'people.manage')
 
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState<FormState>(defaultForm)

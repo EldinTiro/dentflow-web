@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
 import { patientService, type PatientStatus, type AddEmergencyContactRequest, type AddAllergyRequest, type UpsertMedicalHistoryRequest } from '../services/patientService'
 import { EditPatientDrawer } from '../components/EditPatientDrawer'
 import {
@@ -22,6 +22,7 @@ import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
 import { Trash2, Plus, AlertTriangle, Phone, User, Heart, CalendarPlus } from 'lucide-react'
 import { AllergyAlert } from '../components/AllergyAlert'
 import { formatDate } from '@/shared/lib/format'
+import { can } from '@/shared/lib/permissions'
 
 type Tab = 'overview' | 'appointments' | 'treatments' | 'files' | 'billing' | 'medical'
 const TABS: Tab[] = ['overview', 'appointments', 'treatments', 'medical', 'files', 'billing']
@@ -73,9 +74,7 @@ export function PatientDetailPage() {
   const [selectedAppt, setSelectedAppt] = useState<AppointmentResponse | null>(null)
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null)
 
-  const canManage = useAuthStore((s) =>
-    s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'Receptionist', 'Dentist', 'Hygienist', 'SuperAdmin'].includes(r)) ?? false
-  )
+  const canManage = can(useAuthStore(selectRoles), 'patients.manage')
 
   const { data: patient, isLoading, isError } = useQuery({
     queryKey: ['patient', id],

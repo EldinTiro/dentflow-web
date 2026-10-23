@@ -90,7 +90,7 @@
   "boolean": { "yes": "Ja", "no": "Nein" },
   "lastLogin": { "never": "Nie" },
   "expiry": { "expired": "Abgelaufen" },
-  "role": { "staff": "Personal", "SuperAdmin": "Super-Admin", "ClinicOwner": "Praxisinhaber", "ClinicAdmin": "Praxisadministrator", "Dentist": "Zahnarzt", "Hygienist": "Dentalhygieniker", "Receptionist": "Empfang", "BillingStaff": "Abrechnung", "ReadOnly": "Nur Lesen" },
+  "role": { "staff": "Personal", "SuperAdmin": "Super-Admin", "ClinicOwner": "Praxisinhaber", "Dentist": "Zahnarzt", "Receptionist": "Empfang", "DentalNurse": "Zahnmedizinische Fachangestellte" },
   "pagination": {
     "pageOfTotal": "Seite {{page}} von {{totalPages}} ({{totalCount}} gesamt)",
     "showingRange": "Zeige {{from}}–{{to}} von {{total}}"

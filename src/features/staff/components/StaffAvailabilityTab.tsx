@@ -8,10 +8,11 @@ import {
   type DayOfWeek,
   type StaffAvailabilityResponse,
 } from '../services/staffService'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
 import { todayLocal } from '@/shared/lib/dates'
+import { can } from '@/shared/lib/permissions'
 
 interface Props {
   staffId: string
@@ -24,9 +25,7 @@ function formatTime(t: string): string {
 
 export function StaffAvailabilityTab({ staffId }: Props) {
   const queryClient = useQueryClient()
-  const canManage = useAuthStore((s) =>
-    s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'SuperAdmin'].includes(r)) ?? false
-  )
+  const canManage = can(useAuthStore(selectRoles), 'people.manage')
 
   const [addingDay, setAddingDay] = useState<DayOfWeek | null>(null)
   const [form, setForm] = useState({

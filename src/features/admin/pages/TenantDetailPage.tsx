@@ -11,6 +11,7 @@ import { getApiErrorMessage } from '@/shared/utils/apiError'
 import { useConfirm } from '@/shared/components/ConfirmDialog'
 import { TempPasswordBox } from '@/shared/components/TempPasswordBox'
 import { formatDate } from '@/shared/lib/format'
+import { TENANT_ROLES } from '@/shared/lib/permissions'
 
 // The API takes the plan code; only the label is translated (QA-014).
 const PLANS = [
@@ -213,8 +214,6 @@ function UsersTab({ id, tenantName }: { id: string; tenantName: string }) {
     onError: showError,
   })
   const confirm = useConfirm()
-
-  const TENANT_ROLES = ['ClinicOwner', 'ClinicAdmin', 'Dentist', 'Hygienist', 'Receptionist', 'BillingStaff', 'ReadOnly']
 
   return (
     <div>

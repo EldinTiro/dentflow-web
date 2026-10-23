@@ -90,7 +90,7 @@
   "boolean": { "yes": "Yes", "no": "No" },
   "lastLogin": { "never": "Never" },
   "expiry": { "expired": "Expired" },
-  "role": { "staff": "Staff", "SuperAdmin": "Super admin", "ClinicOwner": "Clinic owner", "ClinicAdmin": "Clinic admin", "Dentist": "Dentist", "Hygienist": "Hygienist", "Receptionist": "Receptionist", "BillingStaff": "Billing", "ReadOnly": "Read only" },
+  "role": { "staff": "Staff", "SuperAdmin": "Super admin", "ClinicOwner": "Clinic owner", "Dentist": "Dentist", "Receptionist": "Receptionist", "DentalNurse": "Dental nurse" },
   "pagination": {
     "pageOfTotal": "Page {{page}} of {{totalPages}} ({{totalCount}} total)",
     "showingRange": "Showing {{from}}–{{to}} of {{total}}"

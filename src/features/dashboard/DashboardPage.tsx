@@ -10,7 +10,7 @@ import { appointmentService, AppointmentStatus, STATUS_COLORS, APPOINTMENT_STATU
 import { AppointmentDetailPanel } from '@/features/appointments/components/AppointmentDetailPanel'
 import { RescheduleModal } from '@/features/appointments/components/RescheduleModal'
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
-import { canViewFinance } from '@/shared/lib/permissions'
+import { canViewFinance, isClinicMember } from '@/shared/lib/permissions'
 import { patientService } from '@/features/patients/services/patientService'
 import { staffService } from '@/features/staff/services/staffService'
 import { dashboardService } from './dashboardService'
@@ -90,7 +90,7 @@ export function DashboardPage() {
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null)
   const roles = useAuthStore(selectRoles)
   // Same rule as AppointmentsPage: who may change an appointment's status.
-  const canManage = ['ClinicOwner', 'ClinicAdmin', 'Receptionist', 'Dentist', 'Hygienist', 'SuperAdmin'].some((r) => roles.includes(r))
+  const canManage = isClinicMember(roles) || roles.includes('SuperAdmin')
   const { t, i18n } = useTranslation('dashboard')
 
   const localeMap: Record<string, string> = { bs: 'hr', en: 'en', de: 'de' }
