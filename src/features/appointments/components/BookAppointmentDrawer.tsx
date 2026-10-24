@@ -51,6 +51,7 @@ function toDateOnly(d: Date): string {
 
 export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatient, initialDate, initialStartAt, initialProviderId }: Props) {
   const { t } = useTranslation('appointments');
+  const { t: ts } = useTranslation('staff');
   const uid = useId();
   const fid = (name: string) => `${uid}-${name}`;
   const queryClient = useQueryClient();
@@ -190,9 +191,8 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
     });
   };
 
-  const providers = (staffData?.items ?? []).filter(
-    (s: StaffMemberResponse) => s.staffType === 'Dentist' || s.staffType === 'Hygienist',
-  );
+  // Who can be booked is decided by the API (people-merge plan D3).
+  const providers = (staffData?.items ?? []).filter((s: StaffMemberResponse) => s.isBookable);
   const apptTypes = typesData ?? [];
   const displayResults = patientSearch.length >= 1 ? (searchResults ?? []) : [];
   const isPending = createPatientMutation.isPending || bookMutation.isPending;
@@ -386,7 +386,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
             <option value="">{isStaffLoading ? t('booking.loading') : t('booking.selectProvider')}</option>
             {providers.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.fullName} — {s.staffType}
+                {s.fullName} — {ts(`staffType.${s.staffType}`)}
               </option>
             ))}
           </select>

@@ -177,8 +177,9 @@ export function AppointmentsPage() {
   });
 
   const { data: staffData } = useQuery({
-    queryKey: ['staff', '', '', 1],
-    queryFn: () => staffService.list({ pageSize: 100 }),
+    // Everyone, inactive included: past appointments keep their provider's name (B6).
+    queryKey: ['staff', 'all-for-names'],
+    queryFn: () => staffService.list({ pageSize: 100, isActive: 'all' }),
   });
 
   const providerColors = useMemo(() => {

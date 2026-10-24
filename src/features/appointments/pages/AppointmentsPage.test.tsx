@@ -49,3 +49,17 @@ describe('AppointmentsPage filters', () => {
     expect(screen.getByRole('button', { name: 'Clear search' })).toBeInTheDocument()
   })
 })
+
+describe('AppointmentsPage provider names', () => {
+  // People-merge plan B6: GET /staff is active-only by default, but past appointments
+  // of a deactivated dentist must still show their name
+  it('loads every staff member, inactive ones included', async () => {
+    const { staffService } = await import('@/features/staff/services/staffService')
+    renderWithProviders(
+      <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,
+      { route: '/appointments' },
+    )
+
+    await vi.waitFor(() => expect(staffService.list).toHaveBeenCalledWith(expect.objectContaining({ isActive: 'all' })))
+  })
+})

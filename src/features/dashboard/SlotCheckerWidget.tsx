@@ -79,7 +79,7 @@ export function SlotCheckerWidget() {
   })
 
   const providers = useMemo(
-    () => (allStaff?.items ?? []).filter(s => ['Dentist', 'Hygienist'].includes(s.staffType)),
+    () => (allStaff?.items ?? []).filter(s => s.isBookable),
     [allStaff],
   )
 

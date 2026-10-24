@@ -185,9 +185,7 @@ export function DashboardPage() {
     for (const a of todayAppts?.items ?? []) {
       countMap.set(a.providerId, (countMap.get(a.providerId) ?? 0) + 1)
     }
-    const providers = (allStaff?.items ?? []).filter(s =>
-      ['Dentist', 'Hygienist'].includes(s.staffType)
-    )
+    const providers = (allStaff?.items ?? []).filter(s => s.isBookable)
     return providers
       .map(member => ({ id: member.id, count: countMap.get(member.id) ?? 0, member }))
       .sort((a, b) => b.count - a.count)
