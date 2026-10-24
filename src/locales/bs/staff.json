@@ -15,7 +15,8 @@
     "phone": "Telefon",
     "specialty": "Specijalnost",
     "color": "Boja",
-    "status": "Status"
+    "status": "Status",
+    "access": "Pristup"
   },
   "backToStaff": "← Nazad na osoblje",
   "notFound": "Član osoblja nije pronađen.",
@@ -173,5 +174,12 @@
     "upcoming_few": "{{name}} ima {{count}} predstojeća termina. Prvo ih otkažite ili pomjerite.",
     "upcoming_other": "{{name}} ima {{count}} predstojećih termina. Prvo ih otkažite ili pomjerite.",
     "hasHistory": "{{name}} ima termine, pa se profil ne može obrisati. Deaktivirajte ga umjesto toga."
+  },
+  "filter": {
+    "status": "Filter statusa",
+    "access": "Filter pristupa",
+    "anyAccess": "Svaki pristup",
+    "withAccess": "Ima pristup",
+    "withoutAccess": "Bez pristupa"
   }
 }

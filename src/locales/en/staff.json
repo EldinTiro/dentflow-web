@@ -15,7 +15,8 @@
     "phone": "Phone",
     "specialty": "Specialty",
     "color": "Color",
-    "status": "Status"
+    "status": "Status",
+    "access": "Access"
   },
   "backToStaff": "← Back to Staff",
   "notFound": "Staff member not found.",
@@ -171,5 +172,12 @@
     "upcoming_one": "{{name}} has {{count}} upcoming appointment. Cancel or move it first.",
     "upcoming_other": "{{name}} has {{count}} upcoming appointments. Cancel or move them first.",
     "hasHistory": "{{name}} has appointments, so the profile can't be deleted. Deactivate it instead."
+  },
+  "filter": {
+    "status": "Status filter",
+    "access": "Access filter",
+    "anyAccess": "Any access",
+    "withAccess": "Has access",
+    "withoutAccess": "No access"
   }
 }

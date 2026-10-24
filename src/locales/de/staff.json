@@ -15,7 +15,8 @@
     "phone": "Telefon",
     "specialty": "Fachgebiet",
     "color": "Farbe",
-    "status": "Status"
+    "status": "Status",
+    "access": "Zugang"
   },
   "backToStaff": "← Zurück zum Personal",
   "notFound": "Personalmitglied nicht gefunden.",
@@ -171,5 +172,12 @@
     "upcoming_one": "{{name}} hat {{count}} bevorstehenden Termin. Bitte zuerst absagen oder verschieben.",
     "upcoming_other": "{{name}} hat {{count}} bevorstehende Termine. Bitte zuerst absagen oder verschieben.",
     "hasHistory": "{{name}} hat Termine, daher kann das Profil nicht gelöscht werden. Bitte stattdessen deaktivieren."
+  },
+  "filter": {
+    "status": "Statusfilter",
+    "access": "Zugangsfilter",
+    "anyAccess": "Jeder Zugang",
+    "withAccess": "Hat Zugang",
+    "withoutAccess": "Kein Zugang"
   }
 }
