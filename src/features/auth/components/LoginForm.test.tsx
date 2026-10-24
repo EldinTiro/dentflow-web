@@ -38,6 +38,8 @@ describe('LoginForm', () => {
     await submit()
 
     expect(await screen.findByText('Invalid email or password.')).toBeInTheDocument()
+    // Announced to screen readers, not just shown
+    expect(screen.getByRole('alert')).toHaveTextContent('Invalid email or password.')
   })
 
   // DR-20: tabIndex={-1} hid the reveal toggle from keyboard users
