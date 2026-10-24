@@ -1,38 +1,13 @@
 {
-  "team": {
-    "title": "Tim",
-    "memberCount": "{{count}} članova",
-    "button": { "invite": "+ Dodaj člana" },
-    "search": { "placeholder": "Pretraži po imenu ili emailu…" },
-    "emptyState": "Nema članova tima.",
-    "table": {
-      "name": "Ime",
-      "email": "Email",
-      "role": "Uloga",
-      "status": "Status",
-      "lastLogin": "Zadnja prijava"
-    },
-    "resetPwd": { "title": "Privremena lozinka" }
-  },
-  "invite": {
-    "title": "Dodaj člana tima",
-    "successTitle": "Nalog kreiran",
-    "successMessage": "Račun uspješno kreiran. Podijelite pristupne podatke sa novim članom tima.",
-    "email": "Email",
-    "tempPassword": "Privremena lozinka",
-    "tempPasswordWarning": "Ova lozinka neće biti ponovo prikazana.",
-    "firstName": "Ime *",
-    "lastName": "Prezime *",
-    "emailLabel": "Email *",
-    "roleLabel": "Uloga *",
-    "sendButton": "Kreiraj nalog",
-    "sending": "Kreiranje…",
-    "error": "Pozivanje korisnika nije uspjelo. Možda već imaju račun."
-  },
   "adminUsers": {
     "title": "Korisnici",
-    "search": { "placeholder": "Pretraži korisnike…" },
-    "filter": { "allRoles": "Sve uloge", "allTenants": "Svi klijenti" },
+    "search": {
+      "placeholder": "Pretraži korisnike…"
+    },
+    "filter": {
+      "allRoles": "Sve uloge",
+      "allTenants": "Svi klijenti"
+    },
     "emptyState": "Nema pronađenih korisnika.",
     "table": {
       "name": "Ime",

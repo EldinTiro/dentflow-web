@@ -26,7 +26,6 @@ import {
   X,
   Globe,
   Landmark,
-  UsersRound,
 } from 'lucide-react'
 
 const langOptions = [
@@ -49,7 +48,8 @@ export function AppShell() {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
   const isSuperAdmin = user?.roles?.includes('SuperAdmin') ?? false
-  const canManageTeam = user?.roles?.includes('ClinicOwner') ?? false
+  // Owner-only settings (appointment types). Team is gone: people live in Staff (people-merge D5).
+  const canManageSettings = user?.roles?.includes('ClinicOwner') ?? false
   const canFinance = canViewFinance(user?.roles ?? [])
   const { theme, setTheme } = useTheme()
   // The saved preference is the one source of truth for light/dark (QA-021): applied
@@ -116,24 +116,8 @@ export function AppShell() {
         </ul>
       </nav>
 
-      {canManageTeam && (
+      {canManageSettings && (
         <div className="px-3 pb-2 space-y-1">
-          {/* Was reachable only by typing the URL (QA-022). */}
-          <NavLink
-            to="/settings/users"
-            onClick={() => setSidebarOpen(false)}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
-              )
-            }
-          >
-            <UsersRound size={16} className="shrink-0" />
-            {t('nav.team')}
-          </NavLink>
           <NavLink
             to="/settings/appointment-types"
             onClick={() => setSidebarOpen(false)}

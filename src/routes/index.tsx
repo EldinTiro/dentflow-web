@@ -11,7 +11,6 @@ import { UsersPage as AdminUsersPage } from '@/features/admin/pages/UsersPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { PatientsPage } from '@/features/patients/pages/PatientsPage'
 import { PatientDetailPage } from '@/features/patients/pages/PatientDetailPage'
-import { UsersPage } from '@/features/users/pages/UsersPage'
 import { StaffPage } from '@/features/staff/pages/StaffPage'
 import { StaffDetailPage } from '@/features/staff/pages/StaffDetailPage'
 import { AppointmentsPage } from '@/features/appointments/pages/AppointmentsPage'
@@ -73,9 +72,10 @@ export function AppRouter() {
           </Route>
           <Route path="invoices/:id" element={<InvoiceDetailPage />} />
           <Route element={<RoleGuard allowedRoles={['ClinicOwner']} />}>
-            <Route path="settings/users" element={<UsersPage />} />
             <Route path="settings/appointment-types" element={<AppointmentTypesPage />} />
           </Route>
+          {/* Team merged into Staff (people-merge plan D5); keep old bookmarks working. */}
+          <Route path="settings/users" element={<Navigate to="/staff" replace />} />
           <Route path="settings/profile" element={<ProfilePage />} />
         </Route>
       </Route>
