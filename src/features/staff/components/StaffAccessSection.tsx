@@ -7,18 +7,9 @@ import { useConfirm } from '@/shared/components/ConfirmDialog'
 import { TempPasswordBox } from '@/shared/components/TempPasswordBox'
 import { can, TENANT_ROLES, type TenantRole } from '@/shared/lib/permissions'
 import { formatDate } from '@/shared/lib/format'
-import { staffService, type StaffMemberResponse, type StaffType } from '../services/staffService'
+import { staffService, type StaffMemberResponse } from '../services/staffService'
 import { peopleErrorMessage } from '../lib/peopleErrors'
-
-/** A sensible first role for a profile that gets access; the owner can change it. */
-const DEFAULT_ROLE: Record<StaffType, TenantRole> = {
-  Dentist: 'Dentist',
-  DentalAssistant: 'DentalNurse',
-  Hygienist: 'DentalNurse',
-  Receptionist: 'Receptionist',
-  ClinicAdmin: 'Receptionist',
-  OfficeManager: 'Receptionist',
-}
+import { defaultRoleFor } from '../lib/defaultRole'
 
 const selectClass =
   'border border-gray-300 rounded-md px-2 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-600 text-gray-900 dark:text-gray-100 disabled:opacity-50'
@@ -48,7 +39,7 @@ export function StaffAccessSection({ staff }: { staff: StaffMemberResponse }) {
   const canManage = can(useAuthStore(selectRoles), 'people.manage')
   const currentUserId = useAuthStore((s) => s.user?.userId)
   const confirm = useConfirm()
-  const [newRole, setNewRole] = useState<TenantRole>(DEFAULT_ROLE[staff.staffType] ?? 'Receptionist')
+  const [newRole, setNewRole] = useState<TenantRole>(defaultRoleFor(staff.staffType))
   const [tempPassword, setTempPassword] = useState<string | null>(null)
 
   const access = staff.access ?? null
