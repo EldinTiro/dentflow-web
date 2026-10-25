@@ -6,6 +6,7 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 import { logout } from '@/features/auth/services/authService'
 import { tenantService } from '@/features/admin/services/tenantService'
 import { cn } from '@/shared/lib/utils'
+import { canViewFinance } from '@/shared/lib/permissions'
 import { useTheme } from '@/shared/context/ThemeContext'
 import { FeatureProvider } from '@/shared/context/FeatureContext'
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary'
@@ -24,8 +25,7 @@ import {
   Menu,
   X,
   Globe,
-  Receipt,
-  UsersRound,
+  Landmark,
 } from 'lucide-react'
 
 const langOptions = [
@@ -39,7 +39,8 @@ const navItems = [
   { labelKey: 'nav.patients', to: '/patients', icon: Users },
   { labelKey: 'nav.staff', to: '/staff', icon: UserCog },
   { labelKey: 'nav.appointments', to: '/appointments', icon: CalendarDays },
-  { labelKey: 'nav.billing', to: '/invoices', icon: Receipt },
+  // Clinic-level money; the desk reaches a patient's bill from the patient instead.
+  { labelKey: 'nav.finance', to: '/finance', icon: Landmark, financeOnly: true },
 ]
 
 export function AppShell() {
@@ -47,7 +48,9 @@ export function AppShell() {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
   const isSuperAdmin = user?.roles?.includes('SuperAdmin') ?? false
-  const canManageTeam = user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin'].includes(r)) ?? false
+  // Owner-only settings (appointment types). Team is gone: people live in Staff (people-merge D5).
+  const canManageSettings = user?.roles?.includes('ClinicOwner') ?? false
+  const canFinance = canViewFinance(user?.roles ?? [])
   const { theme, setTheme } = useTheme()
   // The saved preference is the one source of truth for light/dark (QA-021): applied
   // when the shell loads, and the header toggle writes back to it.
@@ -90,7 +93,7 @@ export function AppShell() {
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <ul className="space-y-1">
-          {navItems.map((item) => (
+          {navItems.filter((item) => !item.financeOnly || canFinance).map((item) => (
             <li key={item.to}>
               <NavLink
                 to={item.to}
@@ -113,24 +116,8 @@ export function AppShell() {
         </ul>
       </nav>
 
-      {canManageTeam && (
+      {canManageSettings && (
         <div className="px-3 pb-2 space-y-1">
-          {/* Was reachable only by typing the URL (QA-022). */}
-          <NavLink
-            to="/settings/users"
-            onClick={() => setSidebarOpen(false)}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
-              )
-            }
-          >
-            <UsersRound size={16} className="shrink-0" />
-            {t('nav.team')}
-          </NavLink>
           <NavLink
             to="/settings/appointment-types"
             onClick={() => setSidebarOpen(false)}

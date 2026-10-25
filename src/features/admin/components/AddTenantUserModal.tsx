@@ -4,11 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { userAdminService } from '../services/userAdminService'
 import { TempPasswordBox } from '@/shared/components/TempPasswordBox'
-
-const TENANT_ROLES = [
-  'ClinicOwner', 'ClinicAdmin', 'Dentist', 'Hygienist',
-  'Receptionist', 'BillingStaff', 'ReadOnly',
-]
+import { TENANT_ROLES } from '@/shared/lib/permissions'
 
 interface FormValues {
   email: string

@@ -1,0 +1,83 @@
+{
+  "title": "Finance",
+  "tab": {
+    "overview": "Overview",
+    "invoices": "Invoices",
+    "cashUp": "Daily cash-up",
+    "debtors": "Debtors"
+  },
+  "months": [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+  ],
+  "period": {
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "today": "Today",
+    "date": "Date"
+  },
+  "kpi": {
+    "collected": "Collected",
+    "invoiced": "Invoiced",
+    "outstanding": "Outstanding",
+    "overdue": "Overdue",
+    "vsPrevious": "vs {{month}}",
+    "noComparison": "Nothing to compare in {{month}}",
+    "patients_one": "{{count}} patient",
+    "patients_other": "{{count}} patients",
+    "now": "Owed right now"
+  },
+  "chart": {
+    "revenueTitle": "Collected per month",
+    "revenueSubtitle": "Last 12 months",
+    "tableCaption": "Collected per month, last 12 months",
+    "month": "Month",
+    "amount": "Amount"
+  },
+  "methods": {
+    "title": "Paid by",
+    "empty": "No payments this month."
+  },
+  "cashUp": {
+    "total": "Total for the day",
+    "payments_one": "{{count}} payment",
+    "payments_other": "{{count}} payments",
+    "time": "Time",
+    "patient": "Patient",
+    "invoice": "Invoice",
+    "method": "Method",
+    "reference": "Reference",
+    "amount": "Amount",
+    "empty": "No payments on this day.",
+    "print": "Print"
+  },
+  "debtors": {
+    "total": "Total owed",
+    "patient": "Patient",
+    "phone": "Phone",
+    "openInvoices": "Open invoices",
+    "oldest": "Oldest open",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "overdue": "Overdue",
+    "balance": "Balance",
+    "empty": "Nobody owes the clinic money.",
+    "bucket": {
+      "0-30": "0–30 days",
+      "31-60": "31–60 days",
+      "60+": "Over 60 days"
+    }
+  }
+}

@@ -8,11 +8,9 @@ import { toast } from 'sonner'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
 import { useConfirm } from '@/shared/components/ConfirmDialog'
 import { TempPasswordBox } from '@/shared/components/TempPasswordBox'
+import { TENANT_ROLES } from '@/shared/lib/permissions'
 
-const ROLES = [
-  'SuperAdmin', 'ClinicOwner', 'ClinicAdmin', 'Dentist',
-  'Hygienist', 'Receptionist', 'BillingStaff', 'ReadOnly',
-]
+const ROLES = ['SuperAdmin', ...TENANT_ROLES]
 
 function ResetPasswordResult({ tempPassword, onClose, t, tc }: { tempPassword: string; onClose: () => void; t: (key: string) => string; tc: (key: string) => string }) {
   return (

@@ -1,21 +1,22 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { Pencil, Trash2, X } from 'lucide-react'
-import { toast } from 'sonner'
+import { Pencil, X } from 'lucide-react'
 import { patientService, type PatientResponse, type PatientStatus } from '../services/patientService'
 import { CreatePatientDrawer } from '../components/CreatePatientDrawer'
 import { EditPatientDrawer } from '../components/EditPatientDrawer'
-import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
 import { formatDate } from '@/shared/lib/format'
+import { can } from '@/shared/lib/permissions'
 
-const STATUS_KEYS: { value: PatientStatus | ''; labelKey: string }[] = [
-  { value: '', labelKey: 'status.allStatuses' },
+// Active first and by default: inactive patients leave the daily list (people-merge D11).
+type StatusFilter = PatientStatus | 'all'
+const STATUS_KEYS: { value: StatusFilter; labelKey: string }[] = [
   { value: 'Active', labelKey: 'status.active' },
   { value: 'Inactive', labelKey: 'status.inactive' },
   { value: 'Transferred', labelKey: 'status.transferred' },
+  { value: 'all', labelKey: 'status.allStatuses' },
 ]
 
 const STATUS_STYLES: Record<PatientStatus, string> = {
@@ -41,26 +42,22 @@ export function PatientsPage() {
   const { t } = useTranslation('patients')
   const tc = useTranslation('common').t
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
   const [showCreate, setShowCreate] = useState(false)
   const [editing, setEditing] = useState<PatientResponse | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const roles = useAuthStore(selectRoles)
-  const canManage = roles.some((r) =>
-    ['ClinicOwner', 'ClinicAdmin', 'Receptionist', 'SuperAdmin'].includes(r)
-  )
+  const canManage = can(roles, 'patients.manage')
 
   const search = searchParams.get('search') ?? ''
-  const status = (searchParams.get('status') ?? '') as PatientStatus | ''
+  const status = (searchParams.get('status') ?? 'Active') as StatusFilter
   const recallFilter = (searchParams.get('recallFilter') ?? '') as 'overdue' | 'due-soon' | ''
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
 
   const setSearch = (v: string) =>
     setSearchParams((p) => { const n = new URLSearchParams(p); v ? n.set('search', v) : n.delete('search'); n.set('page', '1'); return n }, { replace: true })
-  const setStatus = (v: PatientStatus | '') =>
-    setSearchParams((p) => { const n = new URLSearchParams(p); v ? n.set('status', v) : n.delete('status'); n.set('page', '1'); return n }, { replace: true })
+  const setStatus = (v: StatusFilter) =>
+    setSearchParams((p) => { const n = new URLSearchParams(p); v !== 'Active' ? n.set('status', v) : n.delete('status'); n.set('page', '1'); return n }, { replace: true })
   const clearRecallFilter = () =>
     setSearchParams((p) => { const n = new URLSearchParams(p); n.delete('recallFilter'); n.set('page', '1'); return n }, { replace: true })
   const setPage = (v: number) =>
@@ -71,7 +68,7 @@ export function PatientsPage() {
     queryFn: () =>
       patientService.list({
         search: search || undefined,
-        status: (status as PatientStatus) || undefined,
+        status,
         recallFilter: recallFilter || undefined,
         page,
         pageSize: 20,
@@ -79,19 +76,6 @@ export function PatientsPage() {
     placeholderData: (prev) => prev,
   })
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => patientService.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['patients'] })
-      toast.success(t('toast.deleted'))
-      setDeletingId(null)
-    },
-    onError: () => {
-      toast.error(t('toast.deleteFailed'))
-    },
-  })
-
-  const deletingPatient = deletingId ? data?.items.find((p) => p.id === deletingId) : null
   const colCount = canManage ? 7 : 6
 
   return (
@@ -119,8 +103,9 @@ export function PatientsPage() {
           className="w-full sm:w-72 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
         <select
+          aria-label={t('filter.status')}
           value={status}
-          onChange={(e) => setStatus(e.target.value as PatientStatus | '')}
+          onChange={(e) => setStatus(e.target.value as StatusFilter)}
           className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           {STATUS_KEYS.map((o) => (
@@ -176,7 +161,8 @@ export function PatientsPage() {
             {data?.items.map((p: PatientResponse) => (
               <tr
                 key={p.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
+                data-inactive={p.status === 'Inactive' ? 'true' : undefined}
+                className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer ${p.status === 'Inactive' ? 'opacity-60' : ''}`}
                 onClick={() => navigate(`/patients/${p.id}`)}
               >
                 <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-gray-500 dark:text-gray-400">{p.patientNumber}</td>
@@ -200,13 +186,6 @@ export function PatientsPage() {
                         title={tc('button.edit')}
                       >
                         <Pencil size={14} />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setDeletingId(p.id) }}
-                        className="p-1.5 text-gray-500 hover:text-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors dark:text-gray-400"
-                        title={t('table.deleteTooltip')}
-                      >
-                        <Trash2 size={14} />
                       </button>
                     </div>
                   </td>
@@ -241,17 +220,6 @@ export function PatientsPage() {
 
       {showCreate && <CreatePatientDrawer onClose={() => setShowCreate(false)} />}
       {editing && <EditPatientDrawer patient={editing} onClose={() => setEditing(null)} />}
-
-      <ConfirmDialog
-        open={!!deletingId}
-        title={t('confirm.deleteTitle')}
-        description={t('confirm.deleteDescription', { name: deletingPatient?.fullName ?? '' })}
-        confirmLabel={tc('button.delete')}
-        cancelLabel={tc('button.cancel')}
-        isPending={deleteMutation.isPending}
-        onConfirm={() => deletingId && deleteMutation.mutate(deletingId)}
-        onCancel={() => setDeletingId(null)}
-      />
     </div>
   )
 }

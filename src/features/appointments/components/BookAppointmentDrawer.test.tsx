@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event'
 import i18n from 'i18next'
 import { renderWithProviders } from '@/test/render'
 import { BookAppointmentDrawer } from './BookAppointmentDrawer'
+import { staffService } from '@/features/staff/services/staffService'
+import { appointmentService } from '../services/appointmentService'
 
 const { empty } = vi.hoisted(() => ({ empty: async () => ({ items: [], totalCount: 0, page: 1, pageSize: 100 }) }))
 vi.mock('@/features/staff/services/staffService', () => ({ staffService: { list: vi.fn(empty) } }))
@@ -50,5 +52,61 @@ describe('BookAppointmentDrawer', () => {
     expect(screen.getByLabelText('Duration (min)')).toHaveAttribute('type', 'number')
     expect(screen.getByLabelText('Reason for visit')).toHaveRole('textbox')
     expect(screen.getByLabelText('Notes')).toHaveRole('textbox')
+  })
+})
+
+describe('BookAppointmentDrawer after booking', () => {
+  // Bug: a booking made from the calendar did not appear until a manual reload —
+  // only ['appointments'] was refreshed, and the week view caches under ['appointments-week']
+  it('refreshes the calendar week so the new visit shows up', async () => {
+    vi.mocked(staffService.list).mockResolvedValue({
+      items: [{ id: 'prov-1', fullName: 'Ana Rozić', staffType: 'Dentist', isBookable: true }], totalCount: 1, page: 1, pageSize: 100,
+    } as unknown as Awaited<ReturnType<typeof staffService.list>>)
+    vi.mocked(appointmentService.listTypes).mockResolvedValue([
+      { id: 'type-1', name: 'Filling', defaultDurationMinutes: 45 },
+    ] as unknown as Awaited<ReturnType<typeof appointmentService.listTypes>>)
+    vi.mocked(appointmentService.book).mockResolvedValue({} as Awaited<ReturnType<typeof appointmentService.book>>)
+
+    const { queryClient } = renderWithProviders(
+      <BookAppointmentDrawer
+        onClose={() => {}}
+        initialPatient={{ id: 'pat-1', patientNumber: 'P-1', fullName: 'Lejla Hasanović', phoneMobile: null, email: null }}
+        initialStartAt="2026-10-23T11:00"
+        initialProviderId="prov-1"
+      />,
+    )
+    queryClient.setQueryData(['appointments-week', '2026-10-19'], { items: [] })
+
+    await screen.findByRole('option', { name: /Ana Rozić/ })
+    await screen.findByRole('option', { name: /Filling/ })
+    await userEvent.selectOptions(screen.getByLabelText(/^Provider/), 'prov-1')
+    await userEvent.selectOptions(screen.getByLabelText(/^Appointment type/), 'type-1')
+    await userEvent.click(screen.getByRole('button', { name: 'Book appointment' }))
+
+    await vi.waitFor(() => expect(appointmentService.book).toHaveBeenCalled())
+    await vi.waitFor(() => expect(queryClient.getQueryState(['appointments-week', '2026-10-19'])?.isInvalidated).toBe(true))
+  })
+})
+
+describe('BookAppointmentDrawer providers', () => {
+  // People-merge plan 1.2 / D3: the API decides who can be booked (isBookable)
+  it('offers exactly the bookable staff', async () => {
+    const person = (id: string, fullName: string, staffType: string, isBookable: boolean) =>
+      ({ id, fullName, firstName: fullName, lastName: '', staffType, isBookable, isActive: true })
+    vi.mocked(staffService.list).mockResolvedValueOnce({
+      items: [
+        person('d1', 'Amra Dentist', 'Dentist', true),
+        person('a1', 'Nina Assistant', 'DentalAssistant', true),
+        person('h1', 'Old Hygienist', 'Hygienist', false),
+        person('r1', 'Rea Reception', 'Receptionist', false),
+      ],
+      totalCount: 4, page: 1, pageSize: 100,
+    } as never)
+    renderWithProviders(<BookAppointmentDrawer onClose={() => {}} />)
+
+    const provider = screen.getByLabelText(/^Provider/) as HTMLSelectElement
+    await screen.findByRole('option', { name: /Amra Dentist/ })
+    const names = [...provider.options].filter((o) => o.value).map((o) => o.textContent)
+    expect(names).toEqual(['Amra Dentist — Dentist', 'Nina Assistant — Dental assistant'])
   })
 })

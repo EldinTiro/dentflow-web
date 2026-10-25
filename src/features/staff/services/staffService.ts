@@ -1,4 +1,5 @@
 import apiClient from '@/shared/api/client';
+import type { TenantRole } from '@/shared/lib/permissions';
 
 export type StaffType =
   | 'Dentist'
@@ -26,6 +27,15 @@ export const ALL_STAFF_TYPES: StaffType[] = [
   'OfficeManager',
 ];
 
+/** The sign-in account linked to a staff profile (people-merge plan 2.4). */
+export interface StaffAccessSummary {
+  userId: string;
+  role: string | null;
+  isActive: boolean;
+  mustChangePassword: boolean;
+  lastLoginAt: string | null;
+}
+
 export interface StaffMemberResponse {
   id: string;
   staffType: StaffType;
@@ -48,6 +58,20 @@ export interface StaffMemberResponse {
   postalCode: string | null;
   createdAt: string;
   updatedAt: string | null;
+  /** Can be booked for appointments — decided by the API (active + a clinical staff type). */
+  isBookable: boolean;
+  /** null when the person can't sign in. */
+  access?: StaffAccessSummary | null;
+  /** Only on create with access: shown once, then gone. */
+  tempPassword?: string;
+}
+
+export interface TempPasswordResult {
+  tempPassword: string;
+}
+
+export interface GrantAccessResult extends TempPasswordResult {
+  userId: string;
 }
 
 export interface PagedResult<T> {
@@ -60,7 +84,8 @@ export interface PagedResult<T> {
 export interface ListStaffParams {
   searchTerm?: string;
   staffType?: StaffType;
-  isActive?: boolean;
+  /** The API defaults to active staff; 'all' lifts the filter. */
+  isActive?: boolean | 'all';
   page?: number;
   pageSize?: number;
 }
@@ -74,6 +99,8 @@ export interface CreateStaffRequest {
   hireDate?: string;
   specialty?: string;
   colorHex?: string;
+  /** Present only when the person can sign in; needs an email. */
+  access?: { role: TenantRole };
 }
 
 export interface UpdateStaffRequest {
@@ -184,6 +211,33 @@ export const staffService = {
     return apiClient.delete(`${BASE}/${id}`);
   },
 
+  /** Instead of deleting (people-merge plan B6); 409 while appointments are ahead. */
+  deactivate(id: string) {
+    return apiClient.post<StaffMemberResponse>(`${BASE}/${id}/deactivate`).then((r) => r.data);
+  },
+
+  /** The sign-in stays off; it is given back with setAccessActive. */
+  reactivate(id: string) {
+    return apiClient.post<StaffMemberResponse>(`${BASE}/${id}/reactivate`).then((r) => r.data);
+  },
+
+  // Sign-in access (people-merge plan 4.1): the account is reached through its userId
+  grantAccess(id: string, role: TenantRole) {
+    return apiClient.post<GrantAccessResult>(`${BASE}/${id}/access`, { role }).then((r) => r.data);
+  },
+
+  resetPassword(userId: string) {
+    return apiClient.post<TempPasswordResult>(`/api/v1/users/${userId}/reset-password`).then((r) => r.data);
+  },
+
+  changeRole(userId: string, role: TenantRole) {
+    return apiClient.put(`/api/v1/users/${userId}/role`, { role }).then((r) => r.data);
+  },
+
+  setAccessActive(userId: string, isActive: boolean) {
+    return apiClient.put(`/api/v1/users/${userId}/status`, { isActive }).then((r) => r.data);
+  },
+
   // Availability
   getAvailability(staffId: string) {
     return apiClient
@@ -205,6 +259,13 @@ export const staffService = {
   listBlockedTimes(staffId: string, params?: { from?: string; to?: string }) {
     return apiClient
       .get<StaffBlockedTimeResponse[]>(`${BASE}/${staffId}/blocked-times`, { params })
+      .then((r) => r.data);
+  },
+
+  /** Every absence in the clinic overlapping [from, to] — UTC instants of local day boundaries. */
+  listClinicAbsences(params: { from: string; to: string }) {
+    return apiClient
+      .get<StaffBlockedTimeResponse[]>(`${BASE}/blocked-times`, { params })
       .then((r) => r.data);
   },
 

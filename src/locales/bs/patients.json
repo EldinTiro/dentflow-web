@@ -1,8 +1,13 @@
 {
   "title": "Pacijenti",
   "totalCount": "{{count}} ukupno",
-  "button": { "newPatient": "+ Novi pacijent" },
-  "search": { "placeholder": "Pretraži po imenu, emailu, telefonu…" },
+  "button": {
+    "bookAppointment": "Zakaži termin",
+    "newPatient": "+ Novi pacijent"
+  },
+  "search": {
+    "placeholder": "Pretraži po imenu, emailu, telefonu…"
+  },
   "emptyState": "Nema pronađenih pacijenata.",
   "table": {
     "patientNumber": "Br. pacijenta",
@@ -60,8 +65,6 @@
     "totalCount": "{{count}} termin(a) ukupno"
   },
   "confirm": {
-    "deleteTitle": "Obrisati pacijenta?",
-    "deleteDescription": "{{name}} će biti obrisano. Admin može poništiti ovu akciju.",
     "deleteFile": "Obrisati \"{{fileName}}\"?"
   },
   "drawer": {
@@ -96,7 +99,10 @@
     "saving": "Čuvanje…",
     "saveChanges": "Sačuvaj promjene"
   },
-  "validation": { "required": "Obavezno", "phone": "Unesite ispravan broj telefona, npr. 61 123 456." },
+  "validation": {
+    "required": "Obavezno",
+    "phone": "Unesite ispravan broj telefona, npr. 61 123 456."
+  },
   "error": {
     "createFailed": "Kreiranje pacijenta nije uspjelo. Pokušajte ponovo.",
     "updateFailed": "Čuvanje promjena nije uspjelo. Pokušajte ponovo."
@@ -121,8 +127,7 @@
     "filesUploadFailed": "{{count}} datoteka/e nije učitano",
     "fileDeleted": "Datoteka obrisana",
     "deleteFailed": "Brisanje nije uspjelo",
-    "couldNotOpenFile": "Nije moguće otvoriti datoteku",
-    "deleted": "Pacijent obrisan"
+    "couldNotOpenFile": "Nije moguće otvoriti datoteku"
   },
   "allergyAlert": {
     "label": "Alergije"
@@ -181,7 +186,8 @@
       "hasPacemaker": "Pejsmejker",
       "hasArtificialJoints": "Vještački zglobovi",
       "hasLatexAllergy": "Alergija na latex"
-    }
+    },
+    "removeContact": "Ukloni kontakt {{name}}"
   },
   "treatmentPlans": {
     "newPlan": "Novi plan",
@@ -234,5 +240,27 @@
     "patients_one": "{{count}} pacijent",
     "patients_few": "{{count}} pacijenta",
     "patients_other": "{{count}} pacijenata"
+  },
+  "filter": {
+    "status": "Filter statusa"
+  },
+  "status": {
+    "deactivate": "Deaktiviraj",
+    "reactivate": "Ponovo aktiviraj",
+    "deactivateTitle": "Deaktivirati pacijenta {{name}}?",
+    "deactivateBody": "Pacijent nestaje sa dnevnih lista i ne može se zakazati. Termini, planovi, računi i datoteke ostaju. Možete ga ponovo aktivirati bilo kada.",
+    "reason": "Razlog (neobavezno)",
+    "deactivated": "Pacijent deaktiviran.",
+    "reactivated": "Pacijent je ponovo aktivan.",
+    "failed": "Promjena statusa pacijenta nije uspjela.",
+    "upcoming_one": "Pacijent ima {{count}} predstojeći termin. Prvo ga otkažite ili pomjerite.",
+    "upcoming_few": "Pacijent ima {{count}} predstojeća termina. Prvo ih otkažite ili pomjerite.",
+    "upcoming_other": "Pacijent ima {{count}} predstojećih termina. Prvo ih otkažite ili pomjerite.",
+    "inactiveBanner": "Ovaj pacijent je neaktivan.",
+    "inactiveSince": "Ovaj pacijent je neaktivan od {{date}}.",
+    "deleteDuplicate": "Obriši duplikat",
+    "deleteDuplicateTitle": "Obrisati ovaj duplikat?",
+    "deleteDuplicateBody": "će biti uklonjen. Ovo je samo za pacijenta dodanog greškom, bez termina, planova, računa ili datoteka.",
+    "hasHistory": "Pacijent ima historiju (termine, planove, račune ili datoteke) i ne može se obrisati. Umjesto toga ga deaktivirajte."
   }
 }

@@ -6,7 +6,6 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   staffService,
-  STAFF_TYPE_LABELS,
   ALL_STAFF_TYPES,
   type StaffType,
   type StaffMemberResponse,
@@ -15,17 +14,38 @@ import { CreateStaffDrawer } from '../components/CreateStaffDrawer';
 import { EditStaffDrawer } from '../components/EditStaffDrawer';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
+import { can } from '@/shared/lib/permissions'
+import { peopleErrorMessage } from '../lib/peopleErrors'
+
+type AccessFilter = '' | 'with' | 'without'
+type StatusFilter = 'active' | 'inactive' | 'all'
+
+/** People-merge plan 4.4: one word for where a person's sign-in stands. */
+function accessState(m: StaffMemberResponse): 'none' | 'canSignIn' | 'waiting' | 'disabled' {
+  if (!m.access) return 'none'
+  if (!m.access.isActive) return 'disabled'
+  return m.access.mustChangePassword ? 'waiting' : 'canSignIn'
+}
+
+const ACCESS_TONE = {
+  none: 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300',
+  canSignIn: 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300',
+  waiting: 'bg-amber-100 text-amber-800 dark:bg-amber-400/10 dark:text-amber-300',
+  disabled: 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300',
+} as const
 
 export function StaffPage() {
   const { t } = useTranslation('staff')
   const { t: tc } = useTranslation('common')
   const navigate = useNavigate();
   const roles = useAuthStore(selectRoles);
-  const canManage =
-    roles.includes('ClinicOwner') || roles.includes('ClinicAdmin') || roles.includes('SuperAdmin');
+  const canManage = can(roles, 'people.manage');
 
   const [search, setSearch] = useState('');
   const [staffTypeFilter, setStaffTypeFilter] = useState<StaffType | ''>('');
+  // Active by default (D11), like the API; the access filter works on the loaded page.
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
+  const [accessFilter, setAccessFilter] = useState<AccessFilter>('');
   const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
@@ -33,11 +53,12 @@ export function StaffPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['staff', search, staffTypeFilter, page],
+    queryKey: ['staff', search, staffTypeFilter, statusFilter, page],
     queryFn: () =>
       staffService.list({
         searchTerm: search || undefined,
         staffType: staffTypeFilter || undefined,
+        isActive: statusFilter === 'all' ? 'all' : statusFilter === 'active',
         page,
         pageSize: 20,
       }),
@@ -51,12 +72,15 @@ export function StaffPage() {
       toast.success(t('toast.deleted'))
       setDeletingId(null)
     },
-    onError: () => {
-      toast.error(t('toast.deleteFailed'))
+    onError: (err) => {
+      // Staff.HasHistory: a profile with appointments is deactivated, not deleted (D12)
+      toast.error(peopleErrorMessage(err, t, deletingMember?.fullName ?? ''))
+      setDeletingId(null)
     },
   });
 
-  const members = data?.items ?? [];
+  const members = (data?.items ?? []).filter((m) =>
+    accessFilter === '' || (accessFilter === 'with' ? !!m.access : !m.access));
   const total = data?.totalCount ?? 0;
   const pageSize = 20;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -95,9 +119,29 @@ export function StaffPage() {
           className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           <option value="">{tc('staffType.allTypes')}</option>
-          {ALL_STAFF_TYPES.map((t) => (
-            <option key={t} value={t}>{STAFF_TYPE_LABELS[t]}</option>
+          {ALL_STAFF_TYPES.map((type) => (
+            <option key={type} value={type}>{t(`staffType.${type}`)}</option>
           ))}
+        </select>
+        <select
+          aria-label={t('filter.status')}
+          value={statusFilter}
+          onChange={(e) => { setStatusFilter(e.target.value as StatusFilter); setPage(1); }}
+          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        >
+          <option value="active">{tc('status.active')}</option>
+          <option value="inactive">{tc('status.inactive')}</option>
+          <option value="all">{tc('status.allStatuses')}</option>
+        </select>
+        <select
+          aria-label={t('filter.access')}
+          value={accessFilter}
+          onChange={(e) => setAccessFilter(e.target.value as AccessFilter)}
+          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        >
+          <option value="">{t('filter.anyAccess')}</option>
+          <option value="with">{t('filter.withAccess')}</option>
+          <option value="without">{t('filter.withoutAccess')}</option>
         </select>
       </div>
 
@@ -113,19 +157,20 @@ export function StaffPage() {
               <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.specialty')}</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.color')}</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.status')}</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.access')}</th>
               {canManage && <th className="px-4 py-3" />}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {isLoading ? (
               <tr>
-                <td colSpan={canManage ? 8 : 7} className="text-center py-10 text-gray-500 dark:text-gray-400">
+                <td colSpan={canManage ? 9 : 8} className="text-center py-10 text-gray-500 dark:text-gray-400">
                   {tc('loading')}
                 </td>
               </tr>
             ) : members.length === 0 ? (
               <tr>
-                <td colSpan={canManage ? 8 : 7} className="text-center py-10 text-gray-500 dark:text-gray-400">
+                <td colSpan={canManage ? 9 : 8} className="text-center py-10 text-gray-500 dark:text-gray-400">
                   {t('emptyState')}
                 </td>
               </tr>
@@ -133,7 +178,7 @@ export function StaffPage() {
               members.map((m) => (
                 <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" onClick={() => navigate(`/staff/${m.id}`)}>
                   <td className="px-4 py-3 font-medium text-primary-600 dark:text-primary-400 hover:underline">{m.fullName}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{STAFF_TYPE_LABELS[m.staffType]}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{t(`staffType.${m.staffType}`)}</td>
                   <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.email || '—'}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{m.phone || '—'}</td>
                   <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.specialty || '—'}</td>
@@ -152,6 +197,11 @@ export function StaffPage() {
                       }`}
                     >
                       {m.isActive ? tc('status.active') : tc('status.inactive')}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${ACCESS_TONE[accessState(m)]}`}>
+                      {t(`access.${accessState(m)}`)}
                     </span>
                   </td>
                   {canManage && (

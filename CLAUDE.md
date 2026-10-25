@@ -32,7 +32,6 @@ dentflow-web/src/
 │   ├── admin/
 │   ├── dashboard/
 │   ├── shell/          # App shell / layout
-│   └── users/
 ├── shared/
 │   ├── api/            # Axios client + interceptors (shared/api/client.ts)
 │   ├── components/     # Shared UI components (not feature-specific)
@@ -165,6 +164,14 @@ const { accessToken, user, isAuthenticated, setAuth, clearAuth, hasRole } = useA
 - **Select roles with `useAuthStore(selectRoles)`**, never `s.user?.roles ?? []` — a fresh `[]` per call makes Zustand 5 re-render forever when nobody is signed in
 - `user.mustChangePassword` is set after signing in with a temporary password; `ProtectedRoute` then sends the user to `/change-password` (the API refuses everything else until it is changed)
 - Use `hasRole(...)` to read the current user's role for conditional rendering
+- **Prefer permissions to role lists**: `can(roles, 'people.manage' | 'patients.manage' | …)` and `TENANT_ROLES` in `shared/lib/permissions.ts` mirror `RolePermissions` / `Roles.TenantRoles` in the API. Don't write new `['ClinicOwner', …]` arrays
+
+## People (staff + sign-in)
+
+- There is no Team page or `features/users`: a person is a staff profile, and signing in is an option on it (`/settings/users` redirects to `/staff`). The add-staff drawer has a **Can sign in** switch; the profile's *App access* section gives access, changes the role, resets the password and turns sign-in off — owner only (`people.manage`)
+- Who can be booked comes from the API (`isBookable`), never from staff-type lists
+- `GET /staff` and `GET /patients` return **active** records by default; pass `isActive: 'all'` / `status: 'all'` where inactive ones must still resolve (e.g. provider names on past appointments)
+- Patients and staff are **deactivated**, not deleted. Read 409 details with `getApiErrorCodes(err)` (`shared/utils/apiError.ts`) — e.g. `codes.get('Patient.HasUpcomingAppointments.count')`
 
 ## Routing & Route Guards
 

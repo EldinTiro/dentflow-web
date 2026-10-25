@@ -27,6 +27,7 @@ import {
   type AppointmentResponse,
   type AppointmentStatus,
 } from '../services/appointmentService'
+import { invalidateAppointmentQueries } from '../services/appointmentQueries'
 import { patientService } from '@/features/patients/services/patientService'
 import { staffService } from '@/features/staff/services/staffService'
 import { billingService, INVOICE_STATUS_COLORS, INVOICE_STATUS_LABELS } from '@/features/billing/services/billingService'
@@ -80,8 +81,9 @@ export function AppointmentDetailPanel({
   // Held locally so the drawer can stay open and reflect each status action (QA-027).
   const [a, setA] = useState(initialAppointment)
   useEffect(() => setA(initialAppointment), [initialAppointment])
+  // Owner-only actions on the API (AppointmentActionEndpoints: ClinicOwner, SuperAdmin).
   const isAdmin = useAuthStore((s) =>
-    s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'SuperAdmin'].includes(r)) ?? false
+    s.user?.roles?.some((r) => r === 'ClinicOwner' || r === 'SuperAdmin') ?? false
   )
   const [confirmCancel, setConfirmCancel] = useState(false)
   const [showHistory, setShowHistory] = useState(true)
@@ -124,10 +126,8 @@ export function AppointmentDetailPanel({
 
   const invalidate = () => {
     // The history query used to be fetched once and never refreshed (QA-017).
-    queryClient.invalidateQueries({ queryKey: ['appointment-history', a.id] })
-    queryClient.invalidateQueries({ queryKey: ['appointments'] })
-    queryClient.invalidateQueries({ queryKey: ['appointments-today'] })
-    queryClient.invalidateQueries({ queryKey: ['appointments-week'] })
+    // Includes ['appointment-history', a.id], the calendar, dashboard and free slots.
+    invalidateAppointmentQueries(queryClient)
   }
 
   const statusMutation = useMutation({

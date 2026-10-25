@@ -40,6 +40,7 @@
   },
   "detail": {
     "backToInvoices": "← Zurück zu Rechnungen",
+    "backToPatient": "← Zurück zum Patienten",
     "issuedAt": "Ausgestellt",
     "dueDate": "Fällig",
     "notes": "Notizen",

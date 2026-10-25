@@ -1,8 +1,12 @@
 {
   "title": "Osoblje",
   "memberCount": "{{count}} član(ova)",
-  "button": { "addStaff": "+ Dodaj osoblje" },
-  "search": { "placeholder": "Pretraži po imenu ili emailu…" },
+  "button": {
+    "addStaff": "+ Dodaj osoblje"
+  },
+  "search": {
+    "placeholder": "Pretraži po imenu ili emailu…"
+  },
   "emptyState": "Nema pronađenog osoblja.",
   "table": {
     "name": "Ime",
@@ -11,7 +15,8 @@
     "phone": "Telefon",
     "specialty": "Specijalnost",
     "color": "Boja",
-    "status": "Status"
+    "status": "Status",
+    "access": "Pristup"
   },
   "backToStaff": "← Nazad na osoblje",
   "notFound": "Član osoblja nije pronađen.",
@@ -93,5 +98,88 @@
     "days_one": "{{value}} dan",
     "days_few": "{{value}} dana",
     "days_other": "{{value}} dana"
+  },
+  "staffType": {
+    "Dentist": "Stomatolog",
+    "DentalAssistant": "Stomatološki asistent",
+    "Hygienist": "Higijeničar",
+    "Receptionist": "Recepcioner",
+    "ClinicAdmin": "Administrator klinike",
+    "OfficeManager": "Upravnik ordinacije"
+  },
+  "create": {
+    "title": "Dodaj člana osoblja",
+    "firstName": "Ime",
+    "lastName": "Prezime",
+    "staffType": "Vrsta osoblja",
+    "email": "Email",
+    "phone": "Telefon",
+    "specialty": "Specijalnost",
+    "specialtyPlaceholder": "npr. Ortodoncija",
+    "hireDate": "Datum zaposlenja",
+    "color": "Boja u kalendaru",
+    "canSignIn": "Može se prijaviti",
+    "canSignInHint": "Kreira račun s privremenom lozinkom.",
+    "role": "Uloga",
+    "submit": "Dodaj člana osoblja",
+    "saving": "Spremanje…",
+    "cancel": "Odustani",
+    "required": "Obavezno",
+    "emailRequiredForAccess": "Za prijavu je potreban email.",
+    "emailTaken": "Ovaj email već koristi neko u ovoj klinici.",
+    "failed": "Dodavanje člana osoblja nije uspjelo.",
+    "successTitle": "Član osoblja dodan",
+    "successMessage": "{{name}} se sada može prijaviti ovim emailom i privremenom lozinkom:",
+    "tempPasswordWarning": "Ova lozinka se više neće prikazati. Mora se promijeniti pri prvoj prijavi.",
+    "done": "Gotovo"
+  },
+  "access": {
+    "title": "Pristup aplikaciji",
+    "noAccess": "Ova osoba se još ne može prijaviti.",
+    "role": "Uloga",
+    "give": "Daj pristup",
+    "canSignIn": "Može se prijaviti",
+    "disabled": "Prijava isključena",
+    "waiting": "Čeka prvu prijavu",
+    "none": "Bez pristupa",
+    "mustChange": "Mora promijeniti lozinku",
+    "lastSignIn": "Zadnja prijava",
+    "never": "nikad",
+    "resetPassword": "Resetuj lozinku",
+    "resetTitle": "Resetovati lozinku?",
+    "resetBody": "{{name}} dobija novu privremenu lozinku i mora je promijeniti pri sljedećoj prijavi.",
+    "turnOff": "Isključi prijavu",
+    "turnOffConfirm": "Isključi",
+    "turnOffTitle": "Isključiti prijavu?",
+    "turnOffBody": "{{name}} se više neće moći prijaviti. Profil i njegova historija ostaju.",
+    "turnOn": "Ponovo uključi prijavu",
+    "selfHint": "Ovo ste vi. Svoj račun mijenjate u Profilu i postavkama.",
+    "tempPassword": "Privremena lozinka",
+    "roleChanged": "Uloga promijenjena.",
+    "failed": "Promjena pristupa nije uspjela. Pokušajte ponovo.",
+    "errors": {
+      "self": "Ovdje ne možete mijenjati vlastiti pristup. Za svoj račun koristite Profil i postavke.",
+      "lastOwner": "Klinika mora imati barem jednog aktivnog vlasnika.",
+      "ownerOnly": "Samo vlasnik klinike može mijenjati drugog vlasnika."
+    }
+  },
+  "status": {
+    "deactivate": "Deaktiviraj",
+    "reactivate": "Ponovo aktiviraj",
+    "deactivateTitle": "Deaktivirati: {{name}}?",
+    "deactivateBody": "Više se ne može zakazivati niti prijaviti. Prošli termini zadržavaju ime, a kasnije je možete ponovo aktivirati.",
+    "deactivated": "{{name}} je deaktiviran/a.",
+    "reactivated": "{{name}} je ponovo aktivan/a. Prijava ostaje isključena dok je ponovo ne uključite.",
+    "upcoming_one": "{{name}} ima {{count}} predstojeći termin. Prvo ga otkažite ili pomjerite.",
+    "upcoming_few": "{{name}} ima {{count}} predstojeća termina. Prvo ih otkažite ili pomjerite.",
+    "upcoming_other": "{{name}} ima {{count}} predstojećih termina. Prvo ih otkažite ili pomjerite.",
+    "hasHistory": "{{name}} ima termine, pa se profil ne može obrisati. Deaktivirajte ga umjesto toga."
+  },
+  "filter": {
+    "status": "Filter statusa",
+    "access": "Filter pristupa",
+    "anyAccess": "Svaki pristup",
+    "withAccess": "Ima pristup",
+    "withoutAccess": "Bez pristupa"
   }
 }

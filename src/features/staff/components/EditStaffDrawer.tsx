@@ -11,6 +11,7 @@ import {
   type UpdateStaffRequest,
 } from '../services/staffService';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
+import { can } from '@/shared/lib/permissions'
 
 interface Props {
   staff: StaffMemberResponse;
@@ -19,7 +20,7 @@ interface Props {
 
 export function EditStaffDrawer({ staff, onClose }: Props) {
   const roles = useAuthStore(selectRoles);
-  const canDelete = roles.includes('ClinicOwner') || roles.includes('SuperAdmin');
+  const canDelete = can(roles, 'people.manage');
   const queryClient = useQueryClient();
   const [confirmDelete, setConfirmDelete] = useState(false);
 

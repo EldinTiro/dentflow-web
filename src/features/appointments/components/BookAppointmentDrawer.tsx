@@ -5,6 +5,7 @@ import { Search, X, Clock, UserPlus } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Drawer } from '@/shared/components/Drawer';
 import { appointmentService, type BookAppointmentRequest } from '../services/appointmentService';
+import { invalidateAppointmentQueries } from '../services/appointmentQueries';
 import { patientService, type PatientSearchResult } from '@/features/patients/services/patientService';
 import { toast } from 'sonner';
 import { staffService, type StaffMemberResponse } from '@/features/staff/services/staffService';
@@ -17,6 +18,8 @@ import { tenantService } from '@/features/admin/services/tenantService';
 interface Props {
   onClose: () => void;
   initialPatientId?: string;
+  /** Pre-selects and displays this patient (booking from a patient chart). */
+  initialPatient?: PatientSearchResult;
   initialDate?: string;
   initialStartAt?: string;
   initialProviderId?: string;
@@ -46,8 +49,9 @@ function toDateOnly(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, initialStartAt, initialProviderId }: Props) {
+export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatient, initialDate, initialStartAt, initialProviderId }: Props) {
   const { t } = useTranslation('appointments');
+  const { t: ts } = useTranslation('staff');
   const uid = useId();
   const fid = (name: string) => `${uid}-${name}`;
   const queryClient = useQueryClient();
@@ -69,7 +73,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
   })();
 
   const [patientSearch, setPatientSearch] = useState('');
-  const [selectedPatient, setSelectedPatient] = useState<PatientSearchResult | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<PatientSearchResult | null>(initialPatient ?? null);
   const [patientOpen, setPatientOpen] = useState(false);
   const [showSlotPicker, setShowSlotPicker] = useState(false);
   const patientRef = useRef<HTMLDivElement>(null);
@@ -92,7 +96,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
-      patientId: initialPatientId ?? '',
+      patientId: initialPatient?.id ?? initialPatientId ?? '',
       providerId: initialProviderId ?? '',
       startAt: defaultStartAt,
       durationMinutes: 30,
@@ -143,7 +147,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
   const bookMutation = useMutation({
     mutationFn: (data: BookAppointmentRequest) => appointmentService.book(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      invalidateAppointmentQueries(queryClient);
       queryClient.invalidateQueries({ queryKey: ['patients'] });
       queryClient.invalidateQueries({ queryKey: ['patients-all'] });
       onClose();
@@ -187,9 +191,8 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
     });
   };
 
-  const providers = (staffData?.items ?? []).filter(
-    (s: StaffMemberResponse) => s.staffType === 'Dentist' || s.staffType === 'Hygienist',
-  );
+  // Who can be booked is decided by the API (people-merge plan D3).
+  const providers = (staffData?.items ?? []).filter((s: StaffMemberResponse) => s.isBookable);
   const apptTypes = typesData ?? [];
   const displayResults = patientSearch.length >= 1 ? (searchResults ?? []) : [];
   const isPending = createPatientMutation.isPending || bookMutation.isPending;
@@ -383,7 +386,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialDate, 
             <option value="">{isStaffLoading ? t('booking.loading') : t('booking.selectProvider')}</option>
             {providers.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.fullName} — {s.staffType}
+                {s.fullName} — {ts(`staffType.${s.staffType}`)}
               </option>
             ))}
           </select>

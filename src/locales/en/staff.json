@@ -1,8 +1,12 @@
 {
   "title": "Staff",
   "memberCount": "{{count}} member(s)",
-  "button": { "addStaff": "+ Add Staff" },
-  "search": { "placeholder": "Search by name or email…" },
+  "button": {
+    "addStaff": "+ Add Staff"
+  },
+  "search": {
+    "placeholder": "Search by name or email…"
+  },
   "emptyState": "No staff members found.",
   "table": {
     "name": "Name",
@@ -11,7 +15,8 @@
     "phone": "Phone",
     "specialty": "Specialty",
     "color": "Color",
-    "status": "Status"
+    "status": "Status",
+    "access": "Access"
   },
   "backToStaff": "← Back to Staff",
   "notFound": "Staff member not found.",
@@ -92,5 +97,87 @@
     "remove": "Remove",
     "days_one": "{{value}} day",
     "days_other": "{{value}} days"
+  },
+  "staffType": {
+    "Dentist": "Dentist",
+    "DentalAssistant": "Dental assistant",
+    "Hygienist": "Hygienist",
+    "Receptionist": "Receptionist",
+    "ClinicAdmin": "Clinic admin",
+    "OfficeManager": "Office manager"
+  },
+  "create": {
+    "title": "Add staff member",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "staffType": "Staff type",
+    "email": "Email",
+    "phone": "Phone",
+    "specialty": "Specialty",
+    "specialtyPlaceholder": "e.g. Orthodontics",
+    "hireDate": "Hire date",
+    "color": "Calendar colour",
+    "canSignIn": "Can sign in",
+    "canSignInHint": "Creates an account with a temporary password.",
+    "role": "Role",
+    "submit": "Add staff member",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "required": "Required",
+    "emailRequiredForAccess": "An email is needed to sign in.",
+    "emailTaken": "This email is already used by someone in this clinic.",
+    "failed": "Could not add the staff member.",
+    "successTitle": "Staff member added",
+    "successMessage": "{{name}} can now sign in with this email and temporary password:",
+    "tempPasswordWarning": "This password will not be shown again. It must be changed at first sign-in.",
+    "done": "Done"
+  },
+  "access": {
+    "title": "App access",
+    "noAccess": "This person can't sign in yet.",
+    "role": "Role",
+    "give": "Give access",
+    "canSignIn": "Can sign in",
+    "disabled": "Sign-in turned off",
+    "waiting": "Waiting for first sign-in",
+    "none": "No access",
+    "mustChange": "Must change password",
+    "lastSignIn": "Last sign-in",
+    "never": "never",
+    "resetPassword": "Reset password",
+    "resetTitle": "Reset password?",
+    "resetBody": "{{name}} gets a new temporary password and has to change it at the next sign-in.",
+    "turnOff": "Turn off sign-in",
+    "turnOffConfirm": "Turn off",
+    "turnOffTitle": "Turn off sign-in?",
+    "turnOffBody": "{{name}} will no longer be able to sign in. The profile and its history stay.",
+    "turnOn": "Turn sign-in back on",
+    "selfHint": "This is you. Change your own account in Profile & Settings.",
+    "tempPassword": "Temporary password",
+    "roleChanged": "Role changed.",
+    "failed": "Could not change access. Please try again.",
+    "errors": {
+      "self": "You can't change your own access here. Use Profile & Settings for your own account.",
+      "lastOwner": "A clinic must keep at least one active owner.",
+      "ownerOnly": "Only a clinic owner can change another owner."
+    }
+  },
+  "status": {
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "deactivateTitle": "Deactivate {{name}}?",
+    "deactivateBody": "They can no longer be booked or sign in. Past appointments keep their name, and you can reactivate them later.",
+    "deactivated": "{{name}} is deactivated.",
+    "reactivated": "{{name}} is active again. Sign-in stays off until you turn it back on.",
+    "upcoming_one": "{{name}} has {{count}} upcoming appointment. Cancel or move it first.",
+    "upcoming_other": "{{name}} has {{count}} upcoming appointments. Cancel or move them first.",
+    "hasHistory": "{{name}} has appointments, so the profile can't be deleted. Deactivate it instead."
+  },
+  "filter": {
+    "status": "Status filter",
+    "access": "Access filter",
+    "anyAccess": "Any access",
+    "withAccess": "Has access",
+    "withoutAccess": "No access"
   }
 }

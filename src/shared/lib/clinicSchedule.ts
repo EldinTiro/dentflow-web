@@ -55,19 +55,36 @@ export function busySlotLabels(
 ): Set<string> {
   const busy = new Set<string>()
   if (providerIds.length === 0) return busy
+  for (const [label, busyProviders] of slotOccupancy(appointments, slots, date, durationMinutes, providerIds)) {
+    if (busyProviders.length === providerIds.length) busy.add(label)
+  }
+  return busy
+}
 
+/**
+ * For each slot, which of `providerIds` already have a visit overlapping it (in the
+ * order given). Lets "all providers" show a slot as partly booked instead of free.
+ */
+export function slotOccupancy(
+  appointments: BookedSlot[],
+  slots: { label: string }[],
+  date: string,
+  durationMinutes: number,
+  providerIds: string[],
+): Map<string, string[]> {
   const active = appointments.filter((a) => ACTIVE_STATUSES.has(a.status))
+  const occupancy = new Map<string, string[]>()
   for (const slot of slots) {
     const slotStart = new Date(`${date}T${slot.label}:00`).getTime()
     const slotEnd = slotStart + durationMinutes * 60_000
-    const bookedProviders = new Set(
+    const booked = new Set(
       active
         .filter((a) => new Date(a.startAt).getTime() < slotEnd && new Date(a.endAt).getTime() > slotStart)
         .map((a) => a.providerId),
     )
-    if (providerIds.every((id) => bookedProviders.has(id))) busy.add(slot.label)
+    occupancy.set(slot.label, providerIds.filter((id) => booked.has(id)))
   }
-  return busy
+  return occupancy
 }
 
 const pad = (n: number) => String(n).padStart(2, '0')

@@ -96,7 +96,7 @@ export function ProfilePage() {
   const queryClient = useQueryClient()
   const isSuperAdmin = useAuthStore((s) => s.user?.roles?.includes('SuperAdmin') ?? false)
   const canManageClinic = useAuthStore(
-    (s) => s.user?.roles?.some(r => ['ClinicOwner', 'ClinicAdmin'].includes(r)) ?? false,
+    (s) => s.user?.roles?.includes('ClinicOwner') ?? false,
   )
 
   const [activeTab, setActiveTab] = useState<Tab>('profile')

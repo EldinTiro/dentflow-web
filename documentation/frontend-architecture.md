@@ -133,6 +133,14 @@ const router = createBrowserRouter([
 
 All authenticated routes are wrapped in a role-based route guard that checks the in-memory token and user role before rendering.
 
+What a role may do is mirrored from the API in `shared/lib/permissions.ts` (`can(roles, permission)`,
+`TENANT_ROLES`); components ask for a permission, not a list of role names. The API enforces it.
+
+**People.** Staff and login accounts are one list (*Staff*): a profile can have sign-in access,
+managed in the profile's *App access* section (`StaffAccessSection`). There is no Team page;
+`/settings/users` redirects to `/staff`. Booking lists only staff with `isBookable`.
+Patients and staff are deactivated rather than deleted; lists show active records by default.
+
 ---
 
 ## State Management

@@ -1,8 +1,13 @@
 {
   "title": "Patients",
   "totalCount": "{{count}} total",
-  "button": { "newPatient": "+ New Patient" },
-  "search": { "placeholder": "Search by name, email, phone…" },
+  "button": {
+    "bookAppointment": "Book appointment",
+    "newPatient": "+ New Patient"
+  },
+  "search": {
+    "placeholder": "Search by name, email, phone…"
+  },
   "emptyState": "No patients found.",
   "table": {
     "patientNumber": "Patient #",
@@ -60,8 +65,6 @@
     "totalCount": "{{count}} appointment(s) total"
   },
   "confirm": {
-    "deleteTitle": "Delete Patient?",
-    "deleteDescription": "{{name}} will be soft-deleted. This can be undone by an admin.",
     "deleteFile": "Delete \"{{fileName}}\"?"
   },
   "drawer": {
@@ -96,7 +99,10 @@
     "saving": "Saving…",
     "saveChanges": "Save Changes"
   },
-  "validation": { "required": "Required", "phone": "Enter a valid phone number, e.g. 61 123 456." },
+  "validation": {
+    "required": "Required",
+    "phone": "Enter a valid phone number, e.g. 61 123 456."
+  },
   "error": {
     "createFailed": "Failed to create patient. Please try again.",
     "updateFailed": "Failed to save changes. Please try again."
@@ -121,8 +127,7 @@
     "filesUploadFailed": "{{count}} file(s) failed to upload",
     "fileDeleted": "File deleted",
     "deleteFailed": "Delete failed",
-    "couldNotOpenFile": "Could not open file",
-    "deleted": "Patient deleted"
+    "couldNotOpenFile": "Could not open file"
   },
   "allergyAlert": {
     "label": "Allergies"
@@ -181,7 +186,8 @@
       "hasPacemaker": "Pacemaker",
       "hasArtificialJoints": "Artificial joints",
       "hasLatexAllergy": "Latex allergy"
-    }
+    },
+    "removeContact": "Remove contact {{name}}"
   },
   "treatmentPlans": {
     "newPlan": "New Plan",
@@ -232,5 +238,26 @@
     "dueSoon": "🟡 Recall due soon",
     "patients_one": "{{count}} patient",
     "patients_other": "{{count}} patients"
+  },
+  "filter": {
+    "status": "Status filter"
+  },
+  "status": {
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "deactivateTitle": "Deactivate {{name}}?",
+    "deactivateBody": "The patient leaves the daily lists and can't be booked. Appointments, plans, invoices and files stay. You can reactivate them at any time.",
+    "reason": "Reason (optional)",
+    "deactivated": "Patient deactivated.",
+    "reactivated": "Patient is active again.",
+    "failed": "Could not change the patient's status.",
+    "upcoming_one": "This patient has {{count}} upcoming appointment. Cancel or move it first.",
+    "upcoming_other": "This patient has {{count}} upcoming appointments. Cancel or move them first.",
+    "inactiveBanner": "This patient is inactive.",
+    "inactiveSince": "This patient is inactive since {{date}}.",
+    "deleteDuplicate": "Delete duplicate",
+    "deleteDuplicateTitle": "Delete this duplicate?",
+    "deleteDuplicateBody": "will be removed. This is only for a patient added by mistake, with no appointments, plans, invoices or files.",
+    "hasHistory": "This patient has history (appointments, plans, invoices or files) and can't be deleted. Deactivate them instead."
   }
 }

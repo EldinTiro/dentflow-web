@@ -38,3 +38,26 @@ export function formatAbsenceDays(days: number, lang: string = i18n.language): s
 export function formatAbsenceDate(iso: string, lang: string = i18n.language): string {
   return formatDate(iso, lang)
 }
+
+export const ABSENCE_TYPES = [
+  { value: 'Vacation',         emoji: '🏖️' },
+  { value: 'Sickness',         emoji: '🤒' },
+  { value: 'SpecialLeave',     emoji: '📋' },
+  { value: 'ReligiousHoliday', emoji: '🕌' },
+  { value: 'PublicHoliday',    emoji: '🎉' },
+  { value: 'Education',        emoji: '🎓' },
+] as const
+
+export type AbsenceTypeValue = typeof ABSENCE_TYPES[number]['value']
+
+export const ABSENCE_EMOJI: Record<string, string> = Object.fromEntries(
+  ABSENCE_TYPES.map((t) => [t.value, t.emoji])
+)
+export const ABSENCE_COLOR: Record<string, string> = {
+  Vacation:         'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  Sickness:         'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  SpecialLeave:     'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  ReligiousHoliday: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  PublicHoliday:    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  Education:        'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
+}

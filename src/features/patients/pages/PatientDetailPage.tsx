@@ -2,15 +2,16 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
 import { patientService, type PatientStatus, type AddEmergencyContactRequest, type AddAllergyRequest, type UpsertMedicalHistoryRequest } from '../services/patientService'
 import { EditPatientDrawer } from '../components/EditPatientDrawer'
 import {
   appointmentService,
-  APPOINTMENT_STATUS_LABELS,
   STATUS_COLORS,
 } from '@/features/appointments/services/appointmentService'
+import { useAppointmentStatusLabels } from '@/features/appointments/hooks/useAppointmentStatusLabels'
 import { AppointmentDetailPanel } from '@/features/appointments/components/AppointmentDetailPanel'
+import { BookAppointmentDrawer } from '@/features/appointments/components/BookAppointmentDrawer'
 import { RescheduleModal } from '@/features/appointments/components/RescheduleModal'
 import { StatusBadge } from '@/shared/components/StatusBadge'
 import type { AppointmentResponse } from '@/features/appointments/services/appointmentService'
@@ -18,9 +19,13 @@ import { TreatmentPlanTab } from '@/features/treatments/components/TreatmentPlan
 import { PatientFilesTab } from '../components/PatientFilesTab'
 import { PatientBillingTab } from '@/features/billing/components/PatientBillingTab'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
-import { Trash2, Plus, AlertTriangle, Phone, User, Heart } from 'lucide-react'
+import { Trash2, Plus, AlertTriangle, Phone, User, Heart, CalendarPlus } from 'lucide-react'
 import { AllergyAlert } from '../components/AllergyAlert'
+import { DeactivatePatientDialog } from '../components/DeactivatePatientDialog'
+import { toast } from 'sonner'
+import { getApiErrorCodes, getApiErrorMessage } from '@/shared/utils/apiError'
 import { formatDate } from '@/shared/lib/format'
+import { can } from '@/shared/lib/permissions'
 
 type Tab = 'overview' | 'appointments' | 'treatments' | 'files' | 'billing' | 'medical'
 const TABS: Tab[] = ['overview', 'appointments', 'treatments', 'medical', 'files', 'billing']
@@ -58,7 +63,9 @@ export function PatientDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showEdit, setShowEdit] = useState(false)
+  const [showBook, setShowBook] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmDeactivate, setConfirmDeactivate] = useState(false)
   // The active tab lives in ?tab= so a reload or a shared link keeps it (QA-028).
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = (TABS.includes(searchParams.get('tab') as Tab) ? searchParams.get('tab') : 'overview') as Tab
@@ -71,9 +78,7 @@ export function PatientDetailPage() {
   const [selectedAppt, setSelectedAppt] = useState<AppointmentResponse | null>(null)
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null)
 
-  const canManage = useAuthStore((s) =>
-    s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'Receptionist', 'Dentist', 'Hygienist', 'SuperAdmin'].includes(r)) ?? false
-  )
+  const canManage = can(useAuthStore(selectRoles), 'patients.manage')
 
   const { data: patient, isLoading, isError } = useQuery({
     queryKey: ['patient', id],
@@ -87,11 +92,37 @@ export function PatientDetailPage() {
     enabled: !!id && tab === 'appointments',
   })
 
+  // People-merge plan D9: delete is only for a duplicate without history.
   const deleteMutation = useMutation({
     mutationFn: () => patientService.delete(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] })
       navigate('/patients')
+    },
+    onError: (err) => {
+      setConfirmDelete(false)
+      toast.error(getApiErrorCodes(err).has('Patient.HasHistory')
+        ? t('status.hasHistory')
+        : getApiErrorMessage(err, t('toast.deleteFailed')))
+    },
+  })
+
+  // D8 / D10: deactivate instead of delete; refused while appointments are ahead.
+  const statusMutation = useMutation({
+    mutationFn: (change: { active: true } | { active: false; reason: string }) =>
+      change.active ? patientService.reactivate(id!) : patientService.deactivate(id!, change.reason),
+    onSuccess: (p, change) => {
+      setConfirmDeactivate(false)
+      queryClient.setQueryData(['patient', id], p)
+      queryClient.invalidateQueries({ queryKey: ['patients'] })
+      toast.success(change.active ? t('status.reactivated') : t('status.deactivated'))
+    },
+    onError: (err) => {
+      setConfirmDeactivate(false)
+      const codes = getApiErrorCodes(err)
+      toast.error(codes.has('Patient.HasUpcomingAppointments')
+        ? t('status.upcoming', { count: Number(codes.get('Patient.HasUpcomingAppointments.count') ?? 0) })
+        : getApiErrorMessage(err, t('status.failed')))
     },
   })
 
@@ -115,7 +146,7 @@ export function PatientDetailPage() {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{patient.fullName}</h1>
             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[patient.status]}`}>
-              {patient.status}
+              {tc(`status.${patient.status.toLowerCase()}`)}
             </span>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-mono">{patient.patientNumber}</p>
@@ -128,22 +159,59 @@ export function PatientDetailPage() {
           )}
         </div>
         <div className="flex gap-2">
+          {canManage && (
+            <button
+              onClick={() => setShowBook(true)}
+              className="inline-flex items-center gap-1.5 bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700"
+            >
+              <CalendarPlus size={16} aria-hidden="true" />
+              {t('button.bookAppointment')}
+            </button>
+          )}
           <button
             onClick={() => setShowEdit(true)}
-            className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700"
+            className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             {tc('button.edit')}
           </button>
+          {canManage && patient.status !== 'Inactive' && (
+            <button
+              onClick={() => setConfirmDeactivate(true)}
+              className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              {t('status.deactivate')}
+            </button>
+          )}
           {canManage && (
             <button
               onClick={() => setConfirmDelete(true)}
-              className="border border-red-200 text-red-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-red-50 dark:border-red-400/30 dark:hover:bg-red-400/10 dark:text-red-300"
+              className="text-red-600 px-2 py-2 rounded-md text-xs font-medium hover:bg-red-50 dark:hover:bg-red-400/10 dark:text-red-300"
             >
-              {tc('button.delete')}
+              {t('status.deleteDuplicate')}
             </button>
           )}
         </div>
       </div>
+
+      {patient.status === 'Inactive' && (
+        <div role="status" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200">
+          <span>
+            {patient.deactivatedAt
+              ? t('status.inactiveSince', { date: formatDate(patient.deactivatedAt) })
+              : t('status.inactiveBanner')}
+            {patient.deactivationReason && <> — {patient.deactivationReason}</>}
+          </span>
+          {canManage && (
+            <button
+              onClick={() => statusMutation.mutate({ active: true })}
+              disabled={statusMutation.isPending}
+              className="border border-amber-300 dark:border-amber-400/40 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-amber-100 dark:hover:bg-amber-400/20 disabled:opacity-50"
+            >
+              {t('status.reactivate')}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Tabs */}
       <div role="tablist" aria-label={patient.fullName} className="flex gap-1 border-b border-gray-200 dark:border-gray-700 mb-4">
@@ -240,6 +308,18 @@ export function PatientDetailPage() {
       {showEdit && (
         <EditPatientDrawer patient={patient} onClose={() => setShowEdit(false)} />
       )}
+      {showBook && (
+        <BookAppointmentDrawer
+          onClose={() => setShowBook(false)}
+          initialPatient={{
+            id: patient.id,
+            patientNumber: patient.patientNumber,
+            fullName: patient.fullName,
+            phoneMobile: patient.phoneMobile ?? null,
+            email: patient.email ?? null,
+          }}
+        />
+      )}
 
       {selectedAppt && (
         <AppointmentDetailPanel
@@ -254,11 +334,21 @@ export function PatientDetailPage() {
         <RescheduleModal appointment={rescheduling} onClose={() => setRescheduling(null)} />
       )}
 
+      {confirmDeactivate && (
+        <DeactivatePatientDialog
+          name={patient.fullName}
+          isPending={statusMutation.isPending}
+          onConfirm={(reason) => statusMutation.mutate({ active: false, reason })}
+          onCancel={() => setConfirmDeactivate(false)}
+        />
+      )}
+
       <ConfirmDialog
         open={confirmDelete}
-        title={t('confirm.deleteTitle')}
-        description={<><strong>{patient.fullName}</strong> {t('confirm.deleteDescription', { name: '' })}</>}
-        confirmLabel={tc('button.delete')}
+        title={t('status.deleteDuplicateTitle')}
+        description={<><strong>{patient.fullName}</strong> {t('status.deleteDuplicateBody')}</>}
+        confirmLabel={t('status.deleteDuplicate')}
+        cancelLabel={tc('button.cancel')}
         isPending={deleteMutation.isPending}
         onConfirm={() => deleteMutation.mutate()}
         onCancel={() => setConfirmDelete(false)}
@@ -277,6 +367,7 @@ function AppointmentHistoryTab({
   onSelect: (a: AppointmentResponse) => void
 }) {
   const { t } = useTranslation('patients')
+  const statusLabels = useAppointmentStatusLabels()
   const { t: tc } = useTranslation('common')
   if (appointments.length === 0) {
     return (
@@ -315,7 +406,7 @@ function AppointmentHistoryTab({
             </div>
             <div className="flex items-center gap-3">
               <span className="text-xs text-gray-500 dark:text-gray-400">{a.durationMinutes} min</span>
-              <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={APPOINTMENT_STATUS_LABELS} />
+              <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={statusLabels} />
             </div>
           </li>
         ))}
@@ -480,7 +571,7 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
                   </div>
                 </div>
                 {canManage && (
-                  <button onClick={() => deleteContactMutation.mutate(c.id)} className="text-gray-500 hover:text-red-500 transition-colors dark:text-gray-400">
+                  <button onClick={() => deleteContactMutation.mutate(c.id)} aria-label={t('medical.removeContact', { name: c.name })} title={t('medical.removeContact', { name: c.name })} className="text-gray-500 hover:text-red-500 transition-colors dark:text-gray-400">
                     <Trash2 size={14} />
                   </button>
                 )}

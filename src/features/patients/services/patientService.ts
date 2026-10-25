@@ -36,6 +36,9 @@ export interface PatientResponse {
   notes: string | null
   createdAt: string
   updatedAt: string | null
+  /** Set while the patient is Inactive (people-merge plan D8). */
+  deactivatedAt?: string | null
+  deactivationReason?: string | null
 }
 
 export interface PagedResult<T> {
@@ -186,7 +189,8 @@ export const patientService = {
 
   list: (params?: {
     search?: string
-    status?: PatientStatus
+    /** The API lists Active patients unless asked otherwise; 'all' lifts the filter. */
+    status?: PatientStatus | 'all'
     recallFilter?: 'overdue' | 'due-soon'
     page?: number
     pageSize?: number
@@ -210,9 +214,21 @@ export const patientService = {
       .put<PatientResponse>(`/api/v1/patients/${id}`, body)
       .then((r) => r.data),
 
+  /** Only a duplicate without history; anything else answers 409 Patient.HasHistory (D9). */
   delete: (id: string) =>
     apiClient
       .delete(`/api/v1/patients/${id}`)
+      .then((r) => r.data),
+
+  /** Instead of deleting (D8); 409 Patient.HasUpcomingAppointments while visits are ahead. */
+  deactivate: (id: string, reason?: string) =>
+    apiClient
+      .post<PatientResponse>(`/api/v1/patients/${id}/deactivate`, { reason: reason?.trim() || null })
+      .then((r) => r.data),
+
+  reactivate: (id: string) =>
+    apiClient
+      .post<PatientResponse>(`/api/v1/patients/${id}/reactivate`)
       .then((r) => r.data),
 
   // Emergency contacts

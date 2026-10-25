@@ -9,15 +9,6 @@ export type AppointmentStatus =
   | 'Cancelled'
   | 'NoShow';
 
-export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
-  Scheduled:  'Scheduled',
-  CheckedIn:  'Checked In',
-  InProgress: 'In Progress',
-  Completed:  'Completed',
-  Cancelled:  'Cancelled',
-  NoShow:     'No Show',
-};
-
 export const STATUS_COLORS: Record<AppointmentStatus, string> = {
   Scheduled:  'bg-blue-100 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300',
   CheckedIn:  'bg-yellow-100 text-yellow-700 dark:bg-yellow-400/10 dark:text-yellow-300',

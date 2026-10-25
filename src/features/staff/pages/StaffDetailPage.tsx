@@ -1,12 +1,17 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useParams, useSearchParams, Link } from 'react-router'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
 import { staffService, STAFF_TYPE_LABELS } from '../services/staffService'
 import { EditStaffDrawer } from '../components/EditStaffDrawer'
 import { StaffBlockedTimesTab } from '../components/StaffBlockedTimesTab'
+import { StaffAccessSection } from '../components/StaffAccessSection'
+import { peopleErrorMessage } from '../lib/peopleErrors'
+import { useConfirm } from '@/shared/components/ConfirmDialog'
 import { formatDate } from '@/shared/lib/format'
+import { can } from '@/shared/lib/permissions'
 
 type Tab = 'overview' | 'absence'
 
@@ -37,16 +42,31 @@ export function StaffDetailPage() {
   const { t: tc } = useTranslation('common')
   const { id } = useParams<{ id: string }>()
   const [showEdit, setShowEdit] = useState(false)
-  const [tab, setTab] = useState<Tab>('overview')
+  // ?tab=absence opens the absences straight away (the dashboard's "who is away" links there)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab: Tab = searchParams.get('tab') === 'absence' ? 'absence' : 'overview'
+  const setTab = (v: Tab) => setSearchParams(v === 'overview' ? {} : { tab: v }, { replace: true })
 
-  const canManage = useAuthStore((s) =>
-    s.user?.roles?.some((r) => ['ClinicOwner', 'ClinicAdmin', 'SuperAdmin'].includes(r)) ?? false
-  )
+  const canManage = can(useAuthStore(selectRoles), 'people.manage')
+  const queryClient = useQueryClient()
+  const confirm = useConfirm()
 
   const { data: staff, isLoading, error } = useQuery({
     queryKey: ['staff', id],
     queryFn: () => staffService.getById(id!),
     enabled: !!id,
+  })
+
+  // People-merge plan B6/B7: deactivate instead of delete; the API refuses while
+  // appointments are ahead and keeps the sign-in off on reactivation.
+  const setActive = useMutation({
+    mutationFn: (active: boolean) => (active ? staffService.reactivate(id!) : staffService.deactivate(id!)),
+    onSuccess: (s, active) => {
+      toast.success(active ? t('status.reactivated', { name: s.fullName }) : t('status.deactivated', { name: s.fullName }))
+      queryClient.invalidateQueries({ queryKey: ['staff'] })
+      queryClient.invalidateQueries({ queryKey: ['staff-all-active'] })
+    },
+    onError: (err) => toast.error(peopleErrorMessage(err, t, staff?.fullName ?? '')),
   })
 
   if (isLoading) {
@@ -102,12 +122,37 @@ export function StaffDetailPage() {
           </div>
         </div>
         {canManage && (
-          <button
-            onClick={() => setShowEdit(true)}
-            className="px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-          >
-            {tc('button.edit')}
-          </button>
+          <div className="flex gap-2">
+            {staff.isActive ? (
+              <button
+                onClick={() => confirm.ask({
+                  title: t('status.deactivateTitle', { name: staff.fullName }),
+                  description: t('status.deactivateBody'),
+                  confirmLabel: t('status.deactivate'),
+                  cancelLabel: tc('button.cancel'),
+                  onConfirm: () => setActive.mutate(false),
+                })}
+                disabled={setActive.isPending}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+              >
+                {t('status.deactivate')}
+              </button>
+            ) : (
+              <button
+                onClick={() => setActive.mutate(true)}
+                disabled={setActive.isPending}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+              >
+                {t('status.reactivate')}
+              </button>
+            )}
+            <button
+              onClick={() => setShowEdit(true)}
+              className="px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+            >
+              {tc('button.edit')}
+            </button>
+          </div>
         )}
       </div>
 
@@ -131,6 +176,8 @@ export function StaffDetailPage() {
       {/* Tab content */}
       {tab === 'overview' && (
         <div className="space-y-4">
+          <StaffAccessSection staff={staff} />
+
           <Section title={t('section.contact')}>
             <Field label={t('field.email')} value={staff.email} />
             <Field label={t('field.phone')} value={staff.phone} />
@@ -161,6 +208,8 @@ export function StaffDetailPage() {
       )}
 
       {tab === 'absence' && <StaffBlockedTimesTab staffId={id!} />}
+
+      {confirm.dialog}
 
       {showEdit && (
         <EditStaffDrawer staff={staff} onClose={() => setShowEdit(false)} />

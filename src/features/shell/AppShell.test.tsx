@@ -28,15 +28,11 @@ function renderAs(role: string) {
 describe('AppShell navigation', () => {
   afterEach(() => useAuthStore.getState().clearAuth())
 
-  // QA-022: the Team page was reachable only by typing its URL
-  it('links the Team page for clinic owners and admins', () => {
-    renderAs('ClinicOwner')
-    expect(screen.getByRole('link', { name: 'Team' })).toHaveAttribute('href', '/settings/users')
-  })
-
-  it('does not link it for other roles', () => {
-    renderAs('Receptionist')
+  // People-merge plan 4.5 (D5): Team merged into Staff — one list of people
+  it.each(['ClinicOwner', 'Dentist', 'DentalNurse', 'Receptionist'])('has no Team link for %s', (role) => {
+    renderAs(role)
     expect(screen.queryByRole('link', { name: 'Team' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Staff' })).toHaveAttribute('href', '/staff')
   })
 
   // QA-021: the saved preference said Light while the app was dark (clock / local toggle won)
@@ -60,5 +56,22 @@ describe('AppShell navigation', () => {
   it('names the language switcher', () => {
     renderAs('ClinicOwner')
     expect(screen.getByRole('button', { name: /language/i })).toBeInTheDocument()
+  })
+
+})
+
+describe('AppShell finance link', () => {
+  afterEach(() => useAuthStore.getState().clearAuth())
+
+  // Finance (revenue, ledger, cash-up, debtors) is clinic-level money: finance.view only
+  it('links Finance for the owner', () => {
+    renderAs('ClinicOwner')
+    expect(screen.getByRole('link', { name: 'Finance' })).toHaveAttribute('href', '/finance')
+  })
+
+  it('does not link Finance for a receptionist', () => {
+    renderAs('Receptionist')
+    expect(screen.queryByRole('link', { name: 'Finance' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Billing' })).not.toBeInTheDocument()
   })
 })

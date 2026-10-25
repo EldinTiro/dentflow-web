@@ -1,0 +1,83 @@
+{
+  "title": "Finanzen",
+  "tab": {
+    "overview": "Übersicht",
+    "invoices": "Rechnungen",
+    "cashUp": "Tagesabschluss",
+    "debtors": "Schuldner"
+  },
+  "months": [
+    "Jan",
+    "Feb",
+    "Mär",
+    "Apr",
+    "Mai",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Okt",
+    "Nov",
+    "Dez"
+  ],
+  "period": {
+    "previousMonth": "Vorheriger Monat",
+    "nextMonth": "Nächster Monat",
+    "previousDay": "Vorheriger Tag",
+    "nextDay": "Nächster Tag",
+    "today": "Heute",
+    "date": "Datum"
+  },
+  "kpi": {
+    "collected": "Eingenommen",
+    "invoiced": "Fakturiert",
+    "outstanding": "Offen",
+    "overdue": "Überfällig",
+    "vsPrevious": "vs. {{month}}",
+    "noComparison": "Kein Vergleich für {{month}}",
+    "patients_one": "{{count}} Patient",
+    "patients_other": "{{count}} Patienten",
+    "now": "Derzeit offen"
+  },
+  "chart": {
+    "revenueTitle": "Einnahmen pro Monat",
+    "revenueSubtitle": "Letzte 12 Monate",
+    "tableCaption": "Einnahmen pro Monat, letzte 12 Monate",
+    "month": "Monat",
+    "amount": "Betrag"
+  },
+  "methods": {
+    "title": "Bezahlt mit",
+    "empty": "Keine Zahlungen in diesem Monat."
+  },
+  "cashUp": {
+    "total": "Summe des Tages",
+    "payments_one": "{{count}} Zahlung",
+    "payments_other": "{{count}} Zahlungen",
+    "time": "Uhrzeit",
+    "patient": "Patient",
+    "invoice": "Rechnung",
+    "method": "Zahlungsart",
+    "reference": "Referenz",
+    "amount": "Betrag",
+    "empty": "Keine Zahlungen an diesem Tag.",
+    "print": "Drucken"
+  },
+  "debtors": {
+    "total": "Offen gesamt",
+    "patient": "Patient",
+    "phone": "Telefon",
+    "openInvoices": "Offene Rechnungen",
+    "oldest": "Älteste offene",
+    "days_one": "{{count}} Tag",
+    "days_other": "{{count}} Tage",
+    "overdue": "Überfällig",
+    "balance": "Saldo",
+    "empty": "Niemand schuldet der Praxis Geld.",
+    "bucket": {
+      "0-30": "0–30 Tage",
+      "31-60": "31–60 Tage",
+      "60+": "Über 60 Tage"
+    }
+  }
+}

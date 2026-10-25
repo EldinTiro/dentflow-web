@@ -2,14 +2,15 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useSearchParams, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
 import {
   appointmentService,
-  APPOINTMENT_STATUS_LABELS,
   STATUS_COLORS,
   ALL_STATUSES,
   type AppointmentResponse,
   type AppointmentStatus,
 } from '../services/appointmentService';
+import { invalidateAppointmentQueries } from '../services/appointmentQueries';
 import { staffService } from '@/features/staff/services/staffService';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { BookAppointmentDrawer } from '../components/BookAppointmentDrawer';
@@ -19,6 +20,7 @@ import { AppointmentDetailPanel } from '../components/AppointmentDetailPanel';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
 import { Search, X, Download } from 'lucide-react';
 import { toLocalIsoDate } from '@/shared/lib/dates';
+import { isClinicMember } from '@/shared/lib/permissions'
 
 type Tab = 'list' | 'calendar';
 
@@ -70,17 +72,14 @@ function SortBtn({ label, col, sort, onClick }: {
 export function AppointmentsPage() {
   const { t } = useTranslation('appointments')
   const { t: tc } = useTranslation('common')
+  const statusLabels = useAppointmentStatusLabels()
   const roles = useAuthStore(selectRoles);
-  const canManage =
-    roles.includes('ClinicOwner') ||
-    roles.includes('ClinicAdmin') ||
-    roles.includes('Receptionist') ||
-    roles.includes('Dentist') ||
-    roles.includes('Hygienist') ||
-    roles.includes('SuperAdmin');
+  // Every clinic role books and moves appointments (the API also lets the platform admin).
+  const canManage = isClinicMember(roles) || roles.includes('SuperAdmin');
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const tab = (searchParams.get('tab') ?? 'list') as Tab;
+  // The calendar is the default view: clinics plan the day on it. The list keeps ?tab=list.
+  const tab = (searchParams.get('tab') ?? 'calendar') as Tab;
   const statusFilter = (searchParams.get('status') ?? '') as AppointmentStatus | '';
   const dateFrom = searchParams.get('from') ?? toLocalIsoDate(new Date());
   const dateTo = searchParams.get('to') ?? toLocalIsoDate(new Date());
@@ -96,7 +95,7 @@ export function AppointmentsPage() {
       return n;
     }, { replace: true });
 
-  const setTab = (v: Tab) => updateParam('tab', v === 'list' ? null : v, false);
+  const setTab = (v: Tab) => updateParam('tab', v === 'calendar' ? null : v, false);
   const setStatusFilter = (v: AppointmentStatus | '') => updateParam('status', v || null);
   const setDateFrom = (v: string) => updateParam('from', v || null);
   const setDateTo = (v: string) => updateParam('to', v || null);
@@ -180,8 +179,9 @@ export function AppointmentsPage() {
   });
 
   const { data: staffData } = useQuery({
-    queryKey: ['staff', '', '', 1],
-    queryFn: () => staffService.list({ pageSize: 100 }),
+    // Everyone, inactive included: past appointments keep their provider's name (B6).
+    queryKey: ['staff', 'all-for-names'],
+    queryFn: () => staffService.list({ pageSize: 100, isActive: 'all' }),
   });
 
   const providerColors = useMemo(() => {
@@ -218,8 +218,7 @@ export function AppointmentsPage() {
     mutationFn: ({ id, next }: { id: string; next: AppointmentStatus }) =>
       appointmentService.updateStatus(id, next),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
-      queryClient.invalidateQueries({ queryKey: ['appointments-week'] });
+      invalidateAppointmentQueries(queryClient);
     },
   });
 
@@ -431,7 +430,7 @@ export function AppointmentsPage() {
               >
                 <option value="">{t('filter.allStatuses')}</option>
                 {ALL_STATUSES.map((s) => (
-                  <option key={s} value={s}>{APPOINTMENT_STATUS_LABELS[s]}</option>
+                  <option key={s} value={s}>{statusLabels[s]}</option>
                 ))}
               </select>
 
@@ -510,7 +509,7 @@ export function AppointmentsPage() {
                         <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{a.durationMinutes} {tc('unit.min')}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={APPOINTMENT_STATUS_LABELS} />
+                            <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={statusLabels} />
                             {canManage && nextAction && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); quickStatusMutation.mutate({ id: a.id, next: nextAction.next }); }}
@@ -588,6 +587,7 @@ export function AppointmentsPage() {
               patientNames={patientNames}
               appointmentTypeNames={appointmentTypeNames}
               onAppointmentClick={setSelected}
+              onSlotClick={canManage ? (startAt) => { setBookingInitial({ startAt }); setShowBook(true); } : undefined}
             />
           </div>
         </div>
