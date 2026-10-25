@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { login } from '../services/authService'
 import { useAuthStore } from '../store/authStore'
 import { cn } from '@/shared/lib/utils'
-import { getApiErrorMessage } from '@/shared/utils/apiError'
+import { getApiErrorCodes, getApiErrorMessage } from '@/shared/utils/apiError'
 import axios from 'axios'
 
 const loginSchema = z.object({
@@ -40,9 +40,11 @@ export function LoginForm() {
       const roles = useAuthStore.getState().user?.roles ?? []
       navigate(roles.includes('SuperAdmin') ? '/admin' : '/', { replace: true })
     } catch (err) {
+      const status = axios.isAxiosError(err) ? err.response?.status : undefined
+      if (status === 429) setServerError(t('login.tooManyAttempts'))                       // DT-05
+      else if (getApiErrorCodes(err).has('Auth.AccountLocked')) setServerError(t('login.locked')) // DT-05
       // 403 = valid credentials but the clinic is suspended; say so (QA-002).
-      const suspended = axios.isAxiosError(err) && err.response?.status === 403
-      setServerError(suspended ? getApiErrorMessage(err) : t('login.invalidCredentials'))
+      else setServerError(status === 403 ? getApiErrorMessage(err) : t('login.invalidCredentials'))
     }
   }
 

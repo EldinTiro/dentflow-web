@@ -52,4 +52,23 @@ describe('LoginForm', () => {
 
     expect(screen.getByRole('button', { name: 'Show password' })).toHaveFocus()
   })
+
+  // DT-05: login now locks an account after 5 failures and rate-limits attempts
+  it('says the account is locked, in the user language', async () => {
+    vi.mocked(login).mockRejectedValue(fastEndpointsError('Account is locked. Please try again later.', 'auth.AccountLocked', 403))
+    renderWithProviders(<LoginForm />)
+
+    await submit()
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/locked for 15 minutes/i)
+  })
+
+  it('asks to wait after too many attempts', async () => {
+    vi.mocked(login).mockRejectedValue(Object.assign(new Error('429'), { isAxiosError: true, response: { status: 429, data: '' } }))
+    renderWithProviders(<LoginForm />)
+
+    await submit()
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/too many sign-in attempts/i)
+  })
 })
