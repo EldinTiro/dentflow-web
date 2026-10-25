@@ -6,7 +6,8 @@ import {
   CalendarDays, Users, UserCog, Clock, TrendingUp, TrendingDown,
   CheckCircle2, CalendarPlus, UserPlus, DollarSign, Wallet, Bell,
 } from 'lucide-react'
-import { appointmentService, AppointmentStatus, STATUS_COLORS, APPOINTMENT_STATUS_LABELS, type AppointmentResponse } from '@/features/appointments/services/appointmentService'
+import { appointmentService, AppointmentStatus, STATUS_COLORS, type AppointmentResponse } from '@/features/appointments/services/appointmentService'
+import { useAppointmentStatusLabels } from '@/features/appointments/hooks/useAppointmentStatusLabels'
 import { AppointmentDetailPanel } from '@/features/appointments/components/AppointmentDetailPanel'
 import { RescheduleModal } from '@/features/appointments/components/RescheduleModal'
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
@@ -15,6 +16,7 @@ import { patientService } from '@/features/patients/services/patientService'
 import { staffService } from '@/features/staff/services/staffService'
 import { dashboardService } from './dashboardService'
 import { SlotCheckerWidget } from './SlotCheckerWidget'
+import { AbsencesWidget } from './AbsencesWidget'
 import { StatusBadge } from '@/shared/components/StatusBadge'
 import { toLocalIsoDate } from '@/shared/lib/dates'
 
@@ -56,6 +58,7 @@ interface RecentApptRowProps {
 }
 
 function RecentApptRow({ time, status, complaint, duration, patientName, providerName, onOpen }: RecentApptRowProps) {
+  const statusLabels = useAppointmentStatusLabels()
   const rowBg =
     status === 'Completed' ? 'bg-gray-50/80 dark:bg-gray-800/50 opacity-70' :
     status === 'Cancelled' ? 'bg-red-50/60 dark:bg-red-950/20' :
@@ -68,7 +71,7 @@ function RecentApptRow({ time, status, complaint, duration, patientName, provide
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className="text-sm font-medium text-gray-800 dark:text-gray-200 shrink-0">{time}</div>
-        <StatusBadge status={status} colorMap={STATUS_COLORS} labelMap={APPOINTMENT_STATUS_LABELS} className="shrink-0" />
+        <StatusBadge status={status} colorMap={STATUS_COLORS} labelMap={statusLabels} className="shrink-0" />
         {patientName && (
           <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{patientName}</span>
         )}
@@ -453,6 +456,9 @@ export function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Who is away today and in the next two weeks */}
+      <AbsencesWidget />
 
       {/* Quick slot availability check */}
       <SlotCheckerWidget />

@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { AppointmentResponse, AppointmentStatus } from '../services/appointmentService';
-import { APPOINTMENT_STATUS_LABELS } from '../services/appointmentService';
+import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
 import { useTheme } from '@/shared/context/ThemeContext';
 
 interface Props {
@@ -22,11 +22,16 @@ const DEFAULT_HOUR_END   = 21; // 21:00
 
 /**
  * Hours the grid shows: 06:00–21:00, stretched to fit anything booked earlier or
- * later. A fixed 06:00 start hid a 00:30 booking entirely (QA-029).
+ * later. A fixed 06:00 start hid a 00:30 booking entirely (QA-029). Pass `now` on
+ * the current week so the current-time line always has a place on the grid.
  */
-export function calendarHourRange(appointments: { startAt: string; endAt: string }[]) {
+export function calendarHourRange(appointments: { startAt: string; endAt: string }[], now?: Date) {
   let start = DEFAULT_HOUR_START;
   let end = DEFAULT_HOUR_END;
+  if (now) {
+    start = Math.min(start, now.getHours());
+    end = Math.max(end, now.getHours() + 1);
+  }
   for (const a of appointments) {
     start = Math.min(start, new Date(a.startAt).getHours());
     const e = new Date(a.endAt);
@@ -85,11 +90,22 @@ function layoutDay(appts: AppointmentResponse[]): Map<string, { col: number; col
 }
 
 const HOUR_PX = 56;
+
+/** The current time, refreshed every minute so the now-line keeps moving. */
+function useNow(intervalMs = 60_000) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return now;
+}
 const SLOT_MINUTES = 30;
 
 export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick }: Props) {
   const [tooltip, setTooltip] = useState<TooltipState>(null);
   const { theme } = useTheme();
+  const statusLabels = useAppointmentStatusLabels();
   const isDark = theme === 'dark';
 
   const days = useMemo(
@@ -107,10 +123,20 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
     return map;
   }, [appointments]);
 
-  const { start: HOUR_START, end: HOUR_END } = useMemo(() => calendarHourRange(appointments), [appointments]);
+  const now = useNow();
+  const todayStr = isoDate(now);
+  const showsToday = days.some((d) => isoDate(d) === todayStr);
+  const nowHour = showsToday ? now.getHours() : null;
+
+  const { start: HOUR_START, end: HOUR_END } = useMemo(
+    () => calendarHourRange(appointments, nowHour === null ? undefined : new Date(2000, 0, 1, nowHour)),
+    [appointments, nowHour],
+  );
   const HOURS = HOUR_END - HOUR_START;
   const totalMinutes = HOURS * 60;
-  const todayStr = isoDate(new Date());
+  // Where "now" falls in the grid, or null when the grid does not show this hour
+  const nowOffsetMin = now.getHours() * 60 + now.getMinutes() - HOUR_START * 60;
+  const nowTopPct = nowOffsetMin >= 0 && nowOffsetMin < totalMinutes ? (nowOffsetMin / totalMinutes) * 100 : null;
 
   // Opacity suffix for chip background: more opaque in dark mode for visibility
   const chipBgOpacity = isDark ? '55' : '28';
@@ -194,6 +220,18 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                     />
                   ))}
 
+                  {/* Current time, like Google Calendar: a red line with a dot on today's column */}
+                  {isToday && nowTopPct !== null && (
+                    <div
+                      data-testid="now-line"
+                      aria-hidden
+                      className="pointer-events-none absolute inset-x-0 z-20 h-0.5 -translate-y-1/2 bg-red-500 dark:bg-red-400"
+                      style={{ top: `${nowTopPct}%` }}
+                    >
+                      <span className="absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-red-500 dark:bg-red-400" />
+                    </div>
+                  )}
+
                   {/* Appointment chips */}
                   {dayAppts.map((appt) => {
                     const startMin = minutesSinceDayStart(appt.startAt);
@@ -209,7 +247,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
 
                     const patientName = patientNames[appt.patientId];
                     const typeName = appointmentTypeNames[appt.appointmentTypeId];
-                    const chipLabel = [patientName, typeName].filter(Boolean).join(' · ') || APPOINTMENT_STATUS_LABELS[appt.status as AppointmentStatus];
+                    const chipLabel = [patientName, typeName].filter(Boolean).join(' · ') || statusLabels[appt.status as AppointmentStatus];
 
                     return (
                       <button
@@ -274,7 +312,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
               className="mt-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium"
               style={{ backgroundColor: color + '33', color }}
             >
-              {APPOINTMENT_STATUS_LABELS[a.status as AppointmentStatus] ?? a.status}
+              {statusLabels[a.status as AppointmentStatus] ?? a.status}
             </span>
           </div>
         );

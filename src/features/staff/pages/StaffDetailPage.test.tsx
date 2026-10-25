@@ -203,3 +203,21 @@ describe('StaffDetailPage — deactivate instead of delete (people-merge plan B7
     expect(screen.queryByRole('button', { name: /deactivate|reactivate/i })).not.toBeInTheDocument()
   })
 })
+
+describe('StaffDetailPage — tab from the URL', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+  afterEach(() => useAuthStore.getState().clearAuth())
+
+  // The dashboard's "who is away" links straight to the person's absences
+  it('opens the absence tab for ?tab=absence', async () => {
+    signIn(['Receptionist'])
+    svc.getById.mockResolvedValue(staff())
+    renderWithProviders(
+      <Routes><Route path="/staff/:id" element={<StaffDetailPage />} /></Routes>,
+      { route: '/staff/s1?tab=absence' },
+    )
+
+    expect(await screen.findByText('Show past absences')).toBeInTheDocument()
+    expect(svc.listBlockedTimes).toHaveBeenCalled()
+  })
+})

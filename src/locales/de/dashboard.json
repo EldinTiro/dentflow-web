@@ -49,10 +49,21 @@
     "allProviders": "Alle Ärzte",
     "freeCount": "{{count}} frei",
     "bookedCount": "{{count}} gebucht",
+    "partialCount": "{{count}} teilweise belegt",
+    "partialTooltip": "Belegt: {{busy}} · frei: {{free}}",
     "bookedTooltip": "Gebucht",
     "freeTooltip": "Frei – klicken zum Buchen",
-    "footer": "{{startHour}}:00 – {{endHour}} · 30-Min-Slots · Klicken Sie auf einen freien Slot zum Buchen",
+    "footer": "{{startHour}} – {{endHour}} · {{minutes}}-Min-Slots · Klicken Sie auf einen freien Slot zum Buchen",
     "previousDay": "Vorheriger Tag",
     "nextDay": "Nächster Tag"
+  },
+  "absences": {
+    "title": "Abwesenheiten",
+    "subtitle": "nächste zwei Wochen",
+    "today": "Heute abwesend",
+    "empty": "In den nächsten zwei Wochen ist niemand abwesend.",
+    "tomorrow": "morgen",
+    "inDays_one": "in {{count}} Tag",
+    "inDays_other": "in {{count}} Tagen"
   }
 }

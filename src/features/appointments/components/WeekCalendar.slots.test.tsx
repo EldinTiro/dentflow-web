@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, fireEvent, screen } from '@testing-library/react'
 import { appointmentFixture } from '@/test/fixtures/appointment'
 import { WeekCalendar } from './WeekCalendar'
@@ -20,6 +20,10 @@ function dayColumn(container: HTMLElement, date: string) {
 }
 
 describe('WeekCalendar click-to-book', () => {
+  // The grid stretches to the current hour on the current week; pin a daytime clock
+  beforeEach(() => { vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 9, 22, 10, 0)) })
+  afterEach(() => { vi.useRealTimers() })
+
   // UX Phase A: empty time on the calendar did nothing; booking needed a detour
   // through "+ Book Appointment" and retyping the date and time
   it('books the half hour that was clicked', () => {

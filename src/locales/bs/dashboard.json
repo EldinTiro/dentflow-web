@@ -49,10 +49,22 @@
     "allProviders": "Svi doktori",
     "freeCount": "{{count}} slobodno",
     "bookedCount": "{{count}} zauzeto",
+    "partialCount": "{{count}} djelimično",
+    "partialTooltip": "Zauzeto: {{busy}} · slobodno: {{free}}",
     "bookedTooltip": "Zauzeto",
     "freeTooltip": "Slobodno – klikni za zakazivanje",
-    "footer": "{{startHour}}:00 – {{endHour}} · Termini od 30 min · Klikni slobodan termin za zakazivanje",
+    "footer": "{{startHour}} – {{endHour}} · Termini od {{minutes}} min · Klikni slobodan termin za zakazivanje",
     "previousDay": "Prethodni dan",
     "nextDay": "Sljedeći dan"
+  },
+  "absences": {
+    "title": "Odsutni",
+    "subtitle": "naredne dvije sedmice",
+    "today": "Danas odsutan/na",
+    "empty": "Niko nije odsutan u naredne dvije sedmice.",
+    "tomorrow": "sutra",
+    "inDays_one": "za {{count}} dan",
+    "inDays_few": "za {{count}} dana",
+    "inDays_other": "za {{count}} dana"
   }
 }

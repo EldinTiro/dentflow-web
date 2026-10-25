@@ -262,6 +262,13 @@ export const staffService = {
       .then((r) => r.data);
   },
 
+  /** Every absence in the clinic overlapping [from, to] — UTC instants of local day boundaries. */
+  listClinicAbsences(params: { from: string; to: string }) {
+    return apiClient
+      .get<StaffBlockedTimeResponse[]>(`${BASE}/blocked-times`, { params })
+      .then((r) => r.data);
+  },
+
   addBlockedTime(staffId: string, body: AddBlockedTimeRequest) {
     return apiClient
       .post<StaffBlockedTimeResponse>(`${BASE}/${staffId}/blocked-times`, body)

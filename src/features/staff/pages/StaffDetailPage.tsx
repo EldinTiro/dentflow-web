@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router'
+import { useParams, useSearchParams, Link } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
@@ -42,7 +42,10 @@ export function StaffDetailPage() {
   const { t: tc } = useTranslation('common')
   const { id } = useParams<{ id: string }>()
   const [showEdit, setShowEdit] = useState(false)
-  const [tab, setTab] = useState<Tab>('overview')
+  // ?tab=absence opens the absences straight away (the dashboard's "who is away" links there)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab: Tab = searchParams.get('tab') === 'absence' ? 'absence' : 'overview'
+  const setTab = (v: Tab) => setSearchParams(v === 'overview' ? {} : { tab: v }, { replace: true })
 
   const canManage = can(useAuthStore(selectRoles), 'people.manage')
   const queryClient = useQueryClient()

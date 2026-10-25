@@ -6,7 +6,7 @@ import { CalendarSearch, ChevronLeft, ChevronRight } from 'lucide-react'
 import { appointmentService } from '@/features/appointments/services/appointmentService'
 import { staffService } from '@/features/staff/services/staffService'
 import { tenantService } from '@/features/admin/services/tenantService'
-import { daySchedule as scheduleFor, busySlotLabels as computeBusySlots } from '@/shared/lib/clinicSchedule'
+import { daySchedule as scheduleFor, slotOccupancy } from '@/shared/lib/clinicSchedule'
 import { formatTime } from '@/shared/lib/format'
 
 interface TimeSlot {
@@ -95,17 +95,26 @@ export function SlotCheckerWidget() {
     staleTime: 30 * 1000,
   })
 
-  // "All providers": a slot is only taken when every provider is booked in it.
-  const busySlotLabels = useMemo(
-    () => computeBusySlots(
-      appointments?.items ?? [], allSlots, date, slotDuration,
-      providerId === 'all' ? providers.map((p) => p.id) : [providerId],
-    ),
-    [appointments, allSlots, date, slotDuration, providerId, providers],
+  // Who is busy in each slot. "All providers": a slot is free while anyone is free,
+  // partly booked when some doctors are busy, and booked only when all of them are.
+  const scope = useMemo(
+    () => (providerId === 'all' ? providers.map((p) => p.id) : [providerId]),
+    [providerId, providers],
   )
+  const occupancy = useMemo(
+    () => slotOccupancy(appointments?.items ?? [], allSlots, date, slotDuration, scope),
+    [appointments, allSlots, date, slotDuration, scope],
+  )
+  const nameOf = (id: string) => providers.find((p) => p.id === id)?.fullName ?? id
+  const stateOf = (label: string): 'free' | 'partial' | 'booked' => {
+    const busy = occupancy.get(label)?.length ?? 0
+    if (scope.length === 0 || busy === 0) return 'free'
+    return busy === scope.length ? 'booked' : 'partial'
+  }
 
-  const freeCount   = allSlots.length - busySlotLabels.size
-  const bookedCount = busySlotLabels.size
+  const freeCount    = allSlots.filter((s) => stateOf(s.label) === 'free').length
+  const partialCount = allSlots.filter((s) => stateOf(s.label) === 'partial').length
+  const bookedCount  = allSlots.filter((s) => stateOf(s.label) === 'booked').length
   const isToday     = date === toLocalDate(new Date())
 
   return (
@@ -172,6 +181,12 @@ export function SlotCheckerWidget() {
 
         <span className="text-xs text-gray-500 dark:text-gray-400">
           <span className="font-semibold text-green-700 dark:text-green-400">{t('slotChecker.freeCount', { count: freeCount })}</span>
+          {providerId === 'all' && (
+            <>
+              {' · '}
+              <span className="font-semibold text-amber-700 dark:text-amber-300">{t('slotChecker.partialCount', { count: partialCount })}</span>
+            </>
+          )}
           {' · '}
           <span className="font-semibold text-gray-600 dark:text-gray-300">{t('slotChecker.bookedCount', { count: bookedCount })}</span>
         </span>
@@ -185,16 +200,37 @@ export function SlotCheckerWidget() {
       ) : (
       <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-1.5">
         {allSlots.map(slot => {
-          const busy = busySlotLabels.has(slot.label)
-          if (busy) {
+          const state = stateOf(slot.label)
+          if (state === 'booked') {
             return (
               <div
                 key={slot.label}
+                data-state="booked"
                 title={t('slotChecker.bookedTooltip')}
                 className="rounded-md py-1.5 text-center text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-100 dark:border-red-800/30 select-none cursor-default"
               >
                 {slot.label}
               </div>
+            )
+          }
+          if (state === 'partial') {
+            const busy = occupancy.get(slot.label) ?? []
+            const free = scope.filter((id) => !busy.includes(id))
+            // Exactly one doctor free: book straight with them.
+            const onlyFree = free.length === 1 ? free[0] : undefined
+            return (
+              <Link
+                key={slot.label}
+                to="/appointments"
+                state={{ openCreate: true, date, startTime: slot.label, providerId: onlyFree }}
+                data-state="partial"
+                data-free-provider={onlyFree}
+                title={t('slotChecker.partialTooltip', { busy: busy.map(nameOf).join(', '), free: free.map(nameOf).join(', ') })}
+                className="rounded-md py-1.5 text-center text-xs font-medium bg-amber-50 dark:bg-amber-400/10 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-400/30 hover:bg-amber-100 dark:hover:bg-amber-400/20 transition-colors"
+              >
+                {slot.label}
+                <span className="ml-1 text-[10px] font-semibold opacity-80">{busy.length}/{scope.length}</span>
+              </Link>
             )
           }
           return (
@@ -207,6 +243,7 @@ export function SlotCheckerWidget() {
                 startTime: slot.label,
                 providerId: providerId !== 'all' ? providerId : undefined,
               }}
+              data-state="free"
               title={t('slotChecker.freeTooltip')}
               className="rounded-md py-1.5 text-center text-xs font-medium bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/40 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
             >
@@ -221,6 +258,7 @@ export function SlotCheckerWidget() {
         {t('slotChecker.footer', {
           startHour: formatTime(workdayStart),
           endHour:   formatTime(allSlots.length > 0 ? allSlots[allSlots.length - 1].label : workdayEnd),
+          minutes:   slotDuration,
         })}
       </p>
     </div>

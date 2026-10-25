@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { DEFAULT_WEEKLY_SCHEDULE, daySchedule, busySlotLabels, nextBookableStart } from './clinicSchedule'
+import { DEFAULT_WEEKLY_SCHEDULE, daySchedule, busySlotLabels, slotOccupancy, nextBookableStart } from './clinicSchedule'
 
 describe('daySchedule', () => {
   // QA-018: Settings showed Mon–Fri 08–17 (an unsaved default) while the slot check used 08:00–22:30
@@ -53,5 +53,28 @@ describe('nextBookableStart', () => {
 
   it('skips to the next open day after closing time and over the weekend', () => {
     expect(nextBookableStart(at('2026-10-23T17:30:00'), null)).toBe('2026-10-26T08:00') // Fri evening → Mon
+  })
+})
+
+describe('slotOccupancy', () => {
+  const slots = [{ label: '09:00' }, { label: '09:30' }, { label: '10:00' }]
+  const appt = (providerId: string, start: string, end: string, status = 'Scheduled') =>
+    ({ providerId, startAt: `2026-10-26T${start}:00`, endAt: `2026-10-26T${end}:00`, status })
+
+  // "All providers" hid that a doctor was busy unless every doctor was (user report)
+  it('lists which of the given providers are busy in each slot', () => {
+    const occupancy = slotOccupancy(
+      [appt('p1', '09:00', '10:00'), appt('p2', '09:30', '10:00'), appt('p3', '09:00', '09:30')],
+      slots, '2026-10-26', 30, ['p1', 'p2'],
+    )
+
+    expect(occupancy.get('09:00')).toEqual(['p1'])
+    expect(occupancy.get('09:30')).toEqual(['p1', 'p2'])
+    expect(occupancy.get('10:00')).toEqual([])
+  })
+
+  it('ignores cancelled visits', () => {
+    const occupancy = slotOccupancy([appt('p1', '09:00', '09:30', 'Cancelled')], slots, '2026-10-26', 30, ['p1'])
+    expect(occupancy.get('09:00')).toEqual([])
   })
 })

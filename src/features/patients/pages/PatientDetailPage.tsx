@@ -7,9 +7,9 @@ import { patientService, type PatientStatus, type AddEmergencyContactRequest, ty
 import { EditPatientDrawer } from '../components/EditPatientDrawer'
 import {
   appointmentService,
-  APPOINTMENT_STATUS_LABELS,
   STATUS_COLORS,
 } from '@/features/appointments/services/appointmentService'
+import { useAppointmentStatusLabels } from '@/features/appointments/hooks/useAppointmentStatusLabels'
 import { AppointmentDetailPanel } from '@/features/appointments/components/AppointmentDetailPanel'
 import { BookAppointmentDrawer } from '@/features/appointments/components/BookAppointmentDrawer'
 import { RescheduleModal } from '@/features/appointments/components/RescheduleModal'
@@ -367,6 +367,7 @@ function AppointmentHistoryTab({
   onSelect: (a: AppointmentResponse) => void
 }) {
   const { t } = useTranslation('patients')
+  const statusLabels = useAppointmentStatusLabels()
   const { t: tc } = useTranslation('common')
   if (appointments.length === 0) {
     return (
@@ -405,7 +406,7 @@ function AppointmentHistoryTab({
             </div>
             <div className="flex items-center gap-3">
               <span className="text-xs text-gray-500 dark:text-gray-400">{a.durationMinutes} min</span>
-              <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={APPOINTMENT_STATUS_LABELS} />
+              <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={statusLabels} />
             </div>
           </li>
         ))}

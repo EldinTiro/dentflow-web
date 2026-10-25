@@ -49,10 +49,21 @@
     "allProviders": "All providers",
     "freeCount": "{{count}} free",
     "bookedCount": "{{count}} booked",
+    "partialCount": "{{count}} partly booked",
+    "partialTooltip": "Booked: {{busy}} · free: {{free}}",
     "bookedTooltip": "Booked",
     "freeTooltip": "Free – click to book",
-    "footer": "{{startHour}}:00 – {{endHour}} · 30-min slots · Click a free slot to open the booking form",
+    "footer": "{{startHour}} – {{endHour}} · {{minutes}}-min slots · Click a free slot to open the booking form",
     "previousDay": "Previous day",
     "nextDay": "Next day"
+  },
+  "absences": {
+    "title": "Who is away",
+    "subtitle": "next two weeks",
+    "today": "Away today",
+    "empty": "Nobody is away in the next two weeks.",
+    "tomorrow": "tomorrow",
+    "inDays_one": "in {{count}} day",
+    "inDays_other": "in {{count}} days"
   }
 }
