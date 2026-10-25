@@ -13,7 +13,8 @@ import { tenantService } from '@/features/admin/services/tenantService'
 import type { WeeklySchedule, NotificationConfig } from '@/features/admin/services/tenantService'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { passwordSchema, type PasswordForm } from '../lib/passwordSchema'
-import { DEFAULT_WEEKLY_SCHEDULE } from '@/shared/lib/clinicSchedule'
+import { DEFAULT_WEEKLY_SCHEDULE, invalidOpeningDays } from '@/shared/lib/clinicSchedule'
+import { getApiErrorMessage } from '@/shared/utils/apiError'
 import { EditNameForm } from '../components/EditNameForm'
 
 // ── Schemas ────────────────────────────────────────────────────────────────
@@ -152,6 +153,9 @@ export function ProfilePage() {
     setLocalSchedule(prev => ({ ...prev, [day]: { ...prev[day], ...patch } }))
   }
 
+  // DT-13: an end before the start is shown on the row and blocks saving (the API agrees).
+  const badDays = invalidOpeningDays(localSchedule)
+
   const saveClinicSettings = useMutation({
     mutationFn: () => tenantService.updateSettings({
       slotDurationMinutes: Number(localDuration),
@@ -161,7 +165,7 @@ export function ProfilePage() {
       queryClient.setQueryData(['clinic-settings'], updated)
       toast.success(t('profile.clinicSettings.hoursSaved'))
     },
-    onError: () => toast.error(t('profile.clinicSettings.hoursFailed')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('profile.clinicSettings.hoursFailed'))),
   })
 
   // ── Notification config ───────────────────────────────────────────────────
@@ -608,6 +612,9 @@ export function ProfilePage() {
                     ? <span className="text-xs text-gray-500 dark:text-gray-400">{t('profile.clinicSettings.closed')}</span>
                     : <span />
                   }
+                  {badDays.includes(day) && (
+                    <p role="alert" className="col-span-4 text-xs text-red-600 dark:text-red-400">{t('profile.clinicSettings.endBeforeStart')}</p>
+                  )}
                 </div>
               )
             })}
@@ -631,7 +638,7 @@ export function ProfilePage() {
             <button
               type="button"
               onClick={() => saveClinicSettings.mutate()}
-              disabled={saveClinicSettings.isPending}
+              disabled={saveClinicSettings.isPending || badDays.length > 0}
               className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-60"
             >
               {saveClinicSettings.isPending ? t('profile.clinicSettings.saving') : t('profile.clinicSettings.save')}

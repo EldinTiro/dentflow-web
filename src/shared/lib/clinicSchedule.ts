@@ -25,6 +25,13 @@ export function parseWeeklySchedule(json: string | null | undefined): WeeklySche
   }
 }
 
+/** DT-13: open days whose closing time is not after the opening time ("HH:mm" compares as text). */
+export function invalidOpeningDays(schedule: WeeklySchedule): string[] {
+  return Object.entries(schedule)
+    .filter(([, d]) => d.isOpen && !(d.end > d.start))
+    .map(([day]) => day)
+}
+
 /** Opening hours for a local calendar date (`YYYY-MM-DD`). */
 export function daySchedule(json: string | null | undefined, date: string): DaySchedule {
   const key = DAY_KEYS[new Date(`${date}T00:00:00`).getDay()]

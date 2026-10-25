@@ -78,3 +78,19 @@ describe('slotOccupancy', () => {
     expect(occupancy.get('09:00')).toEqual([])
   })
 })
+
+// DT-13: Monday 08:00 → 07:00 was saved, leaving Monday with no slots
+describe('invalidOpeningDays', () => {
+  it('lists open days that end before (or when) they start', async () => {
+    const { invalidOpeningDays, DEFAULT_WEEKLY_SCHEDULE } = await import('./clinicSchedule')
+    const schedule = {
+      ...DEFAULT_WEEKLY_SCHEDULE,
+      monday: { isOpen: true, start: '08:00', end: '07:00' },
+      tuesday: { isOpen: true, start: '09:00', end: '09:00' },
+      sunday: { isOpen: false, start: '10:00', end: '08:00' }, // closed: hours don't matter
+    }
+
+    expect(invalidOpeningDays(schedule)).toEqual(['monday', 'tuesday'])
+    expect(invalidOpeningDays(DEFAULT_WEEKLY_SCHEDULE)).toEqual([])
+  })
+})
