@@ -19,7 +19,11 @@ vi.mock('@/features/patients/services/patientService', () => ({
 
 function renderInvoice(status: 'Paid' | 'PartiallyPaid' | 'Draft') {
   vi.mocked(billingService.getById).mockResolvedValue(
-    invoiceFixture({ status, paidAmount: status === 'Paid' ? 75 : 30, balanceDue: status === 'Paid' ? 0 : 45 }),
+    invoiceFixture({
+      status,
+      paidAmount: status === 'Paid' ? 75 : status === 'PartiallyPaid' ? 30 : 0,
+      balanceDue: status === 'Paid' ? 0 : status === 'PartiallyPaid' ? 45 : 75,
+    }),
   )
   renderWithProviders(
     <Routes>
@@ -74,5 +78,23 @@ describe('InvoiceDetailPage back link', () => {
 
     expect(await screen.findByRole('link', { name: /back to/i })).toHaveAttribute('href', href)
     useAuthStore.getState().clearAuth()
+  })
+})
+
+// DT-35 / DT-03: Void stayed enabled on paid invoices and always failed; a part-paid one
+// could be voided and its payment stayed in revenue. Only an invoice with no payment.
+describe('InvoiceDetailPage void rules', () => {
+  it.each(['Paid', 'PartiallyPaid'] as const)('disables Void on a %s invoice and says why', async (status) => {
+    renderInvoice(status)
+
+    const voidButton = await screen.findByRole('button', { name: 'Void Invoice' })
+    expect(voidButton).toBeDisabled()
+    expect(voidButton).toHaveAttribute('title', expect.stringMatching(/payment/i))
+  })
+
+  it('allows Void on an invoice with no payment', async () => {
+    renderInvoice('Draft')
+
+    expect(await screen.findByRole('button', { name: 'Void Invoice' })).toBeEnabled()
   })
 })

@@ -50,7 +50,8 @@
     "lineItems": "Stavke",
     "payments": "Plaćanja",
     "noLineItems": "Nema stavki.",
-    "noPayments": "Nema evidentiranih plaćanja."
+    "noPayments": "Nema evidentiranih plaćanja.",
+    "voidHasPayments": "Račun sa evidentiranom uplatom ne može se stornirati."
   },
   "lineItem": {
     "description": "Opis",

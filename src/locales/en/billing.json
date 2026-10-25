@@ -50,7 +50,8 @@
     "lineItems": "Line Items",
     "payments": "Payments",
     "noLineItems": "No line items yet.",
-    "noPayments": "No payments recorded."
+    "noPayments": "No payments recorded.",
+    "voidHasPayments": "An invoice with a payment recorded can't be voided."
   },
   "lineItem": {
     "description": "Description",

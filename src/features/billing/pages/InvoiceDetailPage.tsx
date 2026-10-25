@@ -148,9 +148,12 @@ export function InvoiceDetailPage() {
             >
               {t('button.addLineItem')}
             </button>
+            {/* DT-35 / DT-03: only an invoice with no payment can be voided (the API agrees) */}
             <button
               onClick={() => setConfirmVoid(true)}
-              className="border border-red-200 text-red-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-50 dark:hover:bg-red-950/20 dark:border-red-400/30 dark:text-red-300"
+              disabled={invoice.paidAmount > 0}
+              title={invoice.paidAmount > 0 ? t('detail.voidHasPayments') : undefined}
+              className="disabled:opacity-40 disabled:cursor-not-allowed border border-red-200 text-red-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-50 dark:hover:bg-red-950/20 dark:border-red-400/30 dark:text-red-300"
             >
               {t('button.void')}
             </button>

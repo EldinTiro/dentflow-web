@@ -50,7 +50,8 @@
     "lineItems": "Positionen",
     "payments": "Zahlungen",
     "noLineItems": "Noch keine Positionen.",
-    "noPayments": "Keine Zahlungen erfasst."
+    "noPayments": "Keine Zahlungen erfasst.",
+    "voidHasPayments": "Eine Rechnung mit erfasster Zahlung kann nicht storniert werden."
   },
   "lineItem": {
     "description": "Beschreibung",
