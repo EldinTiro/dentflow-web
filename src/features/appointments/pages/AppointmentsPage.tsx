@@ -135,7 +135,12 @@ export function AppointmentsPage() {
   }, []);
 
   // Week calendar state
-  const [weekStart, setWeekStart] = useState<Date>(() => getMondayOfWeek(new Date()));
+  // DT-24: a link with ?from= opens the calendar on that week.
+  const [weekStart, setWeekStart] = useState<Date>(() => {
+    const from = searchParams.get('from');
+    const fromDate = from && /^\d{4}-\d{2}-\d{2}$/.test(from) ? new Date(`${from}T00:00:00`) : null;
+    return getMondayOfWeek(fromDate && !Number.isNaN(fromDate.getTime()) ? fromDate : new Date());
+  });
   const weekEnd = useMemo(() => {
     const d = new Date(weekStart);
     d.setDate(d.getDate() + 6);
@@ -267,11 +272,9 @@ export function AppointmentsPage() {
           (a.chiefComplaint ?? '').toLowerCase().includes(q),
       );
     }
+    // DT-25: the chosen column alone decides the order; finished and cancelled rows are
+    // marked by their tint, not moved to the end (00:30 sorted after 20:00 when cancelled).
     result.sort((a, b) => {
-      const terminalStatuses = new Set(['Completed', 'Cancelled', 'NoShow']);
-      const aTerminal = terminalStatuses.has(a.status) ? 1 : 0;
-      const bTerminal = terminalStatuses.has(b.status) ? 1 : 0;
-      if (aTerminal !== bTerminal) return aTerminal - bTerminal;
       let cmp = 0;
       if (sort.col === 'startAt') cmp = new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
       else if (sort.col === 'duration') cmp = a.durationMinutes - b.durationMinutes;
@@ -441,7 +444,8 @@ export function AppointmentsPage() {
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">{t('filter.allProviders')}</option>
-                {(staffData?.items ?? []).map((s) => (
+                {/* Only people who take appointments (DT-25); names of others still resolve from staffData */}
+                {(staffData?.items ?? []).filter((s) => s.isBookable).map((s) => (
                   <option key={s.id} value={s.id}>{s.fullName}</option>
                 ))}
               </select>
