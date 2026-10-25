@@ -2,9 +2,16 @@
   "title": "Appointments",
   "totalCount": "{{count}} appointment(s)",
   "filteredOf": "{{filtered}} of",
-  "button": { "bookAppointment": "+ Book Appointment" },
-  "tab": { "list": "List", "calendar": "Calendar" },
-  "search": { "placeholder": "Search patient or chief complaint…" },
+  "button": {
+    "bookAppointment": "+ Book Appointment"
+  },
+  "tab": {
+    "list": "List",
+    "calendar": "Calendar"
+  },
+  "search": {
+    "placeholder": "Search patient or chief complaint…"
+  },
   "filter": {
     "search": "Search appointments",
     "clearSearch": "Clear search",
@@ -55,7 +62,9 @@
   "types": {
     "title": "Types of Services",
     "subtitle": "Manage the types of services available for booking.",
-    "button": { "newType": "New Type" },
+    "button": {
+      "newType": "New Type"
+    },
     "emptyState": "No service types found.",
     "searchPlaceholder": "Search services…",
     "noResults": "No services match your search.",
@@ -154,11 +163,14 @@
     "createInvoice": "Create invoice",
     "overrideButton": "Change status manually",
     "overrideHint": "Admin override — bypasses the transition rules",
-    "overrideReason": "Reason (optional)",
+    "overrideReason": "Reason (required)",
     "applying": "Applying…",
     "apply": "Apply",
     "cancelTitle": "Cancel appointment",
     "cancelBody": "Are you sure you want to cancel this appointment?",
-    "cancelConfirm": "Cancel appointment"
+    "cancelConfirm": "Cancel appointment",
+    "notYetDue": "Check-in and treatment open on the day of the visit.",
+    "patientNotFound": "Patient not found",
+    "overrideNewStatus": "New status"
   }
 }

@@ -87,4 +87,47 @@ describe('AppointmentDetailPanel', () => {
 
     expect(onClose).toHaveBeenCalled()
   })
+
+  // DT-09: "Start treatment" was offered (and accepted) for a visit two weeks ahead
+  it('does not offer check-in or treatment days before the visit', async () => {
+    const start = new Date(Date.now() + 15 * 86_400_000)
+    renderWithProviders(
+      <AppointmentDetailPanel
+        appointment={appointmentFixture({ startAt: start.toISOString(), endAt: new Date(start.getTime() + 1_800_000).toISOString() })}
+        onClose={() => {}} onReschedule={() => {}} canManage />,
+    )
+
+    expect(await screen.findByText(/on the day of the visit/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Check In' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Start Treatment' })).not.toBeInTheDocument()
+  })
+
+  // DT-09: an override needed no reason and could "change" to the current status
+  it('needs a reason for an override and does not offer the current status', async () => {
+    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'o@x', fullName: 'O', roles: ['ClinicOwner'] })
+    const user = userEvent.setup()
+    renderWithProviders(
+      <AppointmentDetailPanel appointment={appointmentFixture({ status: 'Completed' })} onClose={() => {}} onReschedule={() => {}} canManage />,
+    )
+
+    await user.click(await screen.findByRole('button', { name: /change status manually/i }))
+
+    const options = [...(screen.getByRole('combobox', { name: /new status/i }) as HTMLSelectElement).options].map((o) => o.value)
+    expect(options).not.toContain('Completed')
+    const apply = screen.getByRole('button', { name: /apply/i })
+    expect(apply).toBeDisabled()
+    await user.type(screen.getByRole('textbox', { name: /reason/i }), 'Entered on the wrong day')
+    expect(apply).toBeEnabled()
+  })
+
+  // DT-16: an appointment whose patient is gone said "Loading…" forever
+  it('says the patient could not be found instead of loading forever', async () => {
+    const { patientService } = await import('@/features/patients/services/patientService')
+    vi.mocked(patientService.getById).mockRejectedValueOnce(Object.assign(new Error('404'), { isAxiosError: true, response: { status: 404 } }))
+    renderWithProviders(
+      <AppointmentDetailPanel appointment={appointmentFixture()} onClose={() => {}} onReschedule={() => {}} canManage />,
+    )
+
+    expect(await screen.findByText(/patient not found/i)).toBeInTheDocument()
+  })
 })

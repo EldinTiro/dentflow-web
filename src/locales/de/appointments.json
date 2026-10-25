@@ -2,9 +2,16 @@
   "title": "Termine",
   "totalCount": "{{count}} Termin(e)",
   "filteredOf": "{{filtered}} von",
-  "button": { "bookAppointment": "+ Termin buchen" },
-  "tab": { "list": "Liste", "calendar": "Kalender" },
-  "search": { "placeholder": "Patient oder Beschwerden suchen…" },
+  "button": {
+    "bookAppointment": "+ Termin buchen"
+  },
+  "tab": {
+    "list": "Liste",
+    "calendar": "Kalender"
+  },
+  "search": {
+    "placeholder": "Patient oder Beschwerden suchen…"
+  },
   "filter": {
     "search": "Termine suchen",
     "clearSearch": "Suche löschen",
@@ -55,7 +62,9 @@
   "types": {
     "title": "Leistungsarten",
     "subtitle": "Verwalten Sie die verfügbaren Leistungsarten für die Buchung.",
-    "button": { "newType": "Neue Art" },
+    "button": {
+      "newType": "Neue Art"
+    },
     "emptyState": "Keine Leistungsarten gefunden.",
     "searchPlaceholder": "Leistungen suchen…",
     "noResults": "Keine Leistungen entsprechen der Suche.",
@@ -154,11 +163,14 @@
     "createInvoice": "Rechnung erstellen",
     "overrideButton": "Status manuell ändern",
     "overrideHint": "Admin-Override — umgeht die Statusregeln",
-    "overrideReason": "Grund (optional)",
+    "overrideReason": "Grund (erforderlich)",
     "applying": "Wird angewendet…",
     "apply": "Anwenden",
     "cancelTitle": "Termin absagen",
     "cancelBody": "Möchten Sie diesen Termin wirklich absagen?",
-    "cancelConfirm": "Termin absagen"
+    "cancelConfirm": "Termin absagen",
+    "notYetDue": "Check-in und Behandlung sind am Tag des Termins möglich.",
+    "patientNotFound": "Patient nicht gefunden",
+    "overrideNewStatus": "Neuer Status"
   }
 }
