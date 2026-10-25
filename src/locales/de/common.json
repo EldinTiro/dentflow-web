@@ -175,6 +175,7 @@
     "passwordLower": "Muss einen Kleinbuchstaben enthalten",
     "passwordDigit": "Muss eine Ziffer enthalten",
     "passwordSpecial": "Muss ein Sonderzeichen enthalten",
-    "passwordsMismatch": "Passwörter stimmen nicht überein"
+    "passwordsMismatch": "Passwörter stimmen nicht überein",
+    "passwordUnchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden."
   }
 }

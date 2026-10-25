@@ -20,5 +20,10 @@ export const passwordSchema = z
     message: 'common:validation.passwordsMismatch',
     path: ['confirmPassword'],
   })
+  // DT-04: keeping the temporary password means whoever handed it out still knows it
+  .refine((d) => d.newPassword !== d.currentPassword, {
+    message: 'common:validation.passwordUnchanged',
+    path: ['newPassword'],
+  })
 
 export type PasswordForm = z.infer<typeof passwordSchema>

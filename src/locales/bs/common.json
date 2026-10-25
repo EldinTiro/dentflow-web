@@ -175,6 +175,7 @@
     "passwordLower": "Mora sadržavati malo slovo",
     "passwordDigit": "Mora sadržavati broj",
     "passwordSpecial": "Mora sadržavati poseban znak",
-    "passwordsMismatch": "Lozinke se ne podudaraju"
+    "passwordsMismatch": "Lozinke se ne podudaraju",
+    "passwordUnchanged": "Nova lozinka mora biti drugačija od trenutne."
   }
 }

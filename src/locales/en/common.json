@@ -175,6 +175,7 @@
     "passwordLower": "Must contain a lowercase letter",
     "passwordDigit": "Must contain a digit",
     "passwordSpecial": "Must contain a special character",
-    "passwordsMismatch": "Passwords do not match"
+    "passwordsMismatch": "Passwords do not match",
+    "passwordUnchanged": "The new password must be different from the current one."
   }
 }
