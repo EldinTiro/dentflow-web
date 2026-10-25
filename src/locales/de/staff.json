@@ -183,5 +183,18 @@
     "anyAccess": "Jeder Zugang",
     "withAccess": "Hat Zugang",
     "withoutAccess": "Kein Zugang"
+  },
+  "edit": {
+    "title": "Bearbeiten — {{name}}",
+    "address": "Adresse",
+    "city": "Ort",
+    "postalCode": "Postleitzahl",
+    "save": "Änderungen speichern",
+    "failed": "Die Änderungen konnten nicht gespeichert werden.",
+    "emailLocked": "Das ist die Anmelde-E-Mail dieser Person und kann hier nicht geändert werden.",
+    "remove": "Mitarbeiter entfernen",
+    "removeTitle": "Mitarbeiter entfernen?",
+    "removeBody": "{{name}} wird entfernt. Nur für ein Profil ohne Termine möglich — sonst bitte deaktivieren.",
+    "removeConfirm": "Entfernen"
   }
 }

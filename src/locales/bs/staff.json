@@ -185,5 +185,18 @@
     "anyAccess": "Svaki pristup",
     "withAccess": "Ima pristup",
     "withoutAccess": "Bez pristupa"
+  },
+  "edit": {
+    "title": "Uredi — {{name}}",
+    "address": "Adresa",
+    "city": "Grad",
+    "postalCode": "Poštanski broj",
+    "save": "Spremi promjene",
+    "failed": "Promjene nisu spremljene.",
+    "emailLocked": "Ovo je email za prijavu ove osobe, pa se ovdje ne može mijenjati.",
+    "remove": "Ukloni člana osoblja",
+    "removeTitle": "Ukloniti člana osoblja?",
+    "removeBody": "{{name}} će biti uklonjen/a. Moguće samo za profil bez termina — inače ga deaktivirajte.",
+    "removeConfirm": "Ukloni"
   }
 }
