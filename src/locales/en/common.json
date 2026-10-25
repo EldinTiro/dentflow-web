@@ -85,11 +85,27 @@
   },
   "loading": "Loading…",
   "total": "total",
-  "unit": { "min": "min" },
-  "boolean": { "yes": "Yes", "no": "No" },
-  "lastLogin": { "never": "Never" },
-  "expiry": { "expired": "Expired" },
-  "role": { "staff": "Staff", "SuperAdmin": "Super admin", "ClinicOwner": "Clinic owner", "Dentist": "Dentist", "Receptionist": "Receptionist", "DentalNurse": "Dental nurse" },
+  "unit": {
+    "min": "min"
+  },
+  "boolean": {
+    "yes": "Yes",
+    "no": "No"
+  },
+  "lastLogin": {
+    "never": "Never"
+  },
+  "expiry": {
+    "expired": "Expired"
+  },
+  "role": {
+    "staff": "Staff",
+    "SuperAdmin": "Super admin",
+    "ClinicOwner": "Clinic owner",
+    "Dentist": "Dentist",
+    "Receptionist": "Receptionist",
+    "DentalNurse": "Dental nurse"
+  },
   "pagination": {
     "pageOfTotal": "Page {{page}} of {{totalPages}} ({{totalCount}} total)",
     "showingRange": "Showing {{from}}–{{to}} of {{total}}"
@@ -140,7 +156,8 @@
   "tempPassword": {
     "copy": "Copy",
     "copied": "Copied",
-    "mustChange": "They will be asked to choose their own password at first sign-in."
+    "mustChange": "They will be asked to choose their own password at first sign-in.",
+    "copyFailed": "Couldn't copy — the password is selected, press Ctrl+C."
   },
   "validation": {
     "required": "Required",
