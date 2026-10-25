@@ -17,9 +17,10 @@ type Tab = 'overview' | 'absence'
 
 function Field({ label, value }: { label: string; value: string | null | undefined }) {
   return (
-    <div>
+    // min-w-0 + break-words: a long email wrapped onto the next column (DT-15)
+    <div className="min-w-0">
       <dt className="text-xs text-gray-500 dark:text-gray-400 font-medium">{label}</dt>
-      <dd className="text-sm text-gray-800 dark:text-gray-200 mt-0.5">
+      <dd className="text-sm text-gray-800 dark:text-gray-200 mt-0.5 break-words">
         {value || <span className="text-gray-500 dark:text-gray-400">—</span>}
       </dd>
     </div>
@@ -99,7 +100,7 @@ export function StaffDetailPage() {
       </nav>
 
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-4">
           <div
             className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-semibold flex-shrink-0"
@@ -122,7 +123,7 @@ export function StaffDetailPage() {
           </div>
         </div>
         {canManage && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {staff.isActive ? (
               <button
                 onClick={() => confirm.ask({

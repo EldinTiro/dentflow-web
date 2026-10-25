@@ -142,4 +142,21 @@ describe('PatientDetailPage status', () => {
     await waitFor(() => expect(svc.deleteAllergy).toHaveBeenCalledWith('p1', 'a1'))
     await waitFor(() => expect(toast.success).toHaveBeenCalled())
   })
+
+  // DT-19: both actions were offered and then refused by the API
+  it('offers "Delete duplicate" only for a patient without history', async () => {
+    svc.getById.mockResolvedValue(patient({ hasHistory: true } as never))
+    renderAs('Receptionist')
+
+    await screen.findByRole('button', { name: /^deactivate$/i })
+    expect(screen.queryByRole('button', { name: /delete duplicate/i })).not.toBeInTheDocument()
+  })
+
+  it('does not offer booking for an inactive patient', async () => {
+    svc.getById.mockResolvedValue(patient({ status: 'Inactive' }))
+    renderAs('Receptionist')
+
+    await screen.findByRole('status')
+    expect(screen.queryByRole('button', { name: /book appointment/i })).not.toBeInTheDocument()
+  })
 })
