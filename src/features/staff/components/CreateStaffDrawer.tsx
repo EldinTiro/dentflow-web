@@ -9,7 +9,7 @@ import { TempPasswordBox } from '@/shared/components/TempPasswordBox';
 import { TENANT_ROLES, type TenantRole } from '@/shared/lib/permissions';
 import {
   staffService,
-  ALL_STAFF_TYPES,
+  SELECTABLE_STAFF_TYPES,
   type CreateStaffRequest,
   type StaffMemberResponse,
 } from '../services/staffService';
@@ -137,7 +137,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
             {t('create.staffType')} <span className="text-red-500">*</span>
           </label>
           <select id="staff-staffType" className={inputClass} {...register('staffType', { required: true })}>
-            {ALL_STAFF_TYPES.map((type) => (
+            {SELECTABLE_STAFF_TYPES.map((type) => (
               <option key={type} value={type}>{t(`staffType.${type}`)}</option>
             ))}
           </select>

@@ -255,3 +255,16 @@ describe('StaffDetailPage — tab from the URL', () => {
     expect(svc.listBlockedTimes).toHaveBeenCalled()
   })
 })
+
+describe('StaffDetailPage — naming (DT-22)', () => {
+  afterEach(() => { useAuthStore.getState().clearAuth() })
+
+  it('shows the staff type translated, not the raw English label', async () => {
+    signIn(['ClinicOwner'])
+    svc.getById.mockResolvedValue(staff({ staffType: 'DentalAssistant' }))
+    renderPage()
+
+    expect((await screen.findAllByText('Dental nurse')).length).toBeGreaterThan(0)
+    expect(screen.queryByText('Dental Assistant')).not.toBeInTheDocument()
+  })
+})

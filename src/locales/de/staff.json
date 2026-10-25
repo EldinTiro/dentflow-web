@@ -100,7 +100,7 @@
   },
   "staffType": {
     "Dentist": "Zahnarzt",
-    "DentalAssistant": "Zahnmedizinische Assistenz",
+    "DentalAssistant": "Zahnmedizinische Fachangestellte",
     "Hygienist": "Dentalhygieniker",
     "Receptionist": "Empfang",
     "ClinicAdmin": "Praxisadministrator",

@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
-import { staffService, STAFF_TYPE_LABELS } from '../services/staffService'
+import { staffService } from '../services/staffService'
 import { EditStaffDrawer } from '../components/EditStaffDrawer'
 import { StaffBlockedTimesTab } from '../components/StaffBlockedTimesTab'
 import { StaffAccessSection } from '../components/StaffAccessSection'
@@ -110,7 +110,7 @@ export function StaffDetailPage() {
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{staff.fullName}</h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm text-gray-500 dark:text-gray-400">{STAFF_TYPE_LABELS[staff.staffType]}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{t(`staffType.${staff.staffType}`)}</span>
               <span
                 className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                   staff.isActive ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300'
@@ -184,7 +184,7 @@ export function StaffDetailPage() {
           </Section>
 
           <Section title={t('section.employment')}>
-            <Field label={t('field.staffType')} value={STAFF_TYPE_LABELS[staff.staffType]} />
+            <Field label={t('field.staffType')} value={t(`staffType.${staff.staffType}`)} />
             <Field label={t('field.specialty')} value={staff.specialty} />
             <Field label={t('field.hireDate')} value={staff.hireDate ? formatDate(staff.hireDate) : undefined} />
             <Field label={t('field.terminationDate')} value={staff.terminationDate ?? undefined} />

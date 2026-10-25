@@ -94,4 +94,13 @@ describe('CreateStaffDrawer', () => {
 
     expect(screen.getByLabelText(/^role/i)).toHaveValue(role)
   })
+
+  // DT-22: retired names (Hygienist, Clinic admin) were still offered
+  it('offers the current staff types only, with the role-aligned name', () => {
+    renderWithProviders(<CreateStaffDrawer onClose={vi.fn()} />)
+
+    const types = [...(screen.getByLabelText(/^staff type/i) as HTMLSelectElement).options]
+    expect(types.map((o) => o.value)).toEqual(['Dentist', 'DentalAssistant', 'Receptionist', 'OfficeManager'])
+    expect(types.map((o) => o.textContent)).toContain('Dental nurse')
+  })
 })

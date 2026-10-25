@@ -100,7 +100,7 @@
   },
   "staffType": {
     "Dentist": "Dentist",
-    "DentalAssistant": "Dental assistant",
+    "DentalAssistant": "Dental nurse",
     "Hygienist": "Hygienist",
     "Receptionist": "Receptionist",
     "ClinicAdmin": "Clinic admin",
