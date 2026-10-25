@@ -104,9 +104,40 @@ describe('StaffDetailPage — app access (people-merge plan 4.3)', () => {
     renderPage()
 
     await user.selectOptions((await accessSection()).getByLabelText(/^role/i), 'Receptionist')
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /change role/i }))
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/at least one active owner/i)))
     expect(svc.changeRole).toHaveBeenCalledWith('u-amra', 'Receptionist')
+  })
+
+  // DT-06: one click on the dropdown made someone Clinic owner
+  it('asks before changing a role, in plain words for Clinic owner, and does nothing on cancel', async () => {
+    signIn(['ClinicOwner'])
+    svc.getById.mockResolvedValue(staff({ access: account() }))
+    const user = userEvent.setup()
+    renderPage()
+    const section = await accessSection()
+
+    await user.selectOptions(section.getByRole('combobox', { name: /^role/i }), 'ClinicOwner')
+    const dialog = within(await screen.findByRole('dialog'))
+    expect(dialog.getByText(/full control of the clinic/i)).toBeInTheDocument()
+    await user.click(dialog.getByRole('button', { name: /cancel/i }))
+
+    expect(svc.changeRole).not.toHaveBeenCalled()
+    expect(section.getByRole('combobox', { name: /^role/i })).toHaveValue('Dentist')
+  })
+
+  it('confirms every successful role change with a toast', async () => {
+    signIn(['ClinicOwner'])
+    svc.getById.mockResolvedValue(staff({ access: account() }))
+    svc.changeRole.mockResolvedValue(undefined)
+    const user = userEvent.setup()
+    renderPage()
+
+    await user.selectOptions((await accessSection()).getByLabelText(/^role/i), 'DentalNurse')
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /change role/i }))
+
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith(expect.stringMatching(/role changed/i)))
   })
 
   it('turns sign-in off after confirming, and back on', async () => {
@@ -142,6 +173,9 @@ describe('StaffDetailPage — app access (people-merge plan 4.3)', () => {
     expect(section.getByText(/can sign in/i)).toBeInTheDocument()
     expect(section.queryByRole('button')).not.toBeInTheDocument()
     expect(section.queryByRole('combobox')).not.toBeInTheDocument()
+    // DT-34: colleagues' role and last sign-in are for the owner
+    expect(section.queryByText(/last sign-in/i)).not.toBeInTheDocument()
+    expect(section.queryByText('Dentist')).not.toBeInTheDocument()
   })
 })
 

@@ -161,7 +161,11 @@
       "self": "Ovdje ne možete mijenjati vlastiti pristup. Za svoj račun koristite Profil i postavke.",
       "lastOwner": "Klinika mora imati barem jednog aktivnog vlasnika.",
       "ownerOnly": "Samo vlasnik klinike može mijenjati drugog vlasnika."
-    }
+    },
+    "roleTitle": "Promijeniti ulogu?",
+    "roleBody": "{{name}} postaje {{role}}. Šta može vidjeti i raditi mijenja se pri sljedećoj prijavi.",
+    "roleOwnerBody": "{{name}} postaje vlasnik klinike i dobija punu kontrolu nad klinikom: osoblje i pristup, finansije i postavke.",
+    "roleConfirm": "Promijeni ulogu"
   },
   "status": {
     "deactivate": "Deaktiviraj",

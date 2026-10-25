@@ -160,7 +160,11 @@
       "self": "You can't change your own access here. Use Profile & Settings for your own account.",
       "lastOwner": "A clinic must keep at least one active owner.",
       "ownerOnly": "Only a clinic owner can change another owner."
-    }
+    },
+    "roleTitle": "Change role?",
+    "roleBody": "{{name}} becomes {{role}}. What they can see and do changes at their next sign-in.",
+    "roleOwnerBody": "{{name}} becomes Clinic owner and gets full control of the clinic: staff and sign-in access, finance and settings.",
+    "roleConfirm": "Change role"
   },
   "status": {
     "deactivate": "Deactivate",

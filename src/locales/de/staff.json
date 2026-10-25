@@ -160,7 +160,11 @@
       "self": "Ihren eigenen Zugang können Sie hier nicht ändern. Nutzen Sie Profil & Einstellungen.",
       "lastOwner": "Eine Praxis muss mindestens einen aktiven Inhaber behalten.",
       "ownerOnly": "Nur ein Praxisinhaber kann einen anderen Inhaber ändern."
-    }
+    },
+    "roleTitle": "Rolle ändern?",
+    "roleBody": "{{name}} wird {{role}}. Was die Person sehen und tun kann, ändert sich bei der nächsten Anmeldung.",
+    "roleOwnerBody": "{{name}} wird Praxisinhaber und erhält die volle Kontrolle über die Praxis: Mitarbeiter und Zugänge, Finanzen und Einstellungen.",
+    "roleConfirm": "Rolle ändern"
   },
   "status": {
     "deactivate": "Deaktivieren",

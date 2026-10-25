@@ -112,19 +112,33 @@ export function StaffAccessSection({ staff }: { staff: StaffMemberResponse }) {
               ? <Badge tone="green">{t('access.canSignIn')}</Badge>
               : <Badge tone="gray">{t('access.disabled')}</Badge>}
             {access.mustChangePassword && <Badge tone="amber">{t('access.mustChange')}</Badge>}
-            {!canManage && access.role && <span className="text-sm text-gray-600 dark:text-gray-300">{tc(`role.${access.role}`)}</span>}
           </div>
 
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            {t('access.lastSignIn')}: {access.lastLoginAt ? formatDate(access.lastLoginAt) : t('access.never')}
-          </p>
+          {/* DT-34: role and last sign-in are for the owner (the API leaves them out for others) */}
+          {canManage && (
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {t('access.lastSignIn')}: {access.lastLoginAt ? formatDate(access.lastLoginAt) : t('access.never')}
+            </p>
+          )}
 
           {canManage && (
             <div className="flex flex-wrap items-end gap-2">
               <div>
                 <label htmlFor={roleId} className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{t('access.role')}</label>
+                {/* DT-06: confirmed first; the select shows the saved role until the API agrees */}
                 <select id={roleId} className={selectClass} value={access.role ?? ''} disabled={isSelf || changeRole.isPending}
-                  onChange={(e) => changeRole.mutate(e.target.value as TenantRole)}>
+                  onChange={(e) => {
+                    const role = e.target.value as TenantRole
+                    confirm.ask({
+                      title: t('access.roleTitle'),
+                      description: role === 'ClinicOwner'
+                        ? t('access.roleOwnerBody', { name: staff.fullName })
+                        : t('access.roleBody', { name: staff.fullName, role: tc(`role.${role}`) }),
+                      confirmLabel: t('access.roleConfirm'),
+                      cancelLabel: tc('button.cancel'),
+                      onConfirm: () => changeRole.mutate(role),
+                    })
+                  }}>
                   {TENANT_ROLES.map((r) => <option key={r} value={r}>{tc(`role.${r}`)}</option>)}
                 </select>
               </div>
