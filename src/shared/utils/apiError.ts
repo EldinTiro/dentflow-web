@@ -42,16 +42,26 @@ export function getApiErrorMessage(
   err: unknown,
   fallback = 'An unexpected error occurred. Please try again.',
 ): string {
-  const axiosErr = err as AxiosError<FastEndpointsErrorBody>;
-  const apiErrors = axiosErr?.response?.data?.errors;
-  if (Array.isArray(apiErrors) && apiErrors.length > 0) {
-    for (const e of apiErrors) {
-      // reason carries the message; name is always "generalErrors"
-      const msg = resolveMessage(e.reason) ?? resolveMessage(e.name);
-      if (msg) return msg;
-    }
-  }
-  return fallback;
+  return getApiErrorMessages(err)[0] ?? fallback;
+}
+
+/**
+ * Every human-readable message of a FastEndpoints error. Error metadata travels as extra
+ * entries named "<code>.<key>" (e.g. "….count" → "6"); those are data, never shown (DT-26).
+ */
+export function getApiErrorMessages(err: unknown): string[] {
+  const apiErrors = (err as AxiosError<FastEndpointsErrorBody> | undefined)?.response?.data?.errors;
+  if (!Array.isArray(apiErrors)) return [];
+  const names = new Set(apiErrors.map((e) => e.name?.toLowerCase()).filter(Boolean));
+  const isMetadata = (name?: string) => {
+    const i = name?.lastIndexOf('.') ?? -1;
+    return i > 0 && names.has(name!.slice(0, i).toLowerCase());
+  };
+  return apiErrors
+    .filter((e) => !isMetadata(e.name))
+    // reason carries the message; name is the code (or "generalErrors")
+    .map((e) => resolveMessage(e.reason) ?? resolveMessage(e.name))
+    .filter((m): m is string => !!m);
 }
 
 /** Error codes the API returned, matched case-insensitively. */

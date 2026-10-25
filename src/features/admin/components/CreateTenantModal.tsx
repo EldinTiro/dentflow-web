@@ -8,19 +8,15 @@ import i18n from 'i18next'
 import axios from 'axios'
 import { tenantService, type TenantCreatedResponse } from '../services/tenantService'
 import { TempPasswordBox } from '@/shared/components/TempPasswordBox'
+import { getApiErrorMessages } from '@/shared/utils/apiError'
 import { useEscapeKey } from '@/shared/lib/useEscapeKey'
 
 function extractApiError(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data
     // FastEndpoints UseProblemDetails() format: errors: [{ name, reason }]
-    if (Array.isArray(data?.errors) && data.errors.length > 0) {
-      return data.errors
-        .map((e: { reason?: string; description?: string; message?: string }) =>
-          e.reason ?? e.description ?? e.message ?? String(e)
-        )
-        .join(' ')
-    }
+    const messages = getApiErrorMessages(error)
+    if (messages.length > 0) return messages.join(' ')
     if (data?.detail) return data.detail as string
     if (data?.message) return data.message as string
   }
