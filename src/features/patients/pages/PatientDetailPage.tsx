@@ -78,7 +78,8 @@ export function PatientDetailPage() {
   const [selectedAppt, setSelectedAppt] = useState<AppointmentResponse | null>(null)
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null)
 
-  const canManage = can(useAuthStore(selectRoles), 'patients.manage')
+  const roles = useAuthStore(selectRoles)
+  const canManage = can(roles, 'patients.manage')
 
   const { data: patient, isLoading, isError } = useQuery({
     queryKey: ['patient', id],
@@ -247,7 +248,7 @@ export function PatientDetailPage() {
           onSelect={setSelectedAppt}
         />
       ) : tab === 'treatments' ? (
-        <TreatmentPlanTab patientId={id!} canManage={canManage} />
+        <TreatmentPlanTab patientId={id!} canManage={can(roles, 'treatments.manage')} />
       ) : tab === 'medical' ? (
         <MedicalTab patientId={id!} canManage={canManage} />
       ) : tab === 'files' ? (
