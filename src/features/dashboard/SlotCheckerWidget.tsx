@@ -254,6 +254,8 @@ export function SlotCheckerWidget() {
       </div>
       )}
 
+      {/* DT-29: no opening hours under "closed on this day" */}
+      {!isDayClosed && (
       <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
         {t('slotChecker.footer', {
           startHour: formatTime(workdayStart),
@@ -261,6 +263,7 @@ export function SlotCheckerWidget() {
           minutes:   slotDuration,
         })}
       </p>
+      )}
     </div>
   )
 }

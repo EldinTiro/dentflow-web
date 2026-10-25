@@ -67,3 +67,18 @@ describe('SlotCheckerWidget — all providers', () => {
     expect(screen.queryByText(/08:00:00/)).not.toBeInTheDocument()
   })
 })
+
+describe('SlotCheckerWidget — closed day (DT-29)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-25T07:00:00')) // a Sunday; closed by default
+  })
+  afterEach(() => vi.useRealTimers())
+
+  it('does not show opening hours under "closed"', async () => {
+    renderWithProviders(<SlotCheckerWidget />)
+
+    expect(await screen.findByText(/closed on this day/i)).toBeInTheDocument()
+    expect(screen.queryByText(/08:00\s*[–-]\s*12:00/)).not.toBeInTheDocument()
+  })
+})
