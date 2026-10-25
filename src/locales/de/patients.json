@@ -130,7 +130,9 @@
     "couldNotOpenFile": "Datei konnte nicht geöffnet werden"
   },
   "allergyAlert": {
-    "label": "Allergien"
+    "label": "Allergien",
+    "medical": "Medizinische Hinweise",
+    "pregnant": "Schwanger"
   },
   "allergySeverity": {
     "Mild": "Leicht",
@@ -187,7 +189,13 @@
       "hasArtificialJoints": "Künstliche Gelenke",
       "hasLatexAllergy": "Latexallergie"
     },
-    "removeContact": "Kontakt {{name}} entfernen"
+    "removeContact": "Kontakt {{name}} entfernen",
+    "removeAllergy": "Allergie {{allergen}} entfernen",
+    "removeAllergyTitle": "Diese Allergie entfernen?",
+    "removeAllergyBody": "{{allergen}} wird für diesen Patienten nicht mehr als Warnung angezeigt.",
+    "removeAllergyConfirm": "Entfernen",
+    "allergyRemoved": "Allergie entfernt.",
+    "allergyRemoveFailed": "Die Allergie konnte nicht entfernt werden."
   },
   "treatmentPlans": {
     "newPlan": "Neuer Plan",

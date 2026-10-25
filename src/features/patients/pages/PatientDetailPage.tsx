@@ -18,7 +18,7 @@ import type { AppointmentResponse } from '@/features/appointments/services/appoi
 import { TreatmentPlanTab } from '@/features/treatments/components/TreatmentPlanTab'
 import { PatientFilesTab } from '../components/PatientFilesTab'
 import { PatientBillingTab } from '@/features/billing/components/PatientBillingTab'
-import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
+import { ConfirmDialog, useConfirm } from '@/shared/components/ConfirmDialog'
 import { Trash2, Plus, AlertTriangle, Phone, User, Heart, CalendarPlus } from 'lucide-react'
 import { AllergyAlert } from '../components/AllergyAlert'
 import { DeactivatePatientDialog } from '../components/DeactivatePatientDialog'
@@ -417,7 +417,9 @@ function AppointmentHistoryTab({
 
 function MedicalTab({ patientId, canManage }: { patientId: string; canManage: boolean }) {
   const { t } = useTranslation('patients')
+  const { t: tc } = useTranslation('common')
   const qc = useQueryClient()
+  const confirm = useConfirm()
 
   // — Emergency contacts —
   const { data: contacts = [] } = useQuery({
@@ -446,9 +448,14 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
     mutationFn: () => patientService.addAllergy(patientId, allergyForm),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['patient-allergies', patientId] }); setShowAddAllergy(false); setAllergyForm({ allergen: '', reaction: '', severity: '', notes: '' }) },
   })
+  // DT-10: removing an allergy hides a clinical warning, so it is confirmed and announced.
   const deleteAllergyMutation = useMutation({
     mutationFn: (id: string) => patientService.deleteAllergy(patientId, id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['patient-allergies', patientId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['patient-allergies', patientId] })
+      toast.success(t('medical.allergyRemoved'))
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, t('medical.allergyRemoveFailed'))),
   })
 
   // — Medical history —
@@ -506,6 +513,7 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
 
   return (
     <div className="space-y-4">
+      {confirm.dialog}
       {/* ── Emergency Contacts ── */}
       <div className={cardCls}>
         <div className="flex items-center justify-between p-5 pb-3">
@@ -654,7 +662,17 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
                   </div>
                 </div>
                 {canManage && (
-                  <button onClick={() => deleteAllergyMutation.mutate(a.id)} className="text-gray-500 hover:text-red-500 transition-colors dark:text-gray-400">
+                  <button
+                    onClick={() => confirm.ask({
+                      title: t('medical.removeAllergyTitle'),
+                      description: t('medical.removeAllergyBody', { allergen: a.allergen }),
+                      confirmLabel: t('medical.removeAllergyConfirm'),
+                      cancelLabel: tc('button.cancel'),
+                      onConfirm: () => deleteAllergyMutation.mutate(a.id),
+                    })}
+                    aria-label={t('medical.removeAllergy', { allergen: a.allergen })}
+                    title={t('medical.removeAllergy', { allergen: a.allergen })}
+                    className="text-gray-500 hover:text-red-500 transition-colors dark:text-gray-400">
                     <Trash2 size={14} />
                   </button>
                 )}

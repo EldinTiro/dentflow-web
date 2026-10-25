@@ -130,7 +130,9 @@
     "couldNotOpenFile": "Nije moguće otvoriti datoteku"
   },
   "allergyAlert": {
-    "label": "Alergije"
+    "label": "Alergije",
+    "medical": "Medicinska upozorenja",
+    "pregnant": "Trudnoća"
   },
   "allergySeverity": {
     "Mild": "Blaga",
@@ -187,7 +189,13 @@
       "hasArtificialJoints": "Vještački zglobovi",
       "hasLatexAllergy": "Alergija na latex"
     },
-    "removeContact": "Ukloni kontakt {{name}}"
+    "removeContact": "Ukloni kontakt {{name}}",
+    "removeAllergy": "Ukloni alergiju {{allergen}}",
+    "removeAllergyTitle": "Ukloniti ovu alergiju?",
+    "removeAllergyBody": "{{allergen}} se više neće prikazivati kao upozorenje za ovog pacijenta.",
+    "removeAllergyConfirm": "Ukloni",
+    "allergyRemoved": "Alergija uklonjena.",
+    "allergyRemoveFailed": "Uklanjanje alergije nije uspjelo."
   },
   "treatmentPlans": {
     "newPlan": "Novi plan",

@@ -20,6 +20,7 @@ vi.mock('../services/patientService', async (orig) => ({
     deactivate: vi.fn(),
     reactivate: vi.fn(),
     delete: vi.fn(),
+    deleteAllergy: vi.fn(async () => undefined),
   },
 }))
 vi.mock('@/features/appointments/services/appointmentService', async (orig) => ({
@@ -122,5 +123,23 @@ describe('PatientDetailPage status', () => {
     renderAs('Dentist', '/patients/p1?tab=medical')
 
     expect(await screen.findByRole('button', { name: /remove contact/i })).toBeInTheDocument()
+  })
+
+  // DT-10: one click on the trash icon removed an allergy, no confirm and no feedback
+  it('asks before removing an allergy and confirms it was removed', async () => {
+    svc.getById.mockResolvedValue(patient())
+    svc.listAllergies.mockResolvedValue([{ id: 'a1', allergen: 'Penicillin', severity: 'Severe', reaction: null, notes: null, reportedAt: null }] as never)
+    const user = userEvent.setup()
+    renderAs('Dentist', '/patients/p1?tab=medical')
+
+    await user.click(await screen.findByRole('button', { name: /remove allergy penicillin/i }))
+    await user.click((await dialog()).getByRole('button', { name: /cancel/i }))
+    expect(svc.deleteAllergy).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: /remove allergy penicillin/i }))
+    await user.click((await dialog()).getByRole('button', { name: /^remove$/i }))
+
+    await waitFor(() => expect(svc.deleteAllergy).toHaveBeenCalledWith('p1', 'a1'))
+    await waitFor(() => expect(toast.success).toHaveBeenCalled())
   })
 })
