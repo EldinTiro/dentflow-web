@@ -120,7 +120,9 @@
     "documentsHeading": "Dokumente",
     "emptyState": "Noch keine Dateien hochgeladen",
     "couldNotLoadImage": "Bild konnte nicht geladen werden",
-    "deleteTooltip": "Löschen"
+    "deleteTooltip": "Löschen",
+    "planRequired": "Dateiablage ist in den Tarifen Pro und Enterprise verfügbar. Der Praxisinhaber kann den Tarif ändern.",
+    "uploadFailed": "Die Datei konnte nicht hochgeladen werden."
   },
   "toast": {
     "filesUploaded": "{{count}} Datei(en) hochgeladen",

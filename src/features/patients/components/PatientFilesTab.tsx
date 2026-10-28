@@ -13,6 +13,8 @@ import {
   type PatientDocumentResponse,
 } from '../services/documentService'
 import { formatDate } from '@/shared/lib/format'
+import { useFeatureFlags } from '@/shared/context/FeatureContext'
+import { getApiErrorCodes, getApiErrorMessage } from '@/shared/utils/apiError'
 
 const CATEGORIES: DocumentCategory[] = ['XRay', 'Photo', 'Consent', 'Insurance', 'Other']
 
@@ -54,6 +56,8 @@ interface PendingFile {
   localId: string
   file: File
   state: 'pending' | 'uploading' | 'done' | 'error'
+  /** Why the API refused it, shown under the file. */
+  error?: string
 }
 
 // ─── Lazy-loading image thumbnail ────────────────────────────────────────────
@@ -230,6 +234,10 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [lightbox, setLightbox] = useState<{ images: PatientDocumentResponse[]; index: number } | null>(null)
 
+  // File storage is a plan feature (DocumentStorage): Free clinics got a bare 403.
+  const { flags, isLoaded: plansLoaded } = useFeatureFlags()
+  const canStoreFiles = flags.has('DocumentStorage')
+
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ['patient-documents', patientId],
     queryFn: () => documentService.list(patientId),
@@ -259,20 +267,25 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
     if (toUpload.length === 0) return
     setUploading(true)
     let successCount = 0
+    let firstReason: string | undefined
     for (const pf of toUpload) {
-      setPendingFiles(prev => prev.map(f => f.localId === pf.localId ? { ...f, state: 'uploading' } : f))
+      setPendingFiles(prev => prev.map(f => f.localId === pf.localId ? { ...f, state: 'uploading', error: undefined } : f))
       try {
         await documentService.upload(patientId, pf.file, category, notes || undefined)
         setPendingFiles(prev => prev.map(f => f.localId === pf.localId ? { ...f, state: 'done' } : f))
         successCount++
-      } catch {
-        setPendingFiles(prev => prev.map(f => f.localId === pf.localId ? { ...f, state: 'error' } : f))
+      } catch (err) {
+        const reason = getApiErrorCodes(err).has('Feature.NotAvailableOnCurrentPlan')
+          ? t('files.planRequired')
+          : getApiErrorMessage(err, t('files.uploadFailed'))
+        firstReason ??= reason
+        setPendingFiles(prev => prev.map(f => f.localId === pf.localId ? { ...f, state: 'error', error: reason } : f))
       }
     }
     qc.invalidateQueries({ queryKey: ['patient-documents', patientId] })
     if (successCount > 0) toast.success(t('toast.filesUploaded', { count: successCount }))
     const failCount = toUpload.length - successCount
-    if (failCount > 0) toast.error(t('toast.filesUploadFailed', { count: failCount }))
+    if (failCount > 0) toast.error(`${t('toast.filesUploadFailed', { count: failCount })}: ${firstReason}`)
     setPendingFiles(prev => prev.filter(f => f.state !== 'done'))
     if (failCount === 0) { setNotes(''); setCategory('Other') }
     setUploading(false)
@@ -307,8 +320,16 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
 
   return (
     <div className="space-y-4">
+      {/* Plan without file storage: say so instead of offering an upload that fails */}
+      {canManage && plansLoaded && !canStoreFiles && (
+        <div role="note" className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200">
+          <ShieldCheck size={16} className="mt-0.5 shrink-0" aria-hidden />
+          <p>{t('files.planRequired')}</p>
+        </div>
+      )}
+
       {/* Upload panel */}
-      {canManage && (
+      {canManage && canStoreFiles && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('files.uploadTitle')}</h3>
 
@@ -344,7 +365,12 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
                       {pf.state === 'done' && <CheckCircle2 size={14} className="text-green-500" />}
                       {pf.state === 'error' && <AlertCircle size={14} className="text-red-500" />}
                     </span>
-                    <span className="flex-1 truncate text-gray-700 dark:text-gray-200">{pf.file.name}</span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block truncate text-gray-700 dark:text-gray-200">{pf.file.name}</span>
+                      {pf.state === 'error' && pf.error && (
+                        <span role="alert" className="block text-xs text-red-600 dark:text-red-400">{pf.error}</span>
+                      )}
+                    </span>
                     <span className="text-xs text-gray-500 shrink-0 dark:text-gray-400">{formatBytes(pf.file.size)}</span>
                     {(pf.state === 'pending' || pf.state === 'error') && (
                       <button

@@ -120,7 +120,9 @@
     "documentsHeading": "Documents",
     "emptyState": "No files uploaded yet",
     "couldNotLoadImage": "Could not load image",
-    "deleteTooltip": "Delete"
+    "deleteTooltip": "Delete",
+    "planRequired": "Storing files is available on the Pro and Enterprise plans. The clinic owner can change the plan.",
+    "uploadFailed": "The file could not be uploaded."
   },
   "toast": {
     "filesUploaded": "{{count}} file(s) uploaded",
