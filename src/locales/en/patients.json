@@ -110,7 +110,7 @@
   "files": {
     "uploadTitle": "Upload Files",
     "chooseFiles": "Choose files…",
-    "supportedFormats": "Images, PDF, Word. Select multiple files at once.",
+    "supportedFormats": "Images, PDF, Word, up to 20 MB each. Select multiple files at once.",
     "category": "Category",
     "notesOptional": "Notes (optional)",
     "notesPlaceholder": "e.g. Upper right quadrant",
@@ -120,7 +120,10 @@
     "documentsHeading": "Documents",
     "emptyState": "No files uploaded yet",
     "couldNotLoadImage": "Could not load image",
-    "deleteTooltip": "Delete"
+    "deleteTooltip": "Delete",
+    "planRequired": "Storing files is available on the Pro and Enterprise plans. The clinic owner can change the plan.",
+    "uploadFailed": "The file could not be uploaded.",
+    "tooLarge": "This file is larger than 20 MB and can't be uploaded."
   },
   "toast": {
     "filesUploaded": "{{count}} file(s) uploaded",

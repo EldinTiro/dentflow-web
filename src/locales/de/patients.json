@@ -110,7 +110,7 @@
   "files": {
     "uploadTitle": "Dateien hochladen",
     "chooseFiles": "Dateien auswählen…",
-    "supportedFormats": "Bilder, PDF, Word. Wählen Sie mehrere Dateien gleichzeitig.",
+    "supportedFormats": "Bilder, PDF, Word, bis zu 20 MB pro Datei. Wählen Sie mehrere Dateien gleichzeitig.",
     "category": "Kategorie",
     "notesOptional": "Notizen (optional)",
     "notesPlaceholder": "z.B. Oberer rechter Quadrant",
@@ -120,7 +120,10 @@
     "documentsHeading": "Dokumente",
     "emptyState": "Noch keine Dateien hochgeladen",
     "couldNotLoadImage": "Bild konnte nicht geladen werden",
-    "deleteTooltip": "Löschen"
+    "deleteTooltip": "Löschen",
+    "planRequired": "Dateiablage ist in den Tarifen Pro und Enterprise verfügbar. Der Praxisinhaber kann den Tarif ändern.",
+    "uploadFailed": "Die Datei konnte nicht hochgeladen werden.",
+    "tooLarge": "Diese Datei ist größer als 20 MB und kann nicht hochgeladen werden."
   },
   "toast": {
     "filesUploaded": "{{count}} Datei(en) hochgeladen",
