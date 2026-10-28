@@ -198,7 +198,8 @@ export function DashboardPage() {
     new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
 
   return (
-    <div className="p-6 max-w-5xl space-y-6">
+    // Wide but capped: past ~1600px the cards stop gaining anything and lines get long
+    <div className="p-6 max-w-[1600px] space-y-6">
       {/* Page header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
@@ -351,8 +352,11 @@ export function DashboardPage() {
         </div>
       )}
 
+      {/* From 1280px: schedule and slot check on the left, people on the right.
+          Below that the cards stack in this same order. */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 xl:items-start">
       {/* Today's schedule */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 xl:col-span-2">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <CheckCircle2 size={16} className="text-primary-500" />
@@ -419,6 +423,7 @@ export function DashboardPage() {
         )}
       </div>
 
+      <div className="space-y-6 xl:row-span-2">
       {/* Appointments by provider */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
@@ -459,9 +464,13 @@ export function DashboardPage() {
 
       {/* Who is away today and in the next two weeks */}
       <AbsencesWidget />
+      </div>
 
       {/* Quick slot availability check */}
-      <SlotCheckerWidget />
+      <div className="xl:col-span-2">
+        <SlotCheckerWidget />
+      </div>
+      </div>
 
       {/* Act on today's visits without leaving the dashboard */}
       {selected && (
