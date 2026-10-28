@@ -110,7 +110,7 @@
   "files": {
     "uploadTitle": "Učitaj datoteke",
     "chooseFiles": "Odaberi datoteke…",
-    "supportedFormats": "Slike, PDF, Word. Odaberite više datoteka odjednom.",
+    "supportedFormats": "Slike, PDF, Word, do 20 MB po datoteci. Odaberite više datoteka odjednom.",
     "category": "Kategorija",
     "notesOptional": "Bilješke (opcionalno)",
     "notesPlaceholder": "npr. Gornji desni kvadrant",
@@ -122,7 +122,8 @@
     "couldNotLoadImage": "Nije moguće učitati sliku",
     "deleteTooltip": "Obriši",
     "planRequired": "Pohrana datoteka dostupna je u Pro i Enterprise paketima. Vlasnik klinike može promijeniti paket.",
-    "uploadFailed": "Datoteka nije učitana."
+    "uploadFailed": "Datoteka nije učitana.",
+    "tooLarge": "Ova datoteka je veća od 20 MB i ne može se učitati."
   },
   "toast": {
     "filesUploaded": "{{count}} datoteka/e učitano",

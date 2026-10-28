@@ -18,6 +18,9 @@ import { getApiErrorCodes, getApiErrorMessage } from '@/shared/utils/apiError'
 
 const CATEGORIES: DocumentCategory[] = ['XRay', 'Photo', 'Consent', 'Insurance', 'Other']
 
+/** Same limit as the API (Document.TooLarge) and nginx's client_max_body_size. */
+export const MAX_FILE_BYTES = 20 * 1024 * 1024
+
 const CATEGORY_ICONS: Record<DocumentCategory, React.ReactNode> = {
   XRay: <ImageIcon size={14} />,
   Photo: <ImageIcon size={14} />,
@@ -58,6 +61,8 @@ interface PendingFile {
   state: 'pending' | 'uploading' | 'done' | 'error'
   /** Why the API refused it, shown under the file. */
   error?: string
+  /** Over the size limit: shown with the reason, never sent. */
+  tooLarge?: boolean
 }
 
 // ─── Lazy-loading image thumbnail ────────────────────────────────────────────
@@ -249,11 +254,15 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
-    const newItems: PendingFile[] = files.map(f => ({
-      localId: `${f.name}-${f.lastModified}-${Math.random()}`,
-      file: f,
-      state: 'pending' as const,
-    }))
+    const newItems: PendingFile[] = files.map(f => {
+      const tooLarge = f.size > MAX_FILE_BYTES
+      return {
+        localId: `${f.name}-${f.lastModified}-${Math.random()}`,
+        file: f,
+        state: tooLarge ? 'error' as const : 'pending' as const,
+        ...(tooLarge ? { tooLarge, error: t('files.tooLarge') } : {}),
+      }
+    })
     setPendingFiles(prev => [...prev, ...newItems])
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
@@ -263,7 +272,7 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
   }
 
   async function handleUpload() {
-    const toUpload = pendingFiles.filter(f => f.state === 'pending' || f.state === 'error')
+    const toUpload = pendingFiles.filter(f => !f.tooLarge && (f.state === 'pending' || f.state === 'error'))
     if (toUpload.length === 0) return
     setUploading(true)
     let successCount = 0
@@ -275,9 +284,14 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
         setPendingFiles(prev => prev.map(f => f.localId === pf.localId ? { ...f, state: 'done' } : f))
         successCount++
       } catch (err) {
-        const reason = getApiErrorCodes(err).has('Feature.NotAvailableOnCurrentPlan')
+        const codes = getApiErrorCodes(err)
+        const status = (err as { response?: { status?: number } } | undefined)?.response?.status
+        const reason = codes.has('Feature.NotAvailableOnCurrentPlan')
           ? t('files.planRequired')
-          : getApiErrorMessage(err, t('files.uploadFailed'))
+          // 413 comes from a proxy as an HTML page, so it carries no readable reason
+          : status === 413 || codes.has('Document.TooLarge')
+            ? t('files.tooLarge')
+            : getApiErrorMessage(err, t('files.uploadFailed'))
         firstReason ??= reason
         setPendingFiles(prev => prev.map(f => f.localId === pf.localId ? { ...f, state: 'error', error: reason } : f))
       }
@@ -316,7 +330,7 @@ export function PatientFilesTab({ patientId, canManage }: Props) {
     }
   }
 
-  const pendingCount = pendingFiles.filter(f => f.state === 'pending' || f.state === 'error').length
+  const pendingCount = pendingFiles.filter(f => !f.tooLarge && (f.state === 'pending' || f.state === 'error')).length
 
   return (
     <div className="space-y-4">
