@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router'
 import { User, Palette, Building2, Bell, Plus } from 'lucide-react'
 import { useUserPreferences, useUpdateUserPreferences } from '../hooks/useUserPreferences'
 import { userService } from '../services/userService'
@@ -100,7 +101,16 @@ export function ProfilePage() {
     (s) => s.user?.roles?.includes('ClinicOwner') ?? false,
   )
 
-  const [activeTab, setActiveTab] = useState<Tab>('profile')
+  // DT-31: the tab lives in ?tab= like the patient and staff tabs, so a reload keeps it.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const activeTab: Tab = (['profile', 'appearance', 'clinic', 'notifications'] as const).find((x) => x === tabParam) ?? 'profile'
+  const setActiveTab = (next: Tab) =>
+    setSearchParams((p) => {
+      const n = new URLSearchParams(p)
+      if (next === 'profile') n.delete('tab'); else n.set('tab', next)
+      return n
+    }, { replace: true })
 
   // ── Queries ──────────────────────────────────────────────────────────────
 
@@ -291,6 +301,7 @@ export function ProfilePage() {
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
+            aria-pressed={activeTab === tab.id}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors rounded-t-lg -mb-px border-b-2 ${
               activeTab === tab.id
                 ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400'
