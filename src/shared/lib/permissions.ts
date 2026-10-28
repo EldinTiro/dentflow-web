@@ -16,15 +16,18 @@ export type Permission =
   | 'finance.view'
   | 'people.manage'
   | 'patients.manage'
+  /** Treatment plans and their items. The API checks it with a role list (DT-12). */
+  | 'treatments.manage'
 
 const ALL: readonly Permission[] = [
   'dashboard.view', 'billing.view', 'billing.collect', 'finance.adjust', 'finance.view', 'people.manage', 'patients.manage',
+  'treatments.manage',
 ]
 
 const ROLE_PERMISSIONS: Record<string, readonly Permission[]> = {
   ClinicOwner: ALL,
-  Dentist: ['dashboard.view', 'billing.view', 'patients.manage'],
-  DentalNurse: ['dashboard.view', 'billing.view', 'billing.collect', 'patients.manage'],
+  Dentist: ['dashboard.view', 'billing.view', 'patients.manage', 'treatments.manage'],
+  DentalNurse: ['dashboard.view', 'billing.view', 'billing.collect', 'patients.manage', 'treatments.manage'],
   Receptionist: ['dashboard.view', 'billing.view', 'billing.collect', 'patients.manage'],
   SuperAdmin: ['dashboard.view'],
 }

@@ -7,18 +7,9 @@ import { useConfirm } from '@/shared/components/ConfirmDialog'
 import { TempPasswordBox } from '@/shared/components/TempPasswordBox'
 import { can, TENANT_ROLES, type TenantRole } from '@/shared/lib/permissions'
 import { formatDate } from '@/shared/lib/format'
-import { staffService, type StaffMemberResponse, type StaffType } from '../services/staffService'
+import { staffService, type StaffMemberResponse } from '../services/staffService'
 import { peopleErrorMessage } from '../lib/peopleErrors'
-
-/** A sensible first role for a profile that gets access; the owner can change it. */
-const DEFAULT_ROLE: Record<StaffType, TenantRole> = {
-  Dentist: 'Dentist',
-  DentalAssistant: 'DentalNurse',
-  Hygienist: 'DentalNurse',
-  Receptionist: 'Receptionist',
-  ClinicAdmin: 'Receptionist',
-  OfficeManager: 'Receptionist',
-}
+import { defaultRoleFor } from '../lib/defaultRole'
 
 const selectClass =
   'border border-gray-300 rounded-md px-2 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-600 text-gray-900 dark:text-gray-100 disabled:opacity-50'
@@ -48,7 +39,7 @@ export function StaffAccessSection({ staff }: { staff: StaffMemberResponse }) {
   const canManage = can(useAuthStore(selectRoles), 'people.manage')
   const currentUserId = useAuthStore((s) => s.user?.userId)
   const confirm = useConfirm()
-  const [newRole, setNewRole] = useState<TenantRole>(DEFAULT_ROLE[staff.staffType] ?? 'Receptionist')
+  const [newRole, setNewRole] = useState<TenantRole>(defaultRoleFor(staff.staffType))
   const [tempPassword, setTempPassword] = useState<string | null>(null)
 
   const access = staff.access ?? null
@@ -112,19 +103,33 @@ export function StaffAccessSection({ staff }: { staff: StaffMemberResponse }) {
               ? <Badge tone="green">{t('access.canSignIn')}</Badge>
               : <Badge tone="gray">{t('access.disabled')}</Badge>}
             {access.mustChangePassword && <Badge tone="amber">{t('access.mustChange')}</Badge>}
-            {!canManage && access.role && <span className="text-sm text-gray-600 dark:text-gray-300">{tc(`role.${access.role}`)}</span>}
           </div>
 
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            {t('access.lastSignIn')}: {access.lastLoginAt ? formatDate(access.lastLoginAt) : t('access.never')}
-          </p>
+          {/* DT-34: role and last sign-in are for the owner (the API leaves them out for others) */}
+          {canManage && (
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {t('access.lastSignIn')}: {access.lastLoginAt ? formatDate(access.lastLoginAt) : t('access.never')}
+            </p>
+          )}
 
           {canManage && (
             <div className="flex flex-wrap items-end gap-2">
               <div>
                 <label htmlFor={roleId} className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{t('access.role')}</label>
+                {/* DT-06: confirmed first; the select shows the saved role until the API agrees */}
                 <select id={roleId} className={selectClass} value={access.role ?? ''} disabled={isSelf || changeRole.isPending}
-                  onChange={(e) => changeRole.mutate(e.target.value as TenantRole)}>
+                  onChange={(e) => {
+                    const role = e.target.value as TenantRole
+                    confirm.ask({
+                      title: t('access.roleTitle'),
+                      description: role === 'ClinicOwner'
+                        ? t('access.roleOwnerBody', { name: staff.fullName })
+                        : t('access.roleBody', { name: staff.fullName, role: tc(`role.${role}`) }),
+                      confirmLabel: t('access.roleConfirm'),
+                      cancelLabel: tc('button.cancel'),
+                      onConfirm: () => changeRole.mutate(role),
+                    })
+                  }}>
                   {TENANT_ROLES.map((r) => <option key={r} value={r}>{tc(`role.${r}`)}</option>)}
                 </select>
               </div>

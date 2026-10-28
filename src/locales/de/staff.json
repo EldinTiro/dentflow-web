@@ -100,7 +100,7 @@
   },
   "staffType": {
     "Dentist": "Zahnarzt",
-    "DentalAssistant": "Zahnmedizinische Assistenz",
+    "DentalAssistant": "Zahnmedizinische Fachangestellte",
     "Hygienist": "Dentalhygieniker",
     "Receptionist": "Empfang",
     "ClinicAdmin": "Praxisadministrator",
@@ -160,7 +160,11 @@
       "self": "Ihren eigenen Zugang können Sie hier nicht ändern. Nutzen Sie Profil & Einstellungen.",
       "lastOwner": "Eine Praxis muss mindestens einen aktiven Inhaber behalten.",
       "ownerOnly": "Nur ein Praxisinhaber kann einen anderen Inhaber ändern."
-    }
+    },
+    "roleTitle": "Rolle ändern?",
+    "roleBody": "{{name}} wird {{role}}. Was die Person sehen und tun kann, ändert sich bei der nächsten Anmeldung.",
+    "roleOwnerBody": "{{name}} wird Praxisinhaber und erhält die volle Kontrolle über die Praxis: Mitarbeiter und Zugänge, Finanzen und Einstellungen.",
+    "roleConfirm": "Rolle ändern"
   },
   "status": {
     "deactivate": "Deaktivieren",
@@ -179,5 +183,18 @@
     "anyAccess": "Jeder Zugang",
     "withAccess": "Hat Zugang",
     "withoutAccess": "Kein Zugang"
+  },
+  "edit": {
+    "title": "Bearbeiten — {{name}}",
+    "address": "Adresse",
+    "city": "Ort",
+    "postalCode": "Postleitzahl",
+    "save": "Änderungen speichern",
+    "failed": "Die Änderungen konnten nicht gespeichert werden.",
+    "emailLocked": "Das ist die Anmelde-E-Mail dieser Person und kann hier nicht geändert werden.",
+    "remove": "Mitarbeiter entfernen",
+    "removeTitle": "Mitarbeiter entfernen?",
+    "removeBody": "{{name}} wird entfernt. Nur für ein Profil ohne Termine möglich — sonst bitte deaktivieren.",
+    "removeConfirm": "Entfernen"
   }
 }

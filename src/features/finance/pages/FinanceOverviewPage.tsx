@@ -123,9 +123,10 @@ export function FinanceOverviewPage() {
                 const share = methodTotal ? Math.round((m.amount / methodTotal) * 100) : 0
                 return (
                   <li key={m.method}>
-                    <div className="flex items-baseline justify-between text-sm">
-                      <span className="text-gray-700 dark:text-gray-200">{tb(`paymentMethod.${m.method}`, m.method)}</span>
-                      <span className="tabular-nums text-gray-900 dark:text-white">
+                    {/* DT-30: label and amount ran together at 1024px ("Insurance6,315.48 KM") */}
+                    <div className="flex items-baseline justify-between gap-3 text-sm">
+                      <span className="min-w-0 truncate text-gray-700 dark:text-gray-200">{tb(`paymentMethod.${m.method}`, m.method)}</span>
+                      <span className="shrink-0 whitespace-nowrap tabular-nums text-gray-900 dark:text-white">
                         {formatMoney(m.amount)} <span className="text-xs text-gray-500 dark:text-gray-400">· {share}%</span>
                       </span>
                     </div>

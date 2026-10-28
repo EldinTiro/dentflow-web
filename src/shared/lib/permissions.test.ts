@@ -31,6 +31,12 @@ describe('can', () => {
     expect(can(['Dentist'], 'billing.collect')).toBe(false)
   })
 
+  // DT-12: a receptionist created plans it couldn't fill; plans are for clinical roles
+  it('keeps treatment plans with clinical roles', () => {
+    for (const role of ['ClinicOwner', 'Dentist', 'DentalNurse']) expect(can([role], 'treatments.manage')).toBe(true)
+    for (const role of ['Receptionist', 'SuperAdmin']) expect(can([role], 'treatments.manage')).toBe(false)
+  })
+
   it('is false for retired and unknown roles', () => {
     expect(can(['ClinicAdmin'], 'people.manage')).toBe(false)
     expect(can(['ReadOnly'], 'finance.view')).toBe(false)

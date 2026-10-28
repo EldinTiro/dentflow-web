@@ -39,6 +39,8 @@ export interface PatientResponse {
   /** Set while the patient is Inactive (people-merge plan D8). */
   deactivatedAt?: string | null
   deactivationReason?: string | null
+  /** Only on GET /patients/{id}: appointments, plans, invoices or documents exist (DT-19). */
+  hasHistory?: boolean
 }
 
 export interface PagedResult<T> {

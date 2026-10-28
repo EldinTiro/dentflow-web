@@ -97,10 +97,12 @@ export function AppointmentDetailPanel({
   // Escape closes the drawer unless a dialog on top of it should get the key (QA-027).
   useEscapeKey(onClose, !confirmCancel && !showOverride && !showCreateInvoice)
 
-  const { data: patient } = useQuery({
+  const { data: patient, isError: patientMissing } = useQuery({
     queryKey: ['patient', a.patientId],
     queryFn: () => patientService.getById(a.patientId),
   })
+  // DT-09: arrival actions open on the day of the visit (the API allows 12 hours ahead).
+  const isDue = Date.now() >= new Date(a.startAt).getTime() - 12 * 3_600_000
 
   const { data: provider } = useQuery({
     queryKey: ['staff-member', a.providerId],
@@ -149,7 +151,7 @@ export function AppointmentDetailPanel({
   })
 
   const overrideMutation = useMutation({
-    mutationFn: () => appointmentService.overrideStatus(a.id, overrideNewStatus, overrideReason || undefined),
+    mutationFn: () => appointmentService.overrideStatus(a.id, overrideNewStatus, overrideReason.trim()),
     onSuccess: (updated) => {
       setA(updated)
       invalidate()
@@ -209,6 +211,9 @@ export function AppointmentDetailPanel({
                 >
                   {patient.fullName}
                 </a>
+              ) : patientMissing ? (
+                // DT-16: rows from before the isolation fix can point at no patient
+                <span className="text-red-600 dark:text-red-400">{td('detail.patientNotFound')}</span>
               ) : (
                 <span className="text-gray-500 italic dark:text-gray-400">{td('detail.loading')}</span>
               )
@@ -408,7 +413,10 @@ export function AppointmentDetailPanel({
         {canManage && (
           <div className="border-t border-gray-200 px-5 py-4 space-y-2 dark:border-gray-600">
             {/* Primary lifecycle action */}
-            {a.status === 'Scheduled' && (
+            {a.status === 'Scheduled' && !isDue && (
+              <p className="text-xs text-gray-500 dark:text-gray-400">{td('detail.notYetDue')}</p>
+            )}
+            {a.status === 'Scheduled' && isDue && (
               <div className="flex gap-2">
                 <button
                   onClick={() => statusMutation.mutate('CheckedIn')}
@@ -501,7 +509,7 @@ export function AppointmentDetailPanel({
               <div className="pt-1 border-t border-gray-100 dark:border-gray-800">
                 {!showOverride ? (
                   <button
-                    onClick={() => { setOverrideNewStatus(a.status); setShowOverride(true) }}
+                    onClick={() => { setOverrideNewStatus(a.status === 'Scheduled' ? 'Completed' : 'Scheduled'); setShowOverride(true) }}
                     className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-orange-600 transition-colors dark:text-gray-400"
                   >
                     <ShieldAlert size={13} />
@@ -514,15 +522,18 @@ export function AppointmentDetailPanel({
                       {td('detail.overrideHint')}
                     </p>
                     <select
+                      aria-label={td('detail.overrideNewStatus')}
                       value={overrideNewStatus}
                       onChange={(e) => setOverrideNewStatus(e.target.value as AppointmentStatus)}
                       className="w-full border border-orange-200 dark:border-orange-700 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400"
                     >
-                      {(['Scheduled', 'CheckedIn', 'InProgress', 'Completed', 'Cancelled', 'NoShow'] as AppointmentStatus[]).map((s) => (
+                      {/* DT-09: overriding to the current status only leaves an empty audit entry */}
+                      {(['Scheduled', 'CheckedIn', 'InProgress', 'Completed', 'Cancelled', 'NoShow'] as AppointmentStatus[]).filter((s) => s !== a.status).map((s) => (
                         <option key={s} value={s}>{tc(statusKey(s))}</option>
                       ))}
                     </select>
                     <input
+                      aria-label={td('detail.overrideReason')}
                       value={overrideReason}
                       onChange={(e) => setOverrideReason(e.target.value)}
                       placeholder={td('detail.overrideReason')}
@@ -536,7 +547,7 @@ export function AppointmentDetailPanel({
                         {td('detail.cancel')}
                       </button>
                       <button
-                        disabled={overrideMutation.isPending}
+                        disabled={overrideMutation.isPending || !overrideReason.trim() || overrideNewStatus === a.status}
                         onClick={() => overrideMutation.mutate()}
                         className="flex-1 bg-primary-600 text-white py-1.5 rounded text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
                       >

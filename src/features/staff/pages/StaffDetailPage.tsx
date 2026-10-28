@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
-import { staffService, STAFF_TYPE_LABELS } from '../services/staffService'
+import { staffService } from '../services/staffService'
 import { EditStaffDrawer } from '../components/EditStaffDrawer'
 import { StaffBlockedTimesTab } from '../components/StaffBlockedTimesTab'
 import { StaffAccessSection } from '../components/StaffAccessSection'
@@ -17,9 +17,10 @@ type Tab = 'overview' | 'absence'
 
 function Field({ label, value }: { label: string; value: string | null | undefined }) {
   return (
-    <div>
+    // min-w-0 + break-words: a long email wrapped onto the next column (DT-15)
+    <div className="min-w-0">
       <dt className="text-xs text-gray-500 dark:text-gray-400 font-medium">{label}</dt>
-      <dd className="text-sm text-gray-800 dark:text-gray-200 mt-0.5">
+      <dd className="text-sm text-gray-800 dark:text-gray-200 mt-0.5 break-words">
         {value || <span className="text-gray-500 dark:text-gray-400">—</span>}
       </dd>
     </div>
@@ -99,7 +100,7 @@ export function StaffDetailPage() {
       </nav>
 
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-4">
           <div
             className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-semibold flex-shrink-0"
@@ -110,7 +111,7 @@ export function StaffDetailPage() {
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{staff.fullName}</h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm text-gray-500 dark:text-gray-400">{STAFF_TYPE_LABELS[staff.staffType]}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{t(`staffType.${staff.staffType}`)}</span>
               <span
                 className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                   staff.isActive ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300'
@@ -122,7 +123,7 @@ export function StaffDetailPage() {
           </div>
         </div>
         {canManage && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {staff.isActive ? (
               <button
                 onClick={() => confirm.ask({
@@ -184,7 +185,7 @@ export function StaffDetailPage() {
           </Section>
 
           <Section title={t('section.employment')}>
-            <Field label={t('field.staffType')} value={STAFF_TYPE_LABELS[staff.staffType]} />
+            <Field label={t('field.staffType')} value={t(`staffType.${staff.staffType}`)} />
             <Field label={t('field.specialty')} value={staff.specialty} />
             <Field label={t('field.hireDate')} value={staff.hireDate ? formatDate(staff.hireDate) : undefined} />
             <Field label={t('field.terminationDate')} value={staff.terminationDate ?? undefined} />

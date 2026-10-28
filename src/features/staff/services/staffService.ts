@@ -9,14 +9,11 @@ export type StaffType =
   | 'ClinicAdmin'
   | 'OfficeManager';
 
-export const STAFF_TYPE_LABELS: Record<StaffType, string> = {
-  Dentist: 'Dentist',
-  DentalAssistant: 'Dental Assistant',
-  Hygienist: 'Hygienist',
-  Receptionist: 'Receptionist',
-  ClinicAdmin: 'Clinic Admin',
-  OfficeManager: 'Office Manager',
-};
+/**
+ * What a new profile can be (DT-22). Hygienist and Clinic admin went with the role
+ * simplification; existing profiles keep them and still display, but they aren't offered.
+ */
+export const SELECTABLE_STAFF_TYPES: StaffType[] = ['Dentist', 'DentalAssistant', 'Receptionist', 'OfficeManager'];
 
 export const ALL_STAFF_TYPES: StaffType[] = [
   'Dentist',

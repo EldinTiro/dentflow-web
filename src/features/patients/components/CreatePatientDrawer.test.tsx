@@ -65,4 +65,16 @@ describe('CreatePatientDrawer', () => {
       expect(screen.getByLabelText(name)).toBeInTheDocument()
     }
   })
+
+  // DT-36 / QA-047: "+387" + "61 234 567" was stored as "+38761 234 567"
+  it('keeps a space between the dial code and the number', async () => {
+    create.mockResolvedValue({} as never)
+    renderWithProviders(<CreatePatientDrawer onClose={() => {}} />)
+    const user = userEvent.setup()
+    await user.type(screen.getByPlaceholderText('61 123 456'), '061 234 567')
+
+    await fillNamesAndSubmit()
+
+    expect(create.mock.calls[0][0].phoneMobile).toBe('+387 61 234 567')
+  })
 })

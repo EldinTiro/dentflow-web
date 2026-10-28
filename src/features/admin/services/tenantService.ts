@@ -115,8 +115,6 @@ export interface DaySchedule {
 export type WeeklySchedule = Record<string, DaySchedule>  // key: "monday"..."sunday"
 
 export interface ClinicSettings {
-  workdayStart: string        // legacy fallback "08:00"
-  workdayEnd: string          // legacy fallback "22:30"
   slotDurationMinutes: number
   weeklyScheduleJson: string | null
 }

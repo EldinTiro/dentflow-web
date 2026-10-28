@@ -2,9 +2,16 @@
   "title": "Termini",
   "totalCount": "{{count}} termin(a)",
   "filteredOf": "{{filtered}} od",
-  "button": { "bookAppointment": "+ Zakaži termin" },
-  "tab": { "list": "Lista", "calendar": "Kalendar" },
-  "search": { "placeholder": "Pretraži pacijenta ili razlog…" },
+  "button": {
+    "bookAppointment": "+ Zakaži termin"
+  },
+  "tab": {
+    "list": "Lista",
+    "calendar": "Kalendar"
+  },
+  "search": {
+    "placeholder": "Pretraži pacijenta ili razlog…"
+  },
   "filter": {
     "search": "Pretraži termine",
     "clearSearch": "Obriši pretragu",
@@ -55,7 +62,9 @@
   "types": {
     "title": "Vrste usluga",
     "subtitle": "Upravljajte vrstama usluga dostupnim za zakazivanje.",
-    "button": { "newType": "Nova vrsta" },
+    "button": {
+      "newType": "Nova vrsta"
+    },
     "emptyState": "Nema vrsta usluga.",
     "searchPlaceholder": "Pretraži usluge…",
     "noResults": "Nema usluga koje odgovaraju pretrazi.",
@@ -154,11 +163,14 @@
     "createInvoice": "Kreiraj fakturu",
     "overrideButton": "Ručno promijeni status",
     "overrideHint": "Admin override — zaobilazi pravila tranzicije",
-    "overrideReason": "Razlog (opciono)",
+    "overrideReason": "Razlog (obavezno)",
     "applying": "Čekaj…",
     "apply": "Primijeni",
     "cancelTitle": "Otkaži termin",
     "cancelBody": "Da li sigurno želite otkazati ovaj termin?",
-    "cancelConfirm": "Otkaži termin"
+    "cancelConfirm": "Otkaži termin",
+    "notYetDue": "Prijem i tretman su dostupni na dan termina.",
+    "patientNotFound": "Pacijent nije pronađen",
+    "overrideNewStatus": "Novi status"
   }
 }

@@ -18,7 +18,7 @@ import type { AppointmentResponse } from '@/features/appointments/services/appoi
 import { TreatmentPlanTab } from '@/features/treatments/components/TreatmentPlanTab'
 import { PatientFilesTab } from '../components/PatientFilesTab'
 import { PatientBillingTab } from '@/features/billing/components/PatientBillingTab'
-import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
+import { ConfirmDialog, useConfirm } from '@/shared/components/ConfirmDialog'
 import { Trash2, Plus, AlertTriangle, Phone, User, Heart, CalendarPlus } from 'lucide-react'
 import { AllergyAlert } from '../components/AllergyAlert'
 import { DeactivatePatientDialog } from '../components/DeactivatePatientDialog'
@@ -78,7 +78,8 @@ export function PatientDetailPage() {
   const [selectedAppt, setSelectedAppt] = useState<AppointmentResponse | null>(null)
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null)
 
-  const canManage = can(useAuthStore(selectRoles), 'patients.manage')
+  const roles = useAuthStore(selectRoles)
+  const canManage = can(roles, 'patients.manage')
 
   const { data: patient, isLoading, isError } = useQuery({
     queryKey: ['patient', id],
@@ -141,7 +142,7 @@ export function PatientDetailPage() {
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{patient.fullName}</h1>
@@ -158,8 +159,8 @@ export function PatientDetailPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t('parentGuardian')} <span className="font-medium text-gray-700 dark:text-gray-300">{patient.parentName}</span></p>
           )}
         </div>
-        <div className="flex gap-2">
-          {canManage && (
+        <div className="flex flex-wrap gap-2">
+          {canManage && patient.status !== 'Inactive' && (
             <button
               onClick={() => setShowBook(true)}
               className="inline-flex items-center gap-1.5 bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700"
@@ -182,7 +183,8 @@ export function PatientDetailPage() {
               {t('status.deactivate')}
             </button>
           )}
-          {canManage && (
+          {/* Only a duplicate without history can be deleted (D9, DT-19). */}
+          {canManage && !patient.hasHistory && (
             <button
               onClick={() => setConfirmDelete(true)}
               className="text-red-600 px-2 py-2 rounded-md text-xs font-medium hover:bg-red-50 dark:hover:bg-red-400/10 dark:text-red-300"
@@ -246,7 +248,7 @@ export function PatientDetailPage() {
           onSelect={setSelectedAppt}
         />
       ) : tab === 'treatments' ? (
-        <TreatmentPlanTab patientId={id!} canManage={canManage} />
+        <TreatmentPlanTab patientId={id!} canManage={can(roles, 'treatments.manage')} />
       ) : tab === 'medical' ? (
         <MedicalTab patientId={id!} canManage={canManage} />
       ) : tab === 'files' ? (
@@ -417,7 +419,9 @@ function AppointmentHistoryTab({
 
 function MedicalTab({ patientId, canManage }: { patientId: string; canManage: boolean }) {
   const { t } = useTranslation('patients')
+  const { t: tc } = useTranslation('common')
   const qc = useQueryClient()
+  const confirm = useConfirm()
 
   // — Emergency contacts —
   const { data: contacts = [] } = useQuery({
@@ -446,9 +450,14 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
     mutationFn: () => patientService.addAllergy(patientId, allergyForm),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['patient-allergies', patientId] }); setShowAddAllergy(false); setAllergyForm({ allergen: '', reaction: '', severity: '', notes: '' }) },
   })
+  // DT-10: removing an allergy hides a clinical warning, so it is confirmed and announced.
   const deleteAllergyMutation = useMutation({
     mutationFn: (id: string) => patientService.deleteAllergy(patientId, id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['patient-allergies', patientId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['patient-allergies', patientId] })
+      toast.success(t('medical.allergyRemoved'))
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, t('medical.allergyRemoveFailed'))),
   })
 
   // — Medical history —
@@ -506,6 +515,7 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
 
   return (
     <div className="space-y-4">
+      {confirm.dialog}
       {/* ── Emergency Contacts ── */}
       <div className={cardCls}>
         <div className="flex items-center justify-between p-5 pb-3">
@@ -654,7 +664,17 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
                   </div>
                 </div>
                 {canManage && (
-                  <button onClick={() => deleteAllergyMutation.mutate(a.id)} className="text-gray-500 hover:text-red-500 transition-colors dark:text-gray-400">
+                  <button
+                    onClick={() => confirm.ask({
+                      title: t('medical.removeAllergyTitle'),
+                      description: t('medical.removeAllergyBody', { allergen: a.allergen }),
+                      confirmLabel: t('medical.removeAllergyConfirm'),
+                      cancelLabel: tc('button.cancel'),
+                      onConfirm: () => deleteAllergyMutation.mutate(a.id),
+                    })}
+                    aria-label={t('medical.removeAllergy', { allergen: a.allergen })}
+                    title={t('medical.removeAllergy', { allergen: a.allergen })}
+                    className="text-gray-500 hover:text-red-500 transition-colors dark:text-gray-400">
                     <Trash2 size={14} />
                   </button>
                 )}

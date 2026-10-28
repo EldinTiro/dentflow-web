@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -9,10 +9,11 @@ import { TempPasswordBox } from '@/shared/components/TempPasswordBox';
 import { TENANT_ROLES, type TenantRole } from '@/shared/lib/permissions';
 import {
   staffService,
-  ALL_STAFF_TYPES,
+  SELECTABLE_STAFF_TYPES,
   type CreateStaffRequest,
   type StaffMemberResponse,
 } from '../services/staffService';
+import { defaultRoleFor } from '../lib/defaultRole';
 
 interface Props {
   onClose: () => void;
@@ -41,8 +42,9 @@ export function CreateStaffDrawer({ onClose }: Props) {
     register,
     handleSubmit,
     watch,
+    setValue,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, dirtyFields },
   } = useForm<FormValues>({
     defaultValues: {
       staffType: 'Receptionist',
@@ -52,6 +54,12 @@ export function CreateStaffDrawer({ onClose }: Props) {
     },
   });
   const canSignIn = watch('canSignIn');
+  const staffType = watch('staffType');
+
+  // DT-21: follow the staff type until the owner picks a role themselves.
+  useEffect(() => {
+    if (!dirtyFields.role) setValue('role', defaultRoleFor(staffType));
+  }, [staffType, dirtyFields.role, setValue]);
 
   const mutation = useMutation({
     mutationFn: ({ canSignIn, role, ...profile }: FormValues) =>
@@ -69,7 +77,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
       await mutation.mutateAsync(values);
     } catch (err) {
       const codes = getApiErrorCodes(err);
-      if (codes.has('Staff.AlreadyExists') || codes.has('Auth.EmailAlreadyExists') || codes.has('DuplicateEmail') || codes.has('DuplicateUserName')) {
+      if (['Staff.AlreadyExists', 'User.EmailAlreadyExists', 'Auth.EmailAlreadyExists', 'DuplicateEmail', 'DuplicateUserName'].some((c) => codes.has(c))) {
         setError('email', { message: t('create.emailTaken') });
       } else if (codes.has('Staff.EmailRequiredForAccess')) {
         setError('email', { message: t('create.emailRequiredForAccess') });
@@ -129,7 +137,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
             {t('create.staffType')} <span className="text-red-500">*</span>
           </label>
           <select id="staff-staffType" className={inputClass} {...register('staffType', { required: true })}>
-            {ALL_STAFF_TYPES.map((type) => (
+            {SELECTABLE_STAFF_TYPES.map((type) => (
               <option key={type} value={type}>{t(`staffType.${type}`)}</option>
             ))}
           </select>

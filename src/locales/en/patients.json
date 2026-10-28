@@ -130,7 +130,9 @@
     "couldNotOpenFile": "Could not open file"
   },
   "allergyAlert": {
-    "label": "Allergies"
+    "label": "Allergies",
+    "medical": "Medical alerts",
+    "pregnant": "Pregnant"
   },
   "allergySeverity": {
     "Mild": "Mild",
@@ -187,7 +189,13 @@
       "hasArtificialJoints": "Artificial joints",
       "hasLatexAllergy": "Latex allergy"
     },
-    "removeContact": "Remove contact {{name}}"
+    "removeContact": "Remove contact {{name}}",
+    "removeAllergy": "Remove allergy {{allergen}}",
+    "removeAllergyTitle": "Remove this allergy?",
+    "removeAllergyBody": "{{allergen}} will no longer be shown as a warning for this patient.",
+    "removeAllergyConfirm": "Remove",
+    "allergyRemoved": "Allergy removed.",
+    "allergyRemoveFailed": "Could not remove the allergy."
   },
   "treatmentPlans": {
     "newPlan": "New Plan",

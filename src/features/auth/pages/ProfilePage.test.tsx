@@ -45,3 +45,15 @@ describe('ProfilePage notifications tab', () => {
     expect(await screen.findByText(upsell)).toBeInTheDocument()
   })
 })
+
+// DT-31: a reload always went back to the Profile tab
+describe('ProfilePage tabs', () => {
+  afterEach(() => useAuthStore.getState().clearAuth())
+
+  it('opens the tab named in ?tab=', async () => {
+    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'p@x', fullName: 'Pink Owner', roles: ['ClinicOwner'] })
+    renderWithProviders(<ThemeProvider><ProfilePage /></ThemeProvider>, { route: '/settings/profile?tab=appearance' })
+
+    expect(await screen.findByRole('button', { name: 'Appearance' })).toHaveAttribute('aria-pressed', 'true')
+  })
+})

@@ -169,7 +169,8 @@ export function CreatePatientDrawer({ onClose }: Props) {
         gender: (values.gender as Gender) || null,
         email: values.email || null,
         phoneMobile: values.phoneMobile
-          ? `${values.phoneDialCode}${values.phoneMobile.replace(/^0/, '')}`
+          // One format: dial code, a space, then the number as typed (QA-047, DT-36)
+          ? `${values.phoneDialCode} ${values.phoneMobile.trim().replace(/^0/, '')}`
           : null,
         smsOptIn: values.smsOptIn,
         emailOptIn: values.emailOptIn,

@@ -68,7 +68,7 @@ describe('CreateStaffDrawer', () => {
   })
 
   // Staff.AlreadyExists: another profile; Auth.EmailAlreadyExists: an account (any clinic)
-  it.each(['staff.AlreadyExists', 'auth.EmailAlreadyExists'])('shows "email already used" under the email field for %s', async (code) => {
+  it.each(['staff.AlreadyExists', 'auth.EmailAlreadyExists', 'user.EmailAlreadyExists'])('shows "email already used" under the email field for %s', async (code) => {
     create.mockRejectedValue(fastEndpointsError('Email already exists.', code, 409))
     const user = userEvent.setup()
     renderWithProviders(<CreateStaffDrawer onClose={vi.fn()} />)
@@ -78,5 +78,29 @@ describe('CreateStaffDrawer', () => {
     await user.click(screen.getByRole('button', { name: /add staff member/i }))
 
     expect(await screen.findByText(/already used by someone/i)).toBeInTheDocument()
+  })
+
+  // DT-21: the role was Receptionist whatever the staff type
+  it.each([
+    ['Dentist', 'Dentist'],
+    ['DentalAssistant', 'DentalNurse'],
+    ['Receptionist', 'Receptionist'],
+  ])('suggests a role that fits the staff type (%s → %s)', async (staffType, role) => {
+    const user = userEvent.setup()
+    renderWithProviders(<CreateStaffDrawer onClose={vi.fn()} />)
+
+    await user.selectOptions(screen.getByLabelText(/^staff type/i), staffType)
+    await user.click(screen.getByRole('checkbox', { name: /can sign in/i }))
+
+    expect(screen.getByLabelText(/^role/i)).toHaveValue(role)
+  })
+
+  // DT-22: retired names (Hygienist, Clinic admin) were still offered
+  it('offers the current staff types only, with the role-aligned name', () => {
+    renderWithProviders(<CreateStaffDrawer onClose={vi.fn()} />)
+
+    const types = [...(screen.getByLabelText(/^staff type/i) as HTMLSelectElement).options]
+    expect(types.map((o) => o.value)).toEqual(['Dentist', 'DentalAssistant', 'Receptionist', 'OfficeManager'])
+    expect(types.map((o) => o.textContent)).toContain('Dental nurse')
   })
 })

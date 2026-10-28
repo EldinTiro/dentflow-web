@@ -438,7 +438,7 @@ export function DashboardPage() {
                       style={{ backgroundColor: member.colorHex ?? '#6366f1' }}
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-200">{member.fullName}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">{member.staffType}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{t(`staff:staffType.${member.staffType}`)}</span>
                   </div>
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">{count}</span>
                 </div>

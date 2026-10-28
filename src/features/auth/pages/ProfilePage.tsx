@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router'
 import { User, Palette, Building2, Bell, Plus } from 'lucide-react'
 import { useUserPreferences, useUpdateUserPreferences } from '../hooks/useUserPreferences'
 import { userService } from '../services/userService'
@@ -13,7 +14,8 @@ import { tenantService } from '@/features/admin/services/tenantService'
 import type { WeeklySchedule, NotificationConfig } from '@/features/admin/services/tenantService'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { passwordSchema, type PasswordForm } from '../lib/passwordSchema'
-import { DEFAULT_WEEKLY_SCHEDULE } from '@/shared/lib/clinicSchedule'
+import { DEFAULT_WEEKLY_SCHEDULE, invalidOpeningDays } from '@/shared/lib/clinicSchedule'
+import { getApiErrorMessage } from '@/shared/utils/apiError'
 import { EditNameForm } from '../components/EditNameForm'
 
 // ── Schemas ────────────────────────────────────────────────────────────────
@@ -99,7 +101,16 @@ export function ProfilePage() {
     (s) => s.user?.roles?.includes('ClinicOwner') ?? false,
   )
 
-  const [activeTab, setActiveTab] = useState<Tab>('profile')
+  // DT-31: the tab lives in ?tab= like the patient and staff tabs, so a reload keeps it.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const activeTab: Tab = (['profile', 'appearance', 'clinic', 'notifications'] as const).find((x) => x === tabParam) ?? 'profile'
+  const setActiveTab = (next: Tab) =>
+    setSearchParams((p) => {
+      const n = new URLSearchParams(p)
+      if (next === 'profile') n.delete('tab'); else n.set('tab', next)
+      return n
+    }, { replace: true })
 
   // ── Queries ──────────────────────────────────────────────────────────────
 
@@ -152,6 +163,9 @@ export function ProfilePage() {
     setLocalSchedule(prev => ({ ...prev, [day]: { ...prev[day], ...patch } }))
   }
 
+  // DT-13: an end before the start is shown on the row and blocks saving (the API agrees).
+  const badDays = invalidOpeningDays(localSchedule)
+
   const saveClinicSettings = useMutation({
     mutationFn: () => tenantService.updateSettings({
       slotDurationMinutes: Number(localDuration),
@@ -161,7 +175,7 @@ export function ProfilePage() {
       queryClient.setQueryData(['clinic-settings'], updated)
       toast.success(t('profile.clinicSettings.hoursSaved'))
     },
-    onError: () => toast.error(t('profile.clinicSettings.hoursFailed')),
+    onError: (err) => toast.error(getApiErrorMessage(err, t('profile.clinicSettings.hoursFailed'))),
   })
 
   // ── Notification config ───────────────────────────────────────────────────
@@ -287,6 +301,7 @@ export function ProfilePage() {
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
+            aria-pressed={activeTab === tab.id}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors rounded-t-lg -mb-px border-b-2 ${
               activeTab === tab.id
                 ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400'
@@ -608,6 +623,9 @@ export function ProfilePage() {
                     ? <span className="text-xs text-gray-500 dark:text-gray-400">{t('profile.clinicSettings.closed')}</span>
                     : <span />
                   }
+                  {badDays.includes(day) && (
+                    <p role="alert" className="col-span-4 text-xs text-red-600 dark:text-red-400">{t('profile.clinicSettings.endBeforeStart')}</p>
+                  )}
                 </div>
               )
             })}
@@ -631,7 +649,7 @@ export function ProfilePage() {
             <button
               type="button"
               onClick={() => saveClinicSettings.mutate()}
-              disabled={saveClinicSettings.isPending}
+              disabled={saveClinicSettings.isPending || badDays.length > 0}
               className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-60"
             >
               {saveClinicSettings.isPending ? t('profile.clinicSettings.saving') : t('profile.clinicSettings.save')}

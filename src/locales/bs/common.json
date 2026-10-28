@@ -85,11 +85,27 @@
   },
   "loading": "Učitavanje…",
   "total": "ukupno",
-  "unit": { "min": "min" },
-  "boolean": { "yes": "Da", "no": "Ne" },
-  "lastLogin": { "never": "Nikad" },
-  "expiry": { "expired": "Isteklo" },
-  "role": { "staff": "Osoblje", "SuperAdmin": "Super admin", "ClinicOwner": "Vlasnik klinike", "Dentist": "Stomatolog", "Receptionist": "Recepcioner", "DentalNurse": "Medicinska sestra / tehničar" },
+  "unit": {
+    "min": "min"
+  },
+  "boolean": {
+    "yes": "Da",
+    "no": "Ne"
+  },
+  "lastLogin": {
+    "never": "Nikad"
+  },
+  "expiry": {
+    "expired": "Isteklo"
+  },
+  "role": {
+    "staff": "Osoblje",
+    "SuperAdmin": "Super admin",
+    "ClinicOwner": "Vlasnik klinike",
+    "Dentist": "Stomatolog",
+    "Receptionist": "Recepcioner",
+    "DentalNurse": "Medicinska sestra / tehničar"
+  },
   "pagination": {
     "pageOfTotal": "Stranica {{page}} od {{totalPages}} ({{totalCount}} ukupno)",
     "showingRange": "Prikaz {{from}}–{{to}} od {{total}}"
@@ -140,7 +156,8 @@
   "tempPassword": {
     "copy": "Kopiraj",
     "copied": "Kopirano",
-    "mustChange": "Pri prvoj prijavi morat će odabrati vlastitu lozinku."
+    "mustChange": "Pri prvoj prijavi morat će odabrati vlastitu lozinku.",
+    "copyFailed": "Kopiranje nije uspjelo — lozinka je označena, pritisnite Ctrl+C."
   },
   "validation": {
     "required": "Obavezno polje",
@@ -158,6 +175,7 @@
     "passwordLower": "Mora sadržavati malo slovo",
     "passwordDigit": "Mora sadržavati broj",
     "passwordSpecial": "Mora sadržavati poseban znak",
-    "passwordsMismatch": "Lozinke se ne podudaraju"
+    "passwordsMismatch": "Lozinke se ne podudaraju",
+    "passwordUnchanged": "Nova lozinka mora biti drugačija od trenutne."
   }
 }

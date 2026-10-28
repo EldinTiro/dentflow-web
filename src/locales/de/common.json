@@ -85,11 +85,27 @@
   },
   "loading": "Laden…",
   "total": "gesamt",
-  "unit": { "min": "Min" },
-  "boolean": { "yes": "Ja", "no": "Nein" },
-  "lastLogin": { "never": "Nie" },
-  "expiry": { "expired": "Abgelaufen" },
-  "role": { "staff": "Personal", "SuperAdmin": "Super-Admin", "ClinicOwner": "Praxisinhaber", "Dentist": "Zahnarzt", "Receptionist": "Empfang", "DentalNurse": "Zahnmedizinische Fachangestellte" },
+  "unit": {
+    "min": "Min"
+  },
+  "boolean": {
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "lastLogin": {
+    "never": "Nie"
+  },
+  "expiry": {
+    "expired": "Abgelaufen"
+  },
+  "role": {
+    "staff": "Personal",
+    "SuperAdmin": "Super-Admin",
+    "ClinicOwner": "Praxisinhaber",
+    "Dentist": "Zahnarzt",
+    "Receptionist": "Empfang",
+    "DentalNurse": "Zahnmedizinische Fachangestellte"
+  },
   "pagination": {
     "pageOfTotal": "Seite {{page}} von {{totalPages}} ({{totalCount}} gesamt)",
     "showingRange": "Zeige {{from}}–{{to}} von {{total}}"
@@ -140,7 +156,8 @@
   "tempPassword": {
     "copy": "Kopieren",
     "copied": "Kopiert",
-    "mustChange": "Bei der ersten Anmeldung muss ein eigenes Passwort gewählt werden."
+    "mustChange": "Bei der ersten Anmeldung muss ein eigenes Passwort gewählt werden.",
+    "copyFailed": "Kopieren nicht möglich — das Passwort ist markiert, drücken Sie Strg+C."
   },
   "validation": {
     "required": "Pflichtfeld",
@@ -158,6 +175,7 @@
     "passwordLower": "Muss einen Kleinbuchstaben enthalten",
     "passwordDigit": "Muss eine Ziffer enthalten",
     "passwordSpecial": "Muss ein Sonderzeichen enthalten",
-    "passwordsMismatch": "Passwörter stimmen nicht überein"
+    "passwordsMismatch": "Passwörter stimmen nicht überein",
+    "passwordUnchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden."
   }
 }

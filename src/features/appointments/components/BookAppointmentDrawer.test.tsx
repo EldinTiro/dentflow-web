@@ -107,6 +107,6 @@ describe('BookAppointmentDrawer providers', () => {
     const provider = screen.getByLabelText(/^Provider/) as HTMLSelectElement
     await screen.findByRole('option', { name: /Amra Dentist/ })
     const names = [...provider.options].filter((o) => o.value).map((o) => o.textContent)
-    expect(names).toEqual(['Amra Dentist — Dentist', 'Nina Assistant — Dental assistant'])
+    expect(names).toEqual(['Amra Dentist — Dentist', 'Nina Assistant — Dental nurse'])
   })
 })

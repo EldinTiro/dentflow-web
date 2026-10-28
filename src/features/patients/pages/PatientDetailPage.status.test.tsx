@@ -20,6 +20,7 @@ vi.mock('../services/patientService', async (orig) => ({
     deactivate: vi.fn(),
     reactivate: vi.fn(),
     delete: vi.fn(),
+    deleteAllergy: vi.fn(async () => undefined),
   },
 }))
 vi.mock('@/features/appointments/services/appointmentService', async (orig) => ({
@@ -122,5 +123,40 @@ describe('PatientDetailPage status', () => {
     renderAs('Dentist', '/patients/p1?tab=medical')
 
     expect(await screen.findByRole('button', { name: /remove contact/i })).toBeInTheDocument()
+  })
+
+  // DT-10: one click on the trash icon removed an allergy, no confirm and no feedback
+  it('asks before removing an allergy and confirms it was removed', async () => {
+    svc.getById.mockResolvedValue(patient())
+    svc.listAllergies.mockResolvedValue([{ id: 'a1', allergen: 'Penicillin', severity: 'Severe', reaction: null, notes: null, reportedAt: null }] as never)
+    const user = userEvent.setup()
+    renderAs('Dentist', '/patients/p1?tab=medical')
+
+    await user.click(await screen.findByRole('button', { name: /remove allergy penicillin/i }))
+    await user.click((await dialog()).getByRole('button', { name: /cancel/i }))
+    expect(svc.deleteAllergy).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: /remove allergy penicillin/i }))
+    await user.click((await dialog()).getByRole('button', { name: /^remove$/i }))
+
+    await waitFor(() => expect(svc.deleteAllergy).toHaveBeenCalledWith('p1', 'a1'))
+    await waitFor(() => expect(toast.success).toHaveBeenCalled())
+  })
+
+  // DT-19: both actions were offered and then refused by the API
+  it('offers "Delete duplicate" only for a patient without history', async () => {
+    svc.getById.mockResolvedValue(patient({ hasHistory: true } as never))
+    renderAs('Receptionist')
+
+    await screen.findByRole('button', { name: /^deactivate$/i })
+    expect(screen.queryByRole('button', { name: /delete duplicate/i })).not.toBeInTheDocument()
+  })
+
+  it('does not offer booking for an inactive patient', async () => {
+    svc.getById.mockResolvedValue(patient({ status: 'Inactive' }))
+    renderAs('Receptionist')
+
+    await screen.findByRole('status')
+    expect(screen.queryByRole('button', { name: /book appointment/i })).not.toBeInTheDocument()
   })
 })
