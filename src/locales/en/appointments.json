@@ -57,7 +57,36 @@
   "calendar": {
     "prev": "← Prev",
     "next": "Next →",
-    "today": "Today"
+    "today": "Today",
+    "day": "Day",
+    "week": "Week",
+    "prevDay": "Previous day",
+    "nextDay": "Next day",
+    "noProviders": "No doctors take appointments yet.",
+    "moveTitle": "Move the appointment?",
+    "moveDescription": "{{patient}} → {{when}} · {{doctor}}",
+    "moveConfirm": "Move",
+    "moveCancel": "Cancel",
+    "moved": "Appointment moved",
+    "moveFailed": "Could not move the appointment",
+    "weekdays": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
+    "weekdaysLong": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ]
   },
   "types": {
     "title": "Types of Services",

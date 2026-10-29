@@ -57,7 +57,36 @@
   "calendar": {
     "prev": "← Preth.",
     "next": "Sljed. →",
-    "today": "Danas"
+    "today": "Danas",
+    "day": "Dan",
+    "week": "Sedmica",
+    "prevDay": "Prethodni dan",
+    "nextDay": "Sljedeći dan",
+    "noProviders": "Još nema doktora koji primaju termine.",
+    "moveTitle": "Pomjeriti termin?",
+    "moveDescription": "{{patient}} → {{when}} · {{doctor}}",
+    "moveConfirm": "Pomjeri",
+    "moveCancel": "Odustani",
+    "moved": "Termin pomjeren",
+    "moveFailed": "Termin nije moguće pomjeriti",
+    "weekdays": [
+      "Pon",
+      "Uto",
+      "Sri",
+      "Čet",
+      "Pet",
+      "Sub",
+      "Ned"
+    ],
+    "weekdaysLong": [
+      "Ponedjeljak",
+      "Utorak",
+      "Srijeda",
+      "Četvrtak",
+      "Petak",
+      "Subota",
+      "Nedjelja"
+    ]
   },
   "types": {
     "title": "Vrste usluga",

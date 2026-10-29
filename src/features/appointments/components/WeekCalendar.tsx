@@ -1,7 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { AppointmentResponse, AppointmentStatus } from '../services/appointmentService';
 import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
 import { useTheme } from '@/shared/context/ThemeContext';
+import { HOUR_PX, SLOT_MINUTES, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
+import { useCalendarDrag } from './useCalendarDrag';
+
+// The week test imports it from here
+export { calendarHourRange };
 
 interface Props {
   weekStart: Date;
@@ -13,32 +19,11 @@ interface Props {
   onAppointmentClick?: (appt: AppointmentResponse) => void;
   /** Click on empty time: local "YYYY-MM-DDTHH:mm", rounded down to the half hour. */
   onSlotClick?: (startAt: string) => void;
+  /** Drop after a drag: the new local start ("YYYY-MM-DDTHH:mm"); the doctor stays. */
+  onMove?: (appt: AppointmentResponse, newStartAt: string, newProviderId?: string) => void;
 }
 
 type TooltipState = { appt: AppointmentResponse; x: number; y: number } | null;
-
-const DEFAULT_HOUR_START = 6;  // 06:00
-const DEFAULT_HOUR_END   = 21; // 21:00
-
-/**
- * Hours the grid shows: 06:00–21:00, stretched to fit anything booked earlier or
- * later. A fixed 06:00 start hid a 00:30 booking entirely (QA-029). Pass `now` on
- * the current week so the current-time line always has a place on the grid.
- */
-export function calendarHourRange(appointments: { startAt: string; endAt: string }[], now?: Date) {
-  let start = DEFAULT_HOUR_START;
-  let end = DEFAULT_HOUR_END;
-  if (now) {
-    start = Math.min(start, now.getHours());
-    end = Math.max(end, now.getHours() + 1);
-  }
-  for (const a of appointments) {
-    start = Math.min(start, new Date(a.startAt).getHours());
-    const e = new Date(a.endAt);
-    end = Math.max(end, e.getHours() + (e.getMinutes() > 0 ? 1 : 0));
-  }
-  return { start, end: Math.min(end, 24) };
-}
 
 function addDays(date: Date, n: number) {
   const d = new Date(date);
@@ -46,63 +31,9 @@ function addDays(date: Date, n: number) {
   return d;
 }
 
-function isoDate(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function minutesSinceDayStart(iso: string) {
-  const d = new Date(iso);
-  return d.getHours() * 60 + d.getMinutes();
-}
-
-const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-function layoutDay(appts: AppointmentResponse[]): Map<string, { col: number; cols: number }> {
-  const sorted = [...appts].sort(
-    (a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
-  );
-
-  const layout = new Map<string, { col: number; cols: number }>();
-  const clusters: AppointmentResponse[][] = [];
-
-  for (const appt of sorted) {
-    const apptStart = new Date(appt.startAt).getTime();
-    let placed = false;
-    for (const cluster of clusters) {
-      const clusterEnd = Math.max(...cluster.map((a) => new Date(a.endAt).getTime()));
-      if (apptStart < clusterEnd) {
-        cluster.push(appt);
-        placed = true;
-        break;
-      }
-    }
-    if (!placed) clusters.push([appt]);
-  }
-
-  for (const cluster of clusters) {
-    const cols = cluster.length;
-    cluster.forEach((appt, colIdx) => {
-      layout.set(appt.id, { col: colIdx, cols });
-    });
-  }
-
-  return layout;
-}
-
-const HOUR_PX = 56;
-
-/** The current time, refreshed every minute so the now-line keeps moving. */
-function useNow(intervalMs = 60_000) {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs]);
-  return now;
-}
-const SLOT_MINUTES = 30;
-
-export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick }: Props) {
+export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove }: Props) {
+  const { t } = useTranslation('appointments');
+  const dayLabels = t('calendar.weekdays', { returnObjects: true }) as string[];
   const [tooltip, setTooltip] = useState<TooltipState>(null);
   const { theme } = useTheme();
   const statusLabels = useAppointmentStatusLabels();
@@ -134,6 +65,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
   );
   const HOURS = HOUR_END - HOUR_START;
   const totalMinutes = HOURS * 60;
+  const drag = useCalendarDrag({ hourStart: HOUR_START, hourEnd: HOUR_END, onMove });
   // Where "now" falls in the grid, or null when the grid does not show this hour
   const nowOffsetMin = now.getHours() * 60 + now.getMinutes() - HOUR_START * 60;
   const nowTopPct = nowOffsetMin >= 0 && nowOffsetMin < totalMinutes ? (nowOffsetMin / totalMinutes) * 100 : null;
@@ -158,7 +90,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                 isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'
               }`}
             >
-              <div>{DAY_LABELS[i]}</div>
+              <div>{dayLabels[i]}</div>
               <div
                 className={`mx-auto mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-sm font-semibold ${
                   isToday ? 'bg-primary-600 text-white' : 'text-gray-800 dark:text-gray-200'
@@ -199,6 +131,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                 <div
                   key={colIdx}
                   data-day={dateStr}
+                  data-drop-day={dateStr}
                   onClick={onSlotClick ? (e) => {
                     const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
                     const slot = Math.floor((y / HOUR_PX) * (60 / SLOT_MINUTES));
@@ -232,6 +165,20 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                     </div>
                   )}
 
+                  {/* Where a dragged visit would land */}
+                  {drag.dragged && drag.preview?.day === dateStr && (
+                    <div
+                      data-testid="drop-preview"
+                      className="pointer-events-none absolute inset-x-1 z-30 rounded border-2 border-dashed border-primary-500 bg-primary-50/70 dark:bg-primary-900/40 px-1.5 py-0.5 text-xs font-semibold text-primary-700 dark:text-primary-200"
+                      style={{
+                        top: `${((drag.preview.startMinutes - HOUR_START * 60) / totalMinutes) * 100}%`,
+                        height: `${(drag.dragged.durationMinutes / totalMinutes) * 100}%`,
+                      }}
+                    >
+                      {`${String(Math.floor(drag.preview.startMinutes / 60)).padStart(2, '0')}:${String(drag.preview.startMinutes % 60).padStart(2, '0')}`}
+                    </div>
+                  )}
+
                   {/* Appointment chips */}
                   {dayAppts.map((appt) => {
                     const startMin = minutesSinceDayStart(appt.startAt);
@@ -248,17 +195,24 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                     const patientName = patientNames[appt.patientId];
                     const typeName = appointmentTypeNames[appt.appointmentTypeId];
                     const chipLabel = [patientName, typeName].filter(Boolean).join(' · ') || statusLabels[appt.status as AppointmentStatus];
+                    const chip = drag.chipProps(appt);
 
                     return (
                       <button
                         key={appt.id}
-                        onClick={(e) => { e.stopPropagation(); onAppointmentClick?.(appt); }}
+                        onPointerDown={(e) => { setTooltip(null); chip.onPointerDown?.(e); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (drag.consumeClick()) return;
+                          onAppointmentClick?.(appt);
+                        }}
                         onMouseEnter={(e) => {
+                          if (drag.dragged) return;
                           const rect = e.currentTarget.getBoundingClientRect();
                           setTooltip({ appt, x: rect.right + 8, y: rect.top });
                         }}
                         onMouseLeave={() => setTooltip(null)}
-                        className="absolute overflow-hidden rounded text-left text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition"
+                        className={`absolute overflow-hidden rounded text-left text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
                         style={{
                           top: `${topPct}%`,
                           height: `${Math.max(heightPct, 1.5)}%`,
@@ -266,6 +220,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                           width: `calc(${widthPct}% - ${col === 0 ? 2 + GAP / 2 : GAP}px)`,
                           backgroundColor: color + chipBgOpacity,
                           borderLeft: `3px solid ${color}`,
+                          ...chip.style,
                         }}
                       >
                         <span className="font-semibold truncate block" style={{ color }}>

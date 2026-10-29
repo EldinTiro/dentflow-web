@@ -57,7 +57,36 @@
   "calendar": {
     "prev": "← Zurück",
     "next": "Weiter →",
-    "today": "Heute"
+    "today": "Heute",
+    "day": "Tag",
+    "week": "Woche",
+    "prevDay": "Vorheriger Tag",
+    "nextDay": "Nächster Tag",
+    "noProviders": "Noch keine Ärzte, die Termine annehmen.",
+    "moveTitle": "Termin verschieben?",
+    "moveDescription": "{{patient}} → {{when}} · {{doctor}}",
+    "moveConfirm": "Verschieben",
+    "moveCancel": "Abbrechen",
+    "moved": "Termin verschoben",
+    "moveFailed": "Termin konnte nicht verschoben werden",
+    "weekdays": [
+      "Mo",
+      "Di",
+      "Mi",
+      "Do",
+      "Fr",
+      "Sa",
+      "So"
+    ],
+    "weekdaysLong": [
+      "Montag",
+      "Dienstag",
+      "Mittwoch",
+      "Donnerstag",
+      "Freitag",
+      "Samstag",
+      "Sonntag"
+    ]
   },
   "types": {
     "title": "Leistungsarten",
