@@ -16,6 +16,7 @@ import { RescheduleModal } from '@/features/appointments/components/RescheduleMo
 import { StatusBadge } from '@/shared/components/StatusBadge'
 import type { AppointmentResponse } from '@/features/appointments/services/appointmentService'
 import { TreatmentPlanTab } from '@/features/treatments/components/TreatmentPlanTab'
+import { ToothChart } from '../components/ToothChart'
 import { PatientFilesTab } from '../components/PatientFilesTab'
 import { PatientBillingTab } from '@/features/billing/components/PatientBillingTab'
 import { ConfirmDialog, useConfirm } from '@/shared/components/ConfirmDialog'
@@ -27,8 +28,8 @@ import { getApiErrorCodes, getApiErrorMessage } from '@/shared/utils/apiError'
 import { formatDate } from '@/shared/lib/format'
 import { can } from '@/shared/lib/permissions'
 
-type Tab = 'overview' | 'appointments' | 'treatments' | 'files' | 'billing' | 'medical'
-const TABS: Tab[] = ['overview', 'appointments', 'treatments', 'medical', 'files', 'billing']
+type Tab = 'overview' | 'appointments' | 'teeth' | 'treatments' | 'files' | 'billing' | 'medical'
+const TABS: Tab[] = ['overview', 'appointments', 'teeth', 'treatments', 'medical', 'files', 'billing']
 
 const STATUS_STYLES: Record<PatientStatus, string> = {
   Active: 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300',
@@ -136,7 +137,7 @@ export function PatientDetailPage() {
   )
 
   return (
-    <div className="p-6 max-w-4xl">
+    <div className="p-6 max-w-6xl">
       <Link to="/patients" className="text-sm text-blue-600 dark:text-blue-400 hover:underline mb-4 block">
         {t('backToPatients')}
       </Link>
@@ -220,6 +221,7 @@ export function PatientDetailPage() {
         {([
           { key: 'overview', label: t('tab.overview') },
           { key: 'appointments', label: t('tab.appointments') },
+          { key: 'teeth', label: t('tab.teeth') },
           { key: 'treatments', label: t('tab.treatments') },
           { key: 'medical', label: t('tab.medical') },
           { key: 'files', label: t('tab.files') },
@@ -247,6 +249,9 @@ export function PatientDetailPage() {
           totalCount={apptData?.totalCount ?? 0}
           onSelect={setSelectedAppt}
         />
+      ) : tab === 'teeth' ? (
+        // Clinicians write the chart, like treatment plans; the desk reads it
+        <ToothChart patientId={id!} canEdit={can(roles, 'treatments.manage')} />
       ) : tab === 'treatments' ? (
         <TreatmentPlanTab patientId={id!} canManage={can(roles, 'treatments.manage')} />
       ) : tab === 'medical' ? (

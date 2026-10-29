@@ -27,7 +27,8 @@
     "treatments": "Treatments",
     "medical": "Medical",
     "files": "Files",
-    "billing": "Billing"
+    "billing": "Billing",
+    "teeth": "Tooth chart"
   },
   "section": {
     "demographics": "Demographics",
@@ -270,5 +271,40 @@
     "deleteDuplicateTitle": "Delete this duplicate?",
     "deleteDuplicateBody": "will be removed. This is only for a patient added by mistake, with no appointments, plans, invoices or files.",
     "hasHistory": "This patient has history (appointments, plans, invoices or files) and can't be deleted. Deactivate them instead."
+  },
+  "teeth": {
+    "upperJaw": "Upper jaw",
+    "lowerJaw": "Lower jaw",
+    "tooth": "Tooth {{n}}",
+    "pickTooth": "Click a tooth to see and record what was found on it.",
+    "findings": "Findings",
+    "noFindings": "Nothing recorded yet.",
+    "treatment": "Treatment plan",
+    "finding": "Finding",
+    "surfaces": "Surfaces",
+    "notes": "Notes",
+    "notesPlaceholder": "Note (optional)",
+    "add": "Add finding",
+    "remove": "Remove {{condition}}",
+    "saveFailed": "Could not save the tooth chart",
+    "condition": {
+      "Caries": "Caries",
+      "Filling": "Filling",
+      "Crown": "Crown",
+      "RootCanal": "Root canal treated",
+      "Implant": "Implant",
+      "Missing": "Missing"
+    },
+    "surface": {
+      "M": "Mesial",
+      "O": "Occlusal / incisal",
+      "D": "Distal",
+      "B": "Buccal / labial",
+      "L": "Lingual / palatal"
+    },
+    "legend": {
+      "planned": "Treatment planned",
+      "done": "Treatment done"
+    }
   }
 }

@@ -142,9 +142,9 @@ function ItemForm({
           <label className="block text-xs text-gray-500 mb-0.5 dark:text-gray-400">{tp('treatmentPlans.tooth')}</label>
           <input
             type="number"
-            min={1}
-            max={32}
-            placeholder="1–32"
+            min={11}
+            max={48}
+            placeholder="11–48"
             value={form.toothNumber}
             onChange={(e) => set('toothNumber', e.target.value)}
             className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
