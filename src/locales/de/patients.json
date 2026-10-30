@@ -27,7 +27,8 @@
     "appointments": "Termine",
     "treatments": "Behandlungen",
     "medical": "Medizinisch",
-    "files": "Dateien"
+    "files": "Dateien",
+    "teeth": "Zahnschema"
   },
   "section": {
     "demographics": "Demografische Daten",
@@ -270,5 +271,40 @@
     "deleteDuplicateTitle": "Dieses Duplikat löschen?",
     "deleteDuplicateBody": "wird entfernt. Nur für einen versehentlich angelegten Patienten ohne Termine, Pläne, Rechnungen oder Dateien.",
     "hasHistory": "Dieser Patient hat einen Verlauf (Termine, Pläne, Rechnungen oder Dateien) und kann nicht gelöscht werden. Bitte stattdessen deaktivieren."
+  },
+  "teeth": {
+    "upperJaw": "Oberkiefer",
+    "lowerJaw": "Unterkiefer",
+    "tooth": "Zahn {{n}}",
+    "pickTooth": "Klicken Sie auf einen Zahn, um Befunde zu sehen und einzutragen.",
+    "findings": "Befunde",
+    "noFindings": "Noch nichts eingetragen.",
+    "treatment": "Behandlungsplan",
+    "finding": "Befund",
+    "surfaces": "Flächen",
+    "notes": "Notiz",
+    "notesPlaceholder": "Notiz (optional)",
+    "add": "Befund hinzufügen",
+    "remove": "Entfernen: {{condition}}",
+    "saveFailed": "Zahnschema konnte nicht gespeichert werden",
+    "condition": {
+      "Caries": "Karies",
+      "Filling": "Füllung",
+      "Crown": "Krone",
+      "RootCanal": "Wurzelbehandelt",
+      "Implant": "Implantat",
+      "Missing": "Fehlt"
+    },
+    "surface": {
+      "M": "Mesial",
+      "O": "Okklusal / inzisal",
+      "D": "Distal",
+      "B": "Bukkal / labial",
+      "L": "Lingual / palatinal"
+    },
+    "legend": {
+      "planned": "Behandlung geplant",
+      "done": "Behandlung abgeschlossen"
+    }
   }
 }

@@ -16,13 +16,22 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { BookAppointmentDrawer } from '../components/BookAppointmentDrawer';
 import { RescheduleModal } from '../components/RescheduleModal';
 import { WeekCalendar } from '../components/WeekCalendar';
+import { DayCalendar, type DayProvider } from '../components/DayCalendar';
+import { useConfirm } from '@/shared/components/ConfirmDialog';
+import { getApiErrorMessage } from '@/shared/utils/apiError';
+import { formatDate as formatDay } from '@/shared/lib/format';
+import { toast } from 'sonner';
 import { AppointmentDetailPanel } from '../components/AppointmentDetailPanel';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
 import { Search, X, Download } from 'lucide-react';
-import { toLocalIsoDate } from '@/shared/lib/dates';
+import { localDayEndUtc, localDayStartUtc, toLocalIsoDate } from '@/shared/lib/dates';
 import { isClinicMember } from '@/shared/lib/permissions'
 
 type Tab = 'list' | 'calendar';
+type CalendarView = 'week' | 'day';
+
+/** Monday = 0, like the week grid. */
+const weekdayIndex = (d: Date) => (d.getDay() + 6) % 7;
 
 function getMondayOfWeek(date: Date): Date {
   const d = new Date(date);
@@ -96,6 +105,13 @@ export function AppointmentsPage() {
     }, { replace: true });
 
   const setTab = (v: Tab) => updateParam('tab', v === 'calendar' ? null : v, false);
+  // The calendar shows a week, or one day with a column per doctor (?view=day&day=…)
+  const calendarView: CalendarView = searchParams.get('view') === 'day' ? 'day' : 'week';
+  const dayParam = searchParams.get('day');
+  const day = dayParam && /^\d{4}-\d{2}-\d{2}$/.test(dayParam) ? dayParam : toLocalIsoDate(new Date());
+  const setCalendarView = (v: CalendarView) => updateParam('view', v === 'day' ? 'day' : null, false);
+  const setDay = (v: string) => updateParam('day', v, false);
+  const shiftDay = (n: number) => { const d = new Date(`${day}T12:00:00`); d.setDate(d.getDate() + n); setDay(toLocalIsoDate(d)); };
   const setStatusFilter = (v: AppointmentStatus | '') => updateParam('status', v || null);
   const setDateFrom = (v: string) => updateParam('from', v || null);
   const setDateTo = (v: string) => updateParam('to', v || null);
@@ -178,6 +194,18 @@ export function AppointmentsPage() {
     queryFn: () => appointmentService.list(calendarParams),
   });
 
+  const showDay = tab === 'calendar' && calendarView === 'day';
+  const { data: dayData } = useQuery({
+    queryKey: ['appointments-day', day],
+    queryFn: () => appointmentService.list({ dateFrom: day, dateTo: day, pageSize: 200 }),
+    enabled: showDay,
+  });
+  const { data: dayAbsences } = useQuery({
+    queryKey: ['clinic-absences', localDayStartUtc(day), localDayEndUtc(day)],
+    queryFn: () => staffService.listClinicAbsences({ from: localDayStartUtc(day), to: localDayEndUtc(day) }),
+    enabled: showDay,
+  });
+
   const { data: apptTypes } = useQuery({
     queryKey: ['appointment-types'],
     queryFn: () => appointmentService.listTypes(),
@@ -206,11 +234,11 @@ export function AppointmentsPage() {
   // The appointment lists carry the names; no need to download every patient (QA-033).
   const patientNames = useMemo(() => {
     const map: Record<string, string> = {};
-    for (const a of [...(listData?.items ?? []), ...(calData?.items ?? [])]) {
+    for (const a of [...(listData?.items ?? []), ...(calData?.items ?? []), ...(dayData?.items ?? [])]) {
       if (a.patientName) map[a.patientId] = a.patientName;
     }
     return map;
-  }, [listData, calData]);
+  }, [listData, calData, dayData]);
 
   const appointmentTypeNames = useMemo(() => {
     const map: Record<string, string> = {};
@@ -218,7 +246,47 @@ export function AppointmentsPage() {
     return map;
   }, [apptTypes]);
 
+  // Day view columns: every doctor who takes appointments, plus anyone else who has a visit that day
+  const dayProviders = useMemo<DayProvider[]>(() => {
+    const busy = new Set((dayData?.items ?? []).map((a) => a.providerId));
+    return (staffData?.items ?? [])
+      .filter((s) => (s.isActive && s.isBookable) || busy.has(s.id))
+      .map((s) => ({ id: s.id, fullName: s.fullName, colorHex: s.colorHex }));
+  }, [staffData, dayData]);
+
   const queryClient = useQueryClient();
+  const confirmMove = useConfirm();
+  const moveMutation = useMutation({
+    mutationFn: ({ appt, startAt, providerId }: { appt: AppointmentResponse; startAt: string; providerId?: string }) => {
+      const start = new Date(startAt);
+      return appointmentService.reschedule(appt.id, {
+        newStartAt: start.toISOString(),
+        newEndAt: new Date(start.getTime() + appt.durationMinutes * 60_000).toISOString(),
+        ...(providerId ? { newProviderId: providerId } : {}),
+      });
+    },
+    onSuccess: () => { invalidateAppointmentQueries(queryClient); toast.success(t('calendar.moved')); },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, t('calendar.moveFailed'))),
+  });
+  const dayLabel = (iso: string) => {
+    const d = new Date(`${iso}T12:00:00`);
+    return `${(t('calendar.weekdaysLong', { returnObjects: true }) as string[])[weekdayIndex(d)]}, ${formatDay(d)}`;
+  };
+  /** Dropped on the calendar: say where it goes, move it on yes. */
+  const askMove = (appt: AppointmentResponse, startAt: string, providerId?: string) => {
+    const [date, time] = startAt.split('T');
+    confirmMove.ask({
+      title: t('calendar.moveTitle'),
+      description: t('calendar.moveDescription', {
+        patient: appt.patientName ?? patientNames[appt.patientId] ?? '',
+        when: `${dayLabel(date)} ${time}`,
+        doctor: providerNames[providerId ?? appt.providerId] ?? '',
+      }),
+      confirmLabel: t('calendar.moveConfirm'),
+      cancelLabel: t('calendar.moveCancel'),
+      onConfirm: () => moveMutation.mutate({ appt, startAt, providerId }),
+    });
+  };
   const quickStatusMutation = useMutation({
     mutationFn: ({ id, next }: { id: string; next: AppointmentStatus }) =>
       appointmentService.updateStatus(id, next),
@@ -551,25 +619,49 @@ export function AppointmentsPage() {
       ) : (
         /* Calendar view */
         <div className="flex-1 overflow-hidden flex flex-col px-4 sm:px-6 pb-6">
-          {/* Week nav */}
-          <div className="flex items-center gap-4 py-2">
-            <button onClick={prevWeek} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.prev')}</button>
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {weekStart.toLocaleDateString([], { month: 'long', day: 'numeric' })}
-              {' — '}
-              {weekEnd.toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })}
-            </span>
-            <button onClick={nextWeek} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.next')}</button>
+          {/* Day / week, and stepping through them */}
+          <div className="flex flex-wrap items-center gap-3 py-2">
+            <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-0.5">
+              {(['day', 'week'] as CalendarView[]).map((v) => (
+                <button
+                  key={v}
+                  aria-pressed={calendarView === v}
+                  onClick={() => setCalendarView(v)}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    calendarView === v
+                      ? 'bg-white dark:bg-gray-700 shadow-sm ring-1 ring-primary-500 text-primary-700 dark:text-white'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  {t(`calendar.${v}`)}
+                </button>
+              ))}
+            </div>
+            {calendarView === 'day' ? (
+              <>
+                <button onClick={() => shiftDay(-1)} aria-label={t('calendar.prevDay')} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">←</button>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 tabular-nums">{dayLabel(day)}</span>
+                <button onClick={() => shiftDay(1)} aria-label={t('calendar.nextDay')} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">→</button>
+              </>
+            ) : (
+              <>
+                <button onClick={prevWeek} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.prev')}</button>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 tabular-nums">
+                  {formatDay(weekStart)} — {formatDay(weekEnd)}
+                </span>
+                <button onClick={nextWeek} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.next')}</button>
+              </>
+            )}
             <button
-              onClick={() => setWeekStart(getMondayOfWeek(new Date()))}
+              onClick={() => (calendarView === 'day' ? setDay(toLocalIsoDate(new Date())) : setWeekStart(getMondayOfWeek(new Date())))}
               className="px-3 py-1 text-sm text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-700 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/30"
             >
               {t('calendar.today')}
             </button>
           </div>
 
-          {/* Provider legend */}
-          {legendProviders.length > 0 && (
+          {/* Provider legend (the day view names its columns instead) */}
+          {calendarView === 'week' && legendProviders.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pb-2">
               {legendProviders.map((p) => (
                 <div key={p.id} className="flex items-center gap-1.5">
@@ -583,6 +675,19 @@ export function AppointmentsPage() {
             </div>
           )}
           <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {calendarView === 'day' ? (
+              <DayCalendar
+                date={day}
+                providers={dayProviders}
+                appointments={dayData?.items ?? []}
+                absences={dayAbsences ?? []}
+                patientNames={patientNames}
+                appointmentTypeNames={appointmentTypeNames}
+                onAppointmentClick={setSelected}
+                onSlotClick={canManage ? (startAt, providerId) => { setBookingInitial({ startAt, providerId }); setShowBook(true); } : undefined}
+                onMove={canManage ? askMove : undefined}
+              />
+            ) : (
             <WeekCalendar
               weekStart={weekStart}
               appointments={calData?.items ?? []}
@@ -592,7 +697,9 @@ export function AppointmentsPage() {
               appointmentTypeNames={appointmentTypeNames}
               onAppointmentClick={setSelected}
               onSlotClick={canManage ? (startAt) => { setBookingInitial({ startAt }); setShowBook(true); } : undefined}
+              onMove={canManage ? askMove : undefined}
             />
+            )}
           </div>
         </div>
       )}
@@ -614,6 +721,7 @@ export function AppointmentsPage() {
           initialProviderId={bookingInitial?.providerId}
         />
       )}
+      {confirmMove.dialog}
       {rescheduling && (
         <RescheduleModal
           appointment={rescheduling}

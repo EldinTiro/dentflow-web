@@ -128,6 +128,7 @@ describe('AppointmentsPage list and calendar (DT-24, DT-25)', () => {
       { route: '/appointments?tab=calendar&from=2026-11-11&to=2026-11-11' },
     )
 
-    expect(await screen.findByText(/November 9 — November 15, 2026/)).toBeInTheDocument()
+    // The week label follows the app language (it was English in Bosnian too)
+    expect(await screen.findByText('09/11/2026 — 15/11/2026')).toBeInTheDocument()
   })
 })

@@ -25,6 +25,11 @@ vi.mock('@/features/staff/services/staffService', () => ({
   staffService: { list: vi.fn(async () => ({ items: [], totalCount: 0, page: 1, pageSize: 100 })) },
 }))
 vi.mock('@/features/admin/services/tenantService', () => ({ tenantService: { getSettings: vi.fn(pending) } }))
+vi.mock('../services/toothChartService', () => ({ toothChartService: { list: vi.fn(async () => []) } }))
+vi.mock('@/features/treatments/services/treatmentService', async (orig) => ({
+  ...(await orig<typeof import('@/features/treatments/services/treatmentService')>()),
+  treatmentService: { list: vi.fn(async () => ({ items: [], totalCount: 0, page: 1, pageSize: 50 })) },
+}))
 vi.mock('@/features/auth/services/userService', () => ({ userService: { getPreferences: vi.fn(async () => ({ timeFormat: '24h' })) } }))
 
 function Location() {
@@ -56,6 +61,17 @@ describe('PatientDetailPage tabs', () => {
     )
     expect(await screen.findByText('Email')).toBeInTheDocument()
     expect(screen.queryByText('field.email')).not.toBeInTheDocument()
+  })
+
+  // User request: a tooth chart in the patient record
+  it('has a tooth chart tab', async () => {
+    renderWithProviders(
+      <Routes><Route path="/patients/:id" element={<PatientDetailPage />} /></Routes>,
+      { route: '/patients/p1?tab=teeth' },
+    )
+
+    expect(await screen.findByRole('tab', { name: 'Tooth chart' })).toHaveAttribute('aria-selected', 'true')
+    expect(await screen.findByRole('group', { name: 'Upper jaw' })).toBeInTheDocument()
   })
 
 })

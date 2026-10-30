@@ -109,4 +109,20 @@ describe('BookAppointmentDrawer providers', () => {
     const names = [...provider.options].filter((o) => o.value).map((o) => o.textContent)
     expect(names).toEqual(['Amra Dentist — Dentist', 'Nina Assistant — Dental nurse'])
   })
+
+  // Bug: clicking Ana's column in the day view opened the form with no doctor chosen —
+  // the doctors load after the form, so the select had no matching option yet
+  it('chooses the given doctor once the doctors have loaded', async () => {
+    vi.mocked(staffService.list).mockResolvedValueOnce({
+      items: [
+        { id: 'p1', fullName: 'Eldina Muhić', firstName: 'Eldina', lastName: 'Muhić', staffType: 'Dentist', isBookable: true, isActive: true },
+        { id: 'p2', fullName: 'Ana Rozić', firstName: 'Ana', lastName: 'Rozić', staffType: 'Dentist', isBookable: true, isActive: true },
+      ],
+      totalCount: 2, page: 1, pageSize: 100,
+    } as never)
+    renderWithProviders(<BookAppointmentDrawer onClose={() => {}} initialProviderId="p2" initialStartAt="2026-10-30T10:00" />)
+
+    await screen.findByRole('option', { name: /Ana Rozić/ })
+    expect(screen.getByLabelText(/^Provider/)).toHaveValue('p2')
+  })
 })

@@ -110,6 +110,8 @@ export interface BookAppointmentRequest {
 export interface RescheduleRequest {
   newStartAt: string;
   newEndAt: string;
+  /** Hand the visit to another doctor (day view drag and drop). */
+  newProviderId?: string;
 }
 
 const BASE = '/api/v1/appointments';

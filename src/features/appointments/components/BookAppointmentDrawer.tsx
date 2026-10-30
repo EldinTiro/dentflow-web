@@ -193,6 +193,12 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
 
   // Who can be booked is decided by the API (people-merge plan D3).
   const providers = (staffData?.items ?? []).filter((s: StaffMemberResponse) => s.isBookable);
+  // The select has no option for the given doctor until the staff list arrives, so the
+  // default value is lost; choose them again once they are there (day view, slot check).
+  const initialProviderLoaded = !!initialProviderId && providers.some((s) => s.id === initialProviderId);
+  useEffect(() => {
+    if (initialProviderLoaded) setValue('providerId', initialProviderId!);
+  }, [initialProviderLoaded, initialProviderId, setValue]);
   const apptTypes = typesData ?? [];
   const displayResults = patientSearch.length >= 1 ? (searchResults ?? []) : [];
   const isPending = createPatientMutation.isPending || bookMutation.isPending;

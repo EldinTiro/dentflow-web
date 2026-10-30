@@ -27,7 +27,8 @@
     "appointments": "Termini",
     "treatments": "Tretmani",
     "medical": "Medicinsko",
-    "files": "Datoteke"
+    "files": "Datoteke",
+    "teeth": "Zubna karta"
   },
   "section": {
     "demographics": "Demografija",
@@ -273,5 +274,40 @@
     "deleteDuplicateTitle": "Obrisati ovaj duplikat?",
     "deleteDuplicateBody": "će biti uklonjen. Ovo je samo za pacijenta dodanog greškom, bez termina, planova, računa ili datoteka.",
     "hasHistory": "Pacijent ima historiju (termine, planove, račune ili datoteke) i ne može se obrisati. Umjesto toga ga deaktivirajte."
+  },
+  "teeth": {
+    "upperJaw": "Gornja vilica",
+    "lowerJaw": "Donja vilica",
+    "tooth": "Zub {{n}}",
+    "pickTooth": "Kliknite na zub da vidite i upišete nalaz.",
+    "findings": "Nalazi",
+    "noFindings": "Još ništa nije upisano.",
+    "treatment": "Plan tretmana",
+    "finding": "Nalaz",
+    "surfaces": "Plohe",
+    "notes": "Napomena",
+    "notesPlaceholder": "Napomena (opcionalno)",
+    "add": "Dodaj nalaz",
+    "remove": "Ukloni: {{condition}}",
+    "saveFailed": "Zubnu kartu nije moguće spremiti",
+    "condition": {
+      "Caries": "Karijes",
+      "Filling": "Plomba",
+      "Crown": "Krunica",
+      "RootCanal": "Liječen korijen",
+      "Implant": "Implantat",
+      "Missing": "Nedostaje"
+    },
+    "surface": {
+      "M": "Mezijalno",
+      "O": "Okluzalno / incizalno",
+      "D": "Distalno",
+      "B": "Vestibularno",
+      "L": "Lingvalno / palatinalno"
+    },
+    "legend": {
+      "planned": "Planiran tretman",
+      "done": "Tretman završen"
+    }
   }
 }
