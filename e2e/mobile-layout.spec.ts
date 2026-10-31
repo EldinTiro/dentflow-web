@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { account, login as signIn } from './support'
 
 /**
  * Mobile layout guards from the design review (documentation/design-review-2026-10-22.md).
@@ -7,19 +8,10 @@ import { test, expect, type Page } from '@playwright/test'
  * offending element is clipped inside an `overflow-hidden` parent instead (DR-34).
  */
 
-const PINK = {
-  email: 'pink@dentflow.local',
-  password: 'Tmp_ebeb16502fe54a8ca15144ad6b230c61!A1',
-}
-
 test.use({ viewport: { width: 375, height: 812 } })
 
 async function login(page: Page) {
-  await page.goto('/login')
-  await page.locator('#email').fill(PINK.email)
-  await page.locator('#password').fill(PINK.password)
-  await page.locator('button[type="submit"]').click()
-  await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 15000 })
+  await signIn(page, account('OWNER'))
 }
 
 async function expectInsideViewport(page: Page, name: RegExp) {
