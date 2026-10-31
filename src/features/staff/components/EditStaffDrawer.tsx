@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { getApiErrorMessage } from '@/shared/utils/apiError';
+import { getApiErrorCodes, getApiErrorMessage } from '@/shared/utils/apiError';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Drawer } from '@/shared/components/Drawer';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import {
   staffService,
+  SELECTABLE_STAFF_TYPES,
   type StaffMemberResponse,
   type UpdateStaffRequest,
 } from '../services/staffService';
@@ -41,6 +42,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
   } = useForm<UpdateStaffRequest>({
     defaultValues: {
       firstName: staff.firstName,
+      staffType: staff.staffType,
       lastName: staff.lastName,
       email: staff.email ?? '',
       phone: staff.phone ?? '',
@@ -63,7 +65,8 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
       onClose();
     },
     onError: (err: unknown) => {
-      toast.error(getApiErrorMessage(err, t('edit.failed')));
+      // A refusal we can explain (e.g. visits ahead when the type stops being bookable) reads translated
+      toast.error(getApiErrorCodes(err).size > 0 ? peopleErrorMessage(err, t, staff.fullName) : getApiErrorMessage(err, t('edit.failed')));
     },
   });
 
@@ -107,6 +110,18 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
               {...register('lastName', { required: t('create.required') })} />
             {errors.lastName && <p className="mt-1 text-xs text-red-600">{errors.lastName.message}</p>}
           </div>
+        </div>
+
+        {/* What the person does decides whether they can be booked; their sign-in role is set
+            under App access. An owner who treats patients is a Dentist here. */}
+        <div>
+          <label htmlFor="staff-edit-staffType" className={labelClass}>{t('create.staffType')}</label>
+          <select id="staff-edit-staffType" className={inputClass} aria-describedby="staff-edit-staffType-hint" {...register('staffType')}>
+            {[...new Set([...SELECTABLE_STAFF_TYPES, staff.staffType])].map((type) => (
+              <option key={type} value={type}>{t(`staffType.${type}`)}</option>
+            ))}
+          </select>
+          <p id="staff-edit-staffType-hint" className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('edit.staffTypeHint')}</p>
         </div>
 
         <div>

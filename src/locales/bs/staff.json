@@ -197,6 +197,7 @@
     "remove": "Ukloni člana osoblja",
     "removeTitle": "Ukloniti člana osoblja?",
     "removeBody": "{{name}} će biti uklonjen/a. Moguće samo za profil bez termina — inače ga deaktivirajte.",
-    "removeConfirm": "Ukloni"
+    "removeConfirm": "Ukloni",
+    "staffTypeHint": "Od vrste zavisi da li se osoba može zakazati. Uloga za prijavu (npr. vlasnik) se postavlja posebno, u dijelu Pristup aplikaciji."
   }
 }
