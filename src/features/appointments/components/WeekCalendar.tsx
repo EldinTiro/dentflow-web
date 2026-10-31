@@ -5,6 +5,7 @@ import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels'
 import { useTheme } from '@/shared/context/ThemeContext';
 import { HOUR_PX, SLOT_MINUTES, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
 import { useCalendarDrag } from './useCalendarDrag';
+import { AppointmentChipBody, CHIP_LAYOUT } from './AppointmentChipBody';
 
 // The week test imports it from here
 export { calendarHourRange };
@@ -212,7 +213,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                           setTooltip({ appt, x: rect.right + 8, y: rect.top });
                         }}
                         onMouseLeave={() => setTooltip(null)}
-                        className={`absolute overflow-hidden rounded text-left text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
+                        className={`absolute ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
                         style={{
                           top: `${topPct}%`,
                           height: `${Math.max(heightPct, 1.5)}%`,
@@ -223,10 +224,13 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                           ...chip.style,
                         }}
                       >
-                        <span className="font-semibold truncate block" style={{ color }}>
-                          {new Date(appt.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
-                        </span>
-                        <span className="truncate block text-gray-700 dark:text-gray-300">{chipLabel}</span>
+                        <AppointmentChipBody
+                          time={new Date(appt.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                          label={chipLabel}
+                          color={color}
+                          durationMinutes={appt.durationMinutes}
+                          dark={isDark}
+                        />
                       </button>
                     );
                   })}

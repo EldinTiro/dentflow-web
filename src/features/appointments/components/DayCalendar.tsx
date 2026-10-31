@@ -6,6 +6,7 @@ import { ABSENCE_EMOJI } from '@/features/staff/lib/absence';
 import { useTheme } from '@/shared/context/ThemeContext';
 import { HOUR_PX, SLOT_MINUTES, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
 import { useCalendarDrag } from './useCalendarDrag';
+import { AppointmentChipBody, CHIP_LAYOUT } from './AppointmentChipBody';
 
 export interface DayProvider {
   id: string;
@@ -170,7 +171,8 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                         if (drag.consumeClick()) return;
                         onAppointmentClick?.(appt);
                       }}
-                      className={`absolute z-10 overflow-hidden rounded text-left text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
+                      title={`${fmtTime(new Date(appt.startAt))} – ${fmtTime(new Date(appt.endAt))} · ${label}`}
+                      className={`absolute z-10 ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
                       style={{
                         top: `${pct(offset)}%`,
                         height: `${Math.max(pct(appt.durationMinutes), 1.5)}%`,
@@ -181,10 +183,13 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                         ...chip.style,
                       }}
                     >
-                      <span className="font-semibold truncate block" style={{ color }}>
-                        {fmtTime(new Date(appt.startAt))} – {fmtTime(new Date(appt.endAt))}
-                      </span>
-                      <span className="truncate block text-gray-700 dark:text-gray-300">{label}</span>
+                      <AppointmentChipBody
+                        time={`${fmtTime(new Date(appt.startAt))} – ${fmtTime(new Date(appt.endAt))}`}
+                        label={label}
+                        color={color}
+                        durationMinutes={appt.durationMinutes}
+                        dark={theme === 'dark'}
+                      />
                     </button>
                   );
                 })}
