@@ -57,6 +57,8 @@ export interface InvoiceResponse {
   payments: InvoicePaymentResponse[]
   createdAt: string
   updatedAt: string | null
+  /** The visit this invoice bills, if it was issued from one. */
+  appointmentId: string | null
 }
 
 export interface InvoiceSummaryResponse {
@@ -74,6 +76,7 @@ export interface InvoiceSummaryResponse {
   patientName: string | null
   /** Past the due date with a balance left (QA-025). */
   isOverdue: boolean
+  appointmentId: string | null
 }
 
 export interface PagedResult<T> {
@@ -98,6 +101,8 @@ export interface CreateInvoiceRequest {
   dueDate?: string | null
   notes?: string | null
   lineItems: CreateLineItemInput[]
+  /** The visit being billed; the API bills a visit once. */
+  appointmentId?: string | null
 }
 
 export interface UpdateInvoiceRequest {
@@ -150,7 +155,7 @@ export const billingService = {
 
   listByPatient: (
     patientId: string,
-    params?: { status?: InvoiceStatus | ''; page?: number; pageSize?: number },
+    params?: { status?: InvoiceStatus | ''; page?: number; pageSize?: number; appointmentId?: string },
   ) =>
     apiClient
       .get<PagedResult<InvoiceSummaryResponse>>(`/api/v1/patients/${patientId}/invoices`, { params })

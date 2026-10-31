@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
 import { StatusBadge } from '@/shared/components/StatusBadge'
@@ -78,6 +79,7 @@ export function AppointmentDetailPanel({
   const queryClient = useQueryClient()
   const { t: td } = useTranslation('appointments')
   const { t: tc } = useTranslation('common')
+  const { t: tb } = useTranslation('billing')
   // Held locally so the drawer can stay open and reflect each status action (QA-027).
   const [a, setA] = useState(initialAppointment)
   useEffect(() => setA(initialAppointment), [initialAppointment])
@@ -119,6 +121,14 @@ export function AppointmentDetailPanel({
     queryFn: () => billingService.listByPatient(a.patientId, { pageSize: 5 }),
     enabled: showBilling,
   })
+
+  // Billed already? A visit is billed once; a voided invoice bills nothing (the API agrees)
+  const { data: visitInvoices, isLoading: visitInvoicesLoading } = useQuery({
+    queryKey: ['invoices', 'appointment', a.id],
+    queryFn: () => billingService.listByPatient(a.patientId, { appointmentId: a.id, pageSize: 5 }),
+    enabled: canManage,
+  })
+  const visitInvoice = visitInvoices?.items.find((i) => i.status !== 'Void')
 
   const { data: history } = useQuery({
     queryKey: ['appointment-history', a.id],
@@ -490,8 +500,22 @@ export function AppointmentDetailPanel({
               )}
             </div>
 
-            {/* Bill patient — available for any non-void/non-cancelled status */}
-            {a.status !== 'Cancelled' && a.status !== 'NoShow' && (
+            {/* Already billed: show that invoice, never a second "Bill patient" */}
+            {visitInvoice && (
+              <Link
+                to={`/invoices/${visitInvoice.id}`}
+                className="flex w-full items-center justify-between gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800 hover:bg-green-100 dark:border-green-400/30 dark:bg-green-400/10 dark:text-green-200 dark:hover:bg-green-400/20"
+              >
+                <span className="flex items-center gap-2 min-w-0">
+                  <Receipt size={14} className="shrink-0" />
+                  <span className="truncate">{td('detail.billed')} · {visitInvoice.invoiceNumber}</span>
+                </span>
+                <span className="shrink-0 text-xs font-semibold">{tb(`status.${visitInvoice.status}`, { defaultValue: visitInvoice.status })}</span>
+              </Link>
+            )}
+
+            {/* Bill patient — once it is known the visit has no invoice yet */}
+            {!visitInvoicesLoading && !visitInvoice && a.status !== 'Cancelled' && a.status !== 'NoShow' && (
               <button
                 onClick={() => setShowCreateInvoice(true)}
                 className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -577,6 +601,7 @@ export function AppointmentDetailPanel({
       <CreateInvoiceDrawer
         patientId={a.patientId}
         appointmentTypeId={a.appointmentTypeId}
+        appointmentId={a.id}
         onClose={() => setShowCreateInvoice(false)}
       />
     )}

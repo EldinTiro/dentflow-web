@@ -24,4 +24,15 @@ describe('CreateInvoiceDrawer', () => {
     expect(await screen.findByText('Required')).toBeInTheDocument()
     expect(billingService.create).not.toHaveBeenCalled()
   })
+
+  // The appointment panel bills a visit once: the invoice has to say which visit it bills
+  it('sends the appointment it bills', async () => {
+    vi.mocked(billingService.create).mockResolvedValue({ id: 'inv-1' } as never)
+    const { container } = renderWithProviders(<CreateInvoiceDrawer patientId="p1" appointmentId="appt-1" onClose={() => {}} />)
+
+    await userEvent.type(container.querySelector<HTMLInputElement>('input[name="lineItems.0.description"]')!, 'Extraction')
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    expect(billingService.create).toHaveBeenCalledWith('p1', expect.objectContaining({ appointmentId: 'appt-1' }))
+  })
 })

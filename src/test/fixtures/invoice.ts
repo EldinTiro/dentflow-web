@@ -9,6 +9,7 @@ export function invoiceFixture(overrides: Partial<InvoiceResponse> = {}): Invoic
     issuedAt: '2026-10-22T08:00:00Z',
     dueDate: null,
     notes: null,
+    appointmentId: null,
     subTotal: 75,
     paidAmount: 0,
     balanceDue: 75,

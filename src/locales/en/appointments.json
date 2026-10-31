@@ -200,6 +200,7 @@
     "cancelConfirm": "Cancel appointment",
     "notYetDue": "Check-in and treatment open on the day of the visit.",
     "patientNotFound": "Patient not found",
-    "overrideNewStatus": "New status"
+    "overrideNewStatus": "New status",
+    "billed": "Billed"
   }
 }
