@@ -85,6 +85,41 @@ describe('AppointmentsPage day view', () => {
     expect(await screen.findByTestId('day-calendar')).toBeInTheDocument()
   })
 
+  // QA pass 2026-10-31 (U-01): Day jumped back to today from whatever week was on screen.
+  it('opens the day view on the week that is shown, not on today', async () => {
+    renderPage('/appointments?from=2026-12-16')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Day' }))
+
+    expect(await screen.findByTestId('day-calendar')).toHaveAttribute('data-date', '2026-12-14')
+  })
+
+  it('stays on the week shown when Week is clicked again', async () => {
+    renderPage('/appointments?from=2026-12-16')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Week' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Day' }))
+
+    expect(await screen.findByTestId('day-calendar')).toHaveAttribute('data-date', '2026-12-14')
+  })
+
+  it('opens the day view on today when today is in the week shown', async () => {
+    renderPage('/appointments')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Day' }))
+
+    expect(await screen.findByTestId('day-calendar')).toHaveAttribute('data-date', '2026-10-29')
+  })
+
+  it('goes back to the week of the day that was shown', async () => {
+    renderPage('/appointments?view=day&day=2026-12-16')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Week' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Day' }))
+
+    expect(await screen.findByTestId('day-calendar')).toHaveAttribute('data-date', '2026-12-14')
+  })
+
   it('steps one day at a time', async () => {
     renderPage()
 
