@@ -50,6 +50,18 @@ describe('DayCalendar', () => {
     expect(screen.getByRole('button', { name: /Miroslav Vuletić/ }).closest('[data-provider-id]')).toBe(column(container, 'p1'))
   })
 
+  // QA pass 2026-10-31 (U-02): the names and the grid scrolled sideways on their own, so with
+  // several doctors the names drifted away from their columns.
+  it('scrolls the doctor names together with their columns', () => {
+    const { container } = render(<DayCalendar {...baseProps} />)
+
+    const scrollers = container.querySelectorAll('.overflow-auto, .overflow-x-auto, .overflow-y-auto')
+    expect(scrollers).toHaveLength(1)
+    expect(scrollers[0]).toContainElement(screen.getByText('Eldina Muhić'))
+    expect(scrollers[0]).toContainElement(column(container, 'p1'))
+    expect(screen.getByText('Eldina Muhić').closest('.sticky')).not.toBeNull()
+  })
+
   it("shades a doctor's absence", () => {
     const { container } = render(<DayCalendar {...baseProps} absences={[holiday]} />)
 

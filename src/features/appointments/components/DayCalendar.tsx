@@ -64,9 +64,11 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
   const columnsTemplate = `56px repeat(${providers.length}, minmax(11rem, 1fr))`;
 
   return (
-    <div className="flex flex-col h-full overflow-x-auto overflow-y-hidden">
+    // One scroll box for both ways, so the names stay over their columns (U-02)
+    <div className="h-full overflow-auto bg-white dark:bg-gray-900">
+      <div style={{ minWidth: `calc(56px + ${providers.length} * 11rem)` }}>
       {/* Doctor header */}
-      <div className="grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: columnsTemplate }}>
+      <div className="sticky top-0 z-30 grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: columnsTemplate }}>
         <div className="border-r border-gray-100 dark:border-gray-700/60" />
         {providers.map((p) => (
           <div key={p.id} className="flex items-center justify-center gap-2 px-2 py-2.5 border-r border-gray-100 dark:border-gray-700/60 last:border-r-0 min-w-0">
@@ -77,7 +79,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
       </div>
 
       {/* Time grid */}
-      <div className="overflow-y-auto flex-1 bg-white dark:bg-gray-900">
+      <div>
         <div className="relative grid" style={{ gridTemplateColumns: columnsTemplate, minHeight: `${HOURS * HOUR_PX}px` }}>
           <div>
             {Array.from({ length: HOURS }, (_, i) => (
@@ -197,6 +199,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
             );
           })}
         </div>
+      </div>
       </div>
     </div>
   );

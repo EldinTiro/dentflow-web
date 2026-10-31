@@ -109,7 +109,6 @@ export function AppointmentsPage() {
   const calendarView: CalendarView = searchParams.get('view') === 'day' ? 'day' : 'week';
   const dayParam = searchParams.get('day');
   const day = dayParam && /^\d{4}-\d{2}-\d{2}$/.test(dayParam) ? dayParam : toLocalIsoDate(new Date());
-  const setCalendarView = (v: CalendarView) => updateParam('view', v === 'day' ? 'day' : null, false);
   const setDay = (v: string) => updateParam('day', v, false);
   const shiftDay = (n: number) => { const d = new Date(`${day}T12:00:00`); d.setDate(d.getDate() + n); setDay(toLocalIsoDate(d)); };
   const setStatusFilter = (v: AppointmentStatus | '') => updateParam('status', v || null);
@@ -163,6 +162,25 @@ export function AppointmentsPage() {
     d.setHours(23, 59, 59);
     return d;
   }, [weekStart]);
+
+  // U-01: switching keeps the dates on screen — Day opens in the week shown (today if it is
+  // in it, else its Monday), Week opens on the week of the day shown.
+  const setCalendarView = (v: CalendarView) => {
+    if (v === calendarView) return;
+    if (v === 'week') {
+      setWeekStart(getMondayOfWeek(new Date(`${day}T12:00:00`)));
+      updateParam('view', null, false);
+      return;
+    }
+    const today = new Date();
+    const target = today >= weekStart && today <= weekEnd ? today : weekStart;
+    setSearchParams((p) => {
+      const n = new URLSearchParams(p);
+      n.set('view', 'day');
+      n.set('day', toLocalIsoDate(target));
+      return n;
+    }, { replace: true });
+  };
 
   const effectiveDateFrom = showPast
     ? (dateFrom || undefined)
