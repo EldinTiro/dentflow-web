@@ -114,6 +114,8 @@ export interface UpdateStaffRequest {
   address?: string;
   city?: string;
   postalCode?: string;
+  /** What the person does; separate from their sign-in role (an owner can be a dentist). */
+  staffType?: StaffType;
 }
 
 export type DayOfWeek = 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';

@@ -195,6 +195,7 @@
     "remove": "Remove staff member",
     "removeTitle": "Remove staff member?",
     "removeBody": "{{name}} will be removed. Only possible for a profile with no appointments — otherwise deactivate it.",
-    "removeConfirm": "Remove"
+    "removeConfirm": "Remove",
+    "staffTypeHint": "Who can be booked follows the type. Sign-in role (e.g. owner) is set separately under App access."
   }
 }

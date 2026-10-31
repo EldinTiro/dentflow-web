@@ -195,6 +195,7 @@
     "remove": "Mitarbeiter entfernen",
     "removeTitle": "Mitarbeiter entfernen?",
     "removeBody": "{{name}} wird entfernt. Nur für ein Profil ohne Termine möglich — sonst bitte deaktivieren.",
-    "removeConfirm": "Entfernen"
+    "removeConfirm": "Entfernen",
+    "staffTypeHint": "Ob jemand gebucht werden kann, hängt vom Typ ab. Die Anmelderolle (z. B. Inhaber) wird separat unter App-Zugang festgelegt."
   }
 }

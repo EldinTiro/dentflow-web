@@ -26,6 +26,8 @@ interface FormValues {
 interface Props {
   patientId?: string
   appointmentTypeId?: string
+  /** Billing a visit from its panel: the invoice remembers it, and the visit is billed once. */
+  appointmentId?: string
   onClose: () => void
 }
 
@@ -36,7 +38,7 @@ const LABEL_CLASS = 'block text-xs font-medium text-gray-600 dark:text-gray-400 
 // Always with the currency (QA-032).
 const fmt = (n: number) => formatMoney(n)
 
-export function CreateInvoiceDrawer({ patientId, appointmentTypeId, onClose }: Props) {
+export function CreateInvoiceDrawer({ patientId, appointmentTypeId, appointmentId, onClose }: Props) {
   const { t } = useTranslation('billing')
   const tc = useTranslation('common').t
   const queryClient = useQueryClient()
@@ -81,6 +83,7 @@ export function CreateInvoiceDrawer({ patientId, appointmentTypeId, onClose }: P
       return billingService.create(pid, {
         dueDate: null,
         notes: values.notes || null,
+        appointmentId: appointmentId ?? null,
         lineItems: values.lineItems.map((li) => ({
           description: li.description,
           cdtCode: null,

@@ -200,6 +200,7 @@
     "cancelConfirm": "Termin absagen",
     "notYetDue": "Check-in und Behandlung sind am Tag des Termins möglich.",
     "patientNotFound": "Patient nicht gefunden",
-    "overrideNewStatus": "Neuer Status"
+    "overrideNewStatus": "Neuer Status",
+    "billed": "Abgerechnet"
   }
 }
