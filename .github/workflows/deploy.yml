@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
 
+# One deploy at a time, in push order. Two merges a few seconds apart ran in
+# parallel; the older build pushed :latest last and production ran it (2026-11-01).
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 env:
   IMAGE: ghcr.io/eldintiro/dentflow-web
 
