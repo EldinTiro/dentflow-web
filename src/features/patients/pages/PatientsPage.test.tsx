@@ -38,6 +38,21 @@ describe('PatientsPage', () => {
     await waitFor(() => expect(list).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'all' })))
   })
 
+  // User request: the parent's name tells same-named patients apart (kartoteka habit)
+  it("shows each patient's parent name in its own column", async () => {
+    list.mockResolvedValue({
+      items: [{ ...row('1943', 'Amra Abaz', 'Active'), parentName: 'Mehmed' }, row('3835', 'Emin Abdi', 'Active')],
+      totalCount: 2, page: 1, pageSize: 20, totalPages: 1, hasPreviousPage: false, hasNextPage: false,
+    } as never)
+    renderWithProviders(<PatientsPage />)
+
+    const amra = (await screen.findByText('Amra Abaz')).closest('tr')!
+    const header = screen.getByRole('columnheader', { name: 'Parent name' })
+    const column = [...header.parentElement!.children].indexOf(header)
+    expect(amra.children[column]).toHaveTextContent('Mehmed')
+    expect(screen.getByText('Emin Abdi').closest('tr')!.children[column]).toHaveTextContent('—')
+  })
+
   it('marks inactive rows and has no delete button on rows', async () => {
     renderWithProviders(<PatientsPage />)
 

@@ -12,6 +12,7 @@
   "table": {
     "patientNumber": "Br. pacijenta",
     "name": "Ime",
+    "parentName": "Ime roditelja",
     "dateOfBirth": "Datum rođenja",
     "mobile": "Mobitel",
     "email": "Email",

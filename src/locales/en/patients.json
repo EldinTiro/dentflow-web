@@ -12,6 +12,7 @@
   "table": {
     "patientNumber": "Patient #",
     "name": "Name",
+    "parentName": "Parent name",
     "dateOfBirth": "Date of Birth",
     "mobile": "Mobile",
     "email": "Email",

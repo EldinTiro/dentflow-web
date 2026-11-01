@@ -76,7 +76,7 @@ export function PatientsPage() {
     placeholderData: (prev) => prev,
   })
 
-  const colCount = canManage ? 7 : 6
+  const colCount = canManage ? 8 : 7
 
   return (
     <div className="p-6">
@@ -140,6 +140,7 @@ export function PatientsPage() {
             <tr>
               <th className="px-4 py-3 text-left">{t('table.patientNumber')}</th>
               <th className="px-4 py-3 text-left">{t('table.name')}</th>
+              <th className="px-4 py-3 text-left">{t('table.parentName')}</th>
               <th className="px-4 py-3 text-left">{t('table.dateOfBirth')}</th>
               <th className="px-4 py-3 text-left">{t('table.mobile')}</th>
               <th className="px-4 py-3 text-left">{t('table.email')}</th>
@@ -167,6 +168,7 @@ export function PatientsPage() {
               >
                 <td className="px-4 py-3 text-sm font-bold tabular-nums whitespace-nowrap text-gray-800 dark:text-gray-100">{p.patientNumber}</td>
                 <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{p.fullName}</td>
+                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{p.parentName || '—'}</td>
                 <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
                   {p.dateOfBirth
                     ? formatDate(p.dateOfBirth + 'T00:00:00')
