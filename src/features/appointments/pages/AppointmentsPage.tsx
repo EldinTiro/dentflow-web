@@ -26,6 +26,8 @@ import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
 import { Search, X, Download } from 'lucide-react';
 import { localDayEndUtc, localDayStartUtc, toLocalIsoDate } from '@/shared/lib/dates';
 import { isClinicMember } from '@/shared/lib/permissions'
+import { tenantService } from '@/features/admin/services/tenantService';
+import { openingHourRange } from '@/shared/lib/clinicSchedule';
 
 type Tab = 'list' | 'calendar';
 type CalendarView = 'week' | 'day';
@@ -223,6 +225,20 @@ export function AppointmentsPage() {
     queryFn: () => staffService.listClinicAbsences({ from: localDayStartUtc(day), to: localDayEndUtc(day) }),
     enabled: showDay,
   });
+
+  // The calendar shows the clinic's working hours (plus anything booked outside them)
+  const { data: clinicSettings } = useQuery({
+    queryKey: ['clinic-settings'],
+    queryFn: tenantService.getSettings,
+    enabled: tab === 'calendar',
+  });
+  const openHours = useMemo(() => {
+    if (!clinicSettings) return null;
+    const dates = calendarView === 'day'
+      ? [day]
+      : Array.from({ length: 7 }, (_, i) => toLocalIsoDate(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i)));
+    return openingHourRange(clinicSettings.weeklyScheduleJson, dates);
+  }, [clinicSettings, calendarView, day, weekStart]);
 
   const { data: apptTypes } = useQuery({
     queryKey: ['appointment-types'],
@@ -704,6 +720,7 @@ export function AppointmentsPage() {
                 onAppointmentClick={setSelected}
                 onSlotClick={canManage ? (startAt, providerId) => { setBookingInitial({ startAt, providerId }); setShowBook(true); } : undefined}
                 onMove={canManage ? askMove : undefined}
+                openHours={openHours}
               />
             ) : (
             <WeekCalendar
@@ -716,6 +733,7 @@ export function AppointmentsPage() {
               onAppointmentClick={setSelected}
               onSlotClick={canManage ? (startAt) => { setBookingInitial({ startAt }); setShowBook(true); } : undefined}
               onMove={canManage ? askMove : undefined}
+              openHours={openHours}
             />
             )}
           </div>

@@ -104,7 +104,7 @@
     "ClinicOwner": "Clinic owner",
     "Dentist": "Dentist",
     "Receptionist": "Receptionist",
-    "DentalNurse": "Dental nurse"
+    "DentalNurse": "Dental technician"
   },
   "pagination": {
     "pageOfTotal": "Page {{page}} of {{totalPages}} ({{totalCount}} total)",

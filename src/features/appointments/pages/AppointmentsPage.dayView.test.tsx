@@ -36,10 +36,18 @@ vi.mock('@/features/staff/services/staffService', () => ({
     listClinicAbsences: vi.fn(async () => []),
   },
 }))
+vi.mock('@/features/admin/services/tenantService', () => ({
+  tenantService: {
+    getSettings: vi.fn(async () => ({
+      slotDurationMinutes: 30,
+      weeklyScheduleJson: JSON.stringify({ thursday: { isOpen: true, start: '10:30', end: '18:30' } }),
+    })),
+  },
+}))
 // The grid itself is covered by DayCalendar.test; here only what the page does with it
 vi.mock('../components/DayCalendar', () => ({
-  DayCalendar: (props: { date: string; providers: DayProvider[]; onMove?: (a: unknown, s: string, p?: string) => void }) => (
-    <div data-testid="day-calendar" data-date={props.date}>
+  DayCalendar: (props: { date: string; providers: DayProvider[]; openHours?: { start: number; end: number } | null; onMove?: (a: unknown, s: string, p?: string) => void }) => (
+    <div data-testid="day-calendar" data-date={props.date} data-open={props.openHours ? `${props.openHours.start}-${props.openHours.end}` : ''}>
       {props.providers.map((p) => <span key={p.id}>{p.fullName}</span>)}
       <button onClick={() => props.onMove?.(visit, '2026-10-29T11:15', 'p2')}>drop on Ana 11:15</button>
     </div>
@@ -74,6 +82,14 @@ describe('AppointmentsPage day view', () => {
     expect(within(day).getByText('Ana Rozić')).toBeInTheDocument()
     expect(within(day).queryByText('Recepcija')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Day' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  // User request: the calendar shows only the hours the clinic works
+  it("gives the calendar the clinic's opening hours for that day", async () => {
+    renderPage() // Thursday 29 Oct, open 10:30–18:30
+
+    const day = await screen.findByTestId('day-calendar')
+    await vi.waitFor(() => expect(day).toHaveAttribute('data-open', '10-19'))
   })
 
   it('switches between day and week and keeps it in the URL', async () => {

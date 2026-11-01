@@ -151,7 +151,7 @@ export function PatientDetailPage() {
               {tc(`status.${patient.status.toLowerCase()}`)}
             </span>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-mono">{patient.patientNumber}</p>
+          <p className="text-lg font-bold text-gray-800 dark:text-gray-100 mt-1 tabular-nums">{patient.patientNumber}</p>
           {patient.preferredName && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t('goesBy', { name: patient.preferredName })}</p>
           )}

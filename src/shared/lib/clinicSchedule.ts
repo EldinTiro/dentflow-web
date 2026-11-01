@@ -38,6 +38,31 @@ export function daySchedule(json: string | null | undefined, date: string): DayS
   return parseWeeklySchedule(json)[key]
 }
 
+/**
+ * Whole hours the calendar shows for these local dates (`YYYY-MM-DD`): earliest opening
+ * to latest closing among the open ones, 10:30–18:30 giving 10–19. A closed day (Sunday
+ * in the day view) takes the hours of the whole week; `null` if the clinic never opens.
+ */
+export function openingHourRange(
+  json: string | null | undefined,
+  dates: string[],
+): { start: number; end: number } | null {
+  const hoursOf = (days: DaySchedule[]) => {
+    const open = days.filter((d) => d.isOpen && d.end > d.start)
+    if (open.length === 0) return null
+    const toMinutes = (hhmm: string) => {
+      const [h, m] = hhmm.split(':').map(Number)
+      return h * 60 + m
+    }
+    return {
+      start: Math.floor(Math.min(...open.map((d) => toMinutes(d.start))) / 60),
+      end: Math.min(24, Math.ceil(Math.max(...open.map((d) => toMinutes(d.end))) / 60)),
+    }
+  }
+  return hoursOf(dates.map((date) => daySchedule(json, date)))
+    ?? hoursOf(Object.values(parseWeeklySchedule(json)))
+}
+
 const ACTIVE_STATUSES = new Set(['Scheduled', 'CheckedIn', 'InProgress'])
 
 interface BookedSlot {

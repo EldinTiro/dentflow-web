@@ -7,14 +7,20 @@ export const DEFAULT_HOUR_START = 6;  // 06:00
 export const DEFAULT_HOUR_END   = 21; // 21:00
 
 /**
- * Hours the grid shows: 06:00–21:00, stretched to fit anything booked earlier or
- * later. A fixed 06:00 start hid a 00:30 booking entirely (QA-029). Pass `now` on
- * the current week so the current-time line always has a place on the grid.
+ * Hours the grid shows: the clinic's opening hours when known, else 06:00–21:00,
+ * stretched to fit anything booked earlier or later. A fixed 06:00 start hid a 00:30
+ * booking entirely (QA-029). Without opening hours, pass `now` on the current week so
+ * the current-time line always has a place; with them, the grid stays on working hours
+ * and the line shows only while the clinic is open.
  */
-export function calendarHourRange(appointments: { startAt: string; endAt: string }[], now?: Date) {
-  let start = DEFAULT_HOUR_START;
-  let end = DEFAULT_HOUR_END;
-  if (now) {
+export function calendarHourRange(
+  appointments: { startAt: string; endAt: string }[],
+  now?: Date,
+  open?: { start: number; end: number } | null,
+) {
+  let start = open?.start ?? DEFAULT_HOUR_START;
+  let end = open?.end ?? DEFAULT_HOUR_END;
+  if (now && !open) {
     start = Math.min(start, now.getHours());
     end = Math.max(end, now.getHours() + 1);
   }

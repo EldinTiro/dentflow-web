@@ -27,12 +27,14 @@ interface Props {
   onSlotClick?: (startAt: string, providerId: string) => void;
   /** Drop after a drag: new local start, and the new doctor when the column changed. */
   onMove?: (appt: AppointmentResponse, newStartAt: string, newProviderId?: string) => void;
+  /** Clinic opening hours (whole hours) the grid shows; defaults to 06:00–21:00. */
+  openHours?: { start: number; end: number } | null;
 }
 
 const fmtTime = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
 /** One day, one column per doctor: how the front desk plans the day. */
-export function DayCalendar({ date, providers, appointments, absences, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove }: Props) {
+export function DayCalendar({ date, providers, appointments, absences, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, openHours }: Props) {
   const { t } = useTranslation('appointments');
   const { t: ts } = useTranslation('staff');
   const { theme } = useTheme();
@@ -42,8 +44,8 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
   const isToday = isoDate(now) === date;
   const nowHour = isToday ? now.getHours() : null;
   const { start: HOUR_START, end: HOUR_END } = useMemo(
-    () => calendarHourRange(appointments, nowHour === null ? undefined : new Date(2000, 0, 1, nowHour)),
-    [appointments, nowHour],
+    () => calendarHourRange(appointments, nowHour === null ? undefined : new Date(2000, 0, 1, nowHour), openHours),
+    [appointments, nowHour, openHours],
   );
   const HOURS = HOUR_END - HOUR_START;
   const totalMinutes = HOURS * 60;

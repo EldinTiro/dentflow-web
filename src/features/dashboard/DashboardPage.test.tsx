@@ -31,10 +31,19 @@ vi.mock('./dashboardService', () => ({
     getFinance: vi.fn(async () => ({ revenueThisMonth: 1234, outstandingBalance: 56 })),
   },
 }))
-vi.mock('./SlotCheckerWidget', () => ({ SlotCheckerWidget: () => null }))
+vi.mock('./SlotCheckerWidget', () => ({ SlotCheckerWidget: () => <div data-testid="slot-checker" /> }))
 
 describe('DashboardPage', () => {
   afterEach(() => vi.useRealTimers())
+
+  // User request: staff use the free-slot check most, so it sits at the top, before the numbers
+  it('shows the free-slot check above the stat cards', () => {
+    renderWithProviders(<DashboardPage />)
+
+    const slotChecker = screen.getByTestId('slot-checker')
+    const firstStat = screen.getByText("Today's Appointments")
+    expect(slotChecker.compareDocumentPosition(firstStat) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
 
   // QA-035: "Pending Confirmation" = 180 — every Scheduled visit ever, past ones included
   it('counts only upcoming scheduled appointments as pending confirmation', async () => {

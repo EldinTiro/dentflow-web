@@ -22,6 +22,8 @@ interface Props {
   onSlotClick?: (startAt: string) => void;
   /** Drop after a drag: the new local start ("YYYY-MM-DDTHH:mm"); the doctor stays. */
   onMove?: (appt: AppointmentResponse, newStartAt: string, newProviderId?: string) => void;
+  /** Clinic opening hours (whole hours) the grid shows; defaults to 06:00–21:00. */
+  openHours?: { start: number; end: number } | null;
 }
 
 type TooltipState = { appt: AppointmentResponse; x: number; y: number } | null;
@@ -32,7 +34,7 @@ function addDays(date: Date, n: number) {
   return d;
 }
 
-export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove }: Props) {
+export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, openHours }: Props) {
   const { t } = useTranslation('appointments');
   const dayLabels = t('calendar.weekdays', { returnObjects: true }) as string[];
   const [tooltip, setTooltip] = useState<TooltipState>(null);
@@ -61,8 +63,8 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
   const nowHour = showsToday ? now.getHours() : null;
 
   const { start: HOUR_START, end: HOUR_END } = useMemo(
-    () => calendarHourRange(appointments, nowHour === null ? undefined : new Date(2000, 0, 1, nowHour)),
-    [appointments, nowHour],
+    () => calendarHourRange(appointments, nowHour === null ? undefined : new Date(2000, 0, 1, nowHour), openHours),
+    [appointments, nowHour, openHours],
   );
   const HOURS = HOUR_END - HOUR_START;
   const totalMinutes = HOURS * 60;

@@ -42,6 +42,14 @@ describe('DayCalendar', () => {
   })
   afterEach(() => { vi.useRealTimers() })
 
+  // User request: only the clinic's working hours
+  it('starts the grid at the clinic opening hour', () => {
+    render(<DayCalendar {...baseProps} openHours={{ start: 10, end: 19 }} />)
+
+    expect(screen.getByText('10:00')).toBeInTheDocument()
+    expect(screen.queryByText('06:00')).not.toBeInTheDocument()
+  })
+
   it('shows one column per doctor, with their visits in it', () => {
     const { container } = render(<DayCalendar {...baseProps} />)
 

@@ -101,7 +101,7 @@
   },
   "staffType": {
     "Dentist": "Stomatolog",
-    "DentalAssistant": "Medicinska sestra / tehničar",
+    "DentalAssistant": "Stomatološki tehničar",
     "Hygienist": "Higijeničar",
     "Receptionist": "Recepcioner",
     "ClinicAdmin": "Administrator klinike",

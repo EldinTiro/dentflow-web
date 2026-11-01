@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { DEFAULT_WEEKLY_SCHEDULE, daySchedule, busySlotLabels, slotOccupancy, nextBookableStart } from './clinicSchedule'
+import { DEFAULT_WEEKLY_SCHEDULE, daySchedule, busySlotLabels, slotOccupancy, nextBookableStart, openingHourRange } from './clinicSchedule'
 
 describe('daySchedule', () => {
   // QA-018: Settings showed Mon–Fri 08–17 (an unsaved default) while the slot check used 08:00–22:30
@@ -92,5 +92,37 @@ describe('invalidOpeningDays', () => {
 
     expect(invalidOpeningDays(schedule)).toEqual(['monday', 'tuesday'])
     expect(invalidOpeningDays(DEFAULT_WEEKLY_SCHEDULE)).toEqual([])
+  })
+})
+
+// User request: the calendar should show only the hours the clinic works
+describe('openingHourRange', () => {
+  const week = ['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06', '2026-11-07', '2026-11-08'] // Mon–Sun
+  const pinkDent = JSON.stringify(Object.fromEntries(
+    ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((d, i) =>
+      [d, { isOpen: i < 5, start: '10:30', end: '18:30' }]),
+  ))
+
+  it('covers the opening hours of the shown days, in whole hours', () => {
+    expect(openingHourRange(pinkDent, week)).toEqual({ start: 10, end: 19 })
+  })
+
+  it('takes the earliest opening and the latest closing when days differ', () => {
+    const schedule = JSON.stringify({
+      ...DEFAULT_WEEKLY_SCHEDULE,
+      monday: { isOpen: true, start: '08:00', end: '12:00' },
+      tuesday: { isOpen: true, start: '13:00', end: '20:00' },
+    })
+    expect(openingHourRange(schedule, ['2026-11-02', '2026-11-03'])).toEqual({ start: 8, end: 20 })
+  })
+
+  it("uses the week's hours for a closed day, so the day view is not empty", () => {
+    expect(openingHourRange(pinkDent, ['2026-11-08'])).toEqual({ start: 10, end: 19 }) // Sunday
+  })
+
+  it('has no range when the clinic is closed every day', () => {
+    const closed = JSON.stringify(Object.fromEntries(
+      Object.entries(DEFAULT_WEEKLY_SCHEDULE).map(([d, h]) => [d, { ...h, isOpen: false }])))
+    expect(openingHourRange(closed, week)).toBeNull()
   })
 })
