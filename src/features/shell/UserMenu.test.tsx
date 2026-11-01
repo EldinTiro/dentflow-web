@@ -24,13 +24,13 @@ describe('UserMenu', () => {
   })
 
   it('opens a menu with who is signed in, their profile and sign out', async () => {
-    renderAs('Alma Trako', 'Dentist')
+    renderAs('Alma Trako', 'Staff')
 
     await userEvent.click(screen.getByRole('button', { name: 'Account menu' }))
 
     expect(screen.getByText('Alma Trako')).toBeInTheDocument()
     expect(screen.getByText('alma@pinkdent.ba')).toBeInTheDocument()
-    expect(screen.getByText('Dentist')).toBeInTheDocument()
+    expect(screen.getByText('Staff')).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'My profile' })).toHaveAttribute('href', '/profile')
     await userEvent.click(screen.getByRole('menuitem', { name: 'Sign out' }))
     expect(logout).toHaveBeenCalled()
@@ -42,14 +42,14 @@ describe('UserMenu', () => {
     expect(screen.getByRole('menuitem', { name: 'Clinic settings' })).toHaveAttribute('href', '/settings')
   })
 
-  it('does not offer clinic settings to a receptionist', async () => {
-    renderAs('Ena Desk', 'Receptionist')
+  it('does not offer clinic settings to Staff', async () => {
+    renderAs('Ena Desk', 'Staff')
     await userEvent.click(screen.getByRole('button', { name: 'Account menu' }))
     expect(screen.queryByRole('menuitem', { name: 'Clinic settings' })).not.toBeInTheDocument()
   })
 
   it('closes with Escape', async () => {
-    renderAs('Alma Trako', 'Dentist')
+    renderAs('Alma Trako', 'Staff')
     await userEvent.click(screen.getByRole('button', { name: 'Account menu' }))
 
     await userEvent.keyboard('{Escape}')

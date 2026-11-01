@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +13,6 @@ import {
   type CreateStaffRequest,
   type StaffMemberResponse,
 } from '../services/staffService';
-import { defaultRoleFor } from '../lib/defaultRole';
 
 interface Props {
   onClose: () => void;
@@ -42,24 +41,17 @@ export function CreateStaffDrawer({ onClose }: Props) {
     register,
     handleSubmit,
     watch,
-    setValue,
     setError,
-    formState: { errors, isSubmitting, dirtyFields },
+    formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     defaultValues: {
       staffType: 'Receptionist',
       colorHex: '#3B82F6',
       canSignIn: false,
-      role: 'Receptionist',
+      role: 'Staff',
     },
   });
   const canSignIn = watch('canSignIn');
-  const staffType = watch('staffType');
-
-  // DT-21: follow the staff type until the owner picks a role themselves.
-  useEffect(() => {
-    if (!dirtyFields.role) setValue('role', defaultRoleFor(staffType));
-  }, [staffType, dirtyFields.role, setValue]);
 
   const mutation = useMutation({
     mutationFn: ({ canSignIn, role, ...profile }: FormValues) =>

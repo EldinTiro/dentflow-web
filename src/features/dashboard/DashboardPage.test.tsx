@@ -77,7 +77,7 @@ describe('DashboardPage', () => {
 
   // UX Phase A: today's schedule rows were read-only; acting on a visit meant a detour via Appointments
   it("opens the appointment from today's schedule in place", async () => {
-    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'r@x', fullName: 'Rec', roles: ['Receptionist'] })
+    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'r@x', fullName: 'Rec', roles: ['Staff'] })
     vi.mocked(appointmentService.list).mockResolvedValue({
       items: [appointmentFixture({ patientName: 'Lejla Hasanović' })], totalCount: 1, page: 1, pageSize: 50,
     } as Awaited<ReturnType<typeof appointmentService.list>>)
@@ -92,7 +92,7 @@ describe('DashboardPage', () => {
 
   // Roles proposal A1: revenue was on every clinic role's dashboard
   it('does not request or show clinic money to a receptionist', async () => {
-    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'r@x', fullName: 'Rec', roles: ['Receptionist'] })
+    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'r@x', fullName: 'Rec', roles: ['Staff'] })
     vi.mocked(dashboardService.getFinance).mockClear()
     renderWithProviders(<DashboardPage />)
 

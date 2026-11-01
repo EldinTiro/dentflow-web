@@ -164,6 +164,7 @@ const { accessToken, user, isAuthenticated, setAuth, clearAuth, hasRole } = useA
 - **Select roles with `useAuthStore(selectRoles)`**, never `s.user?.roles ?? []` — a fresh `[]` per call makes Zustand 5 re-render forever when nobody is signed in
 - `user.mustChangePassword` is set after signing in with a temporary password; `ProtectedRoute` then sends the user to `/change-password` (the API refuses everything else until it is changed)
 - Use `hasRole(...)` to read the current user's role for conditional rendering
+- **Two clinic roles**: `ClinicOwner`, shown as *Administrator* (finance, people, clinic settings), and `Staff`, shown as *Osoblje* (the daily work). The job title is the staff type, not the role. New sign-ins default to `Staff`
 - **Prefer permissions to role lists**: `can(roles, 'people.manage' | 'patients.manage' | …)` and `TENANT_ROLES` in `shared/lib/permissions.ts` mirror `RolePermissions` / `Roles.TenantRoles` in the API. Don't write new `['ClinicOwner', …]` arrays
 
 ## People (staff + sign-in)
@@ -176,14 +177,11 @@ const { accessToken, user, isAuthenticated, setAuth, clearAuth, hasRole } = useA
 ## Routing & Route Guards
 
 ```typescript
-// routes/index.tsx — lazy-loaded routes
-const PatientsPage = lazy(() => import('@/features/patients/pages/PatientsPage'));
-
-// Protected route wraps all authenticated pages
-// Role-based access: pass `allowedRoles` prop to the guard
-<ProtectedRoute allowedRoles={['Dentist', 'ClinicOwner', 'Receptionist']}>
-  <PatientsPage />
-</ProtectedRoute>
+// routes/index.tsx — every page sits under <ProtectedRoute> (signed in) and <AppShell>.
+// Administrator-only pages go under a RoleGuard route; everything else is open to the clinic.
+<Route element={<RoleGuard allowedRoles={['ClinicOwner']} />}>
+  <Route path="settings" element={<SettingsLayout />}>…</Route>
+</Route>
 ```
 
 ## i18n

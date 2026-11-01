@@ -42,8 +42,10 @@ describe('CreateStaffDrawer', () => {
 
     await user.click(screen.getByRole('checkbox', { name: /can sign in/i }))
 
+    // Two roles, named for what they may do: Administrator and Staff (2026-11-02)
     const role = screen.getByLabelText(/^role/i) as HTMLSelectElement
-    expect([...role.options].map((o) => o.value)).toEqual(['ClinicOwner', 'Dentist', 'DentalNurse', 'Receptionist'])
+    expect([...role.options].map((o) => [o.value, o.textContent])).toEqual([['ClinicOwner', 'Administrator'], ['Staff', 'Staff']])
+    expect(role).toHaveValue('Staff')
     await user.click(screen.getByRole('button', { name: /add staff member/i }))
 
     expect(await screen.findByText(/email is needed to sign in/i)).toBeInTheDocument()
@@ -58,12 +60,12 @@ describe('CreateStaffDrawer', () => {
     await fillName(user)
     await user.type(screen.getByLabelText(/^email/i), 'ana@x.ba')
     await user.click(screen.getByRole('checkbox', { name: /can sign in/i }))
-    await user.selectOptions(screen.getByLabelText(/^role/i), 'Dentist')
+    await user.selectOptions(screen.getByLabelText(/^role/i), 'ClinicOwner')
 
     await user.click(screen.getByRole('button', { name: /add staff member/i }))
 
     expect(await screen.findByText('Tmp-123-abc')).toBeInTheDocument()
-    expect(create.mock.calls[0][0]).toMatchObject({ email: 'ana@x.ba', access: { role: 'Dentist' } })
+    expect(create.mock.calls[0][0]).toMatchObject({ email: 'ana@x.ba', access: { role: 'ClinicOwner' } })
     expect(onClose).not.toHaveBeenCalled()
   })
 
@@ -80,19 +82,16 @@ describe('CreateStaffDrawer', () => {
     expect(await screen.findByText(/already used by someone/i)).toBeInTheDocument()
   })
 
-  // DT-21: the role was Receptionist whatever the staff type
-  it.each([
-    ['Dentist', 'Dentist'],
-    ['DentalAssistant', 'DentalNurse'],
-    ['Receptionist', 'Receptionist'],
-  ])('suggests a role that fits the staff type (%s → %s)', async (staffType, role) => {
+  // 2026-11-02: two roles; whatever the job, a new colleague signs in as Staff unless
+  // the Administrator deliberately makes them an Administrator
+  it.each(['Dentist', 'DentalAssistant', 'Receptionist'])('suggests Staff for a %s', async (staffType) => {
     const user = userEvent.setup()
     renderWithProviders(<CreateStaffDrawer onClose={vi.fn()} />)
 
     await user.selectOptions(screen.getByLabelText(/^staff type/i), staffType)
     await user.click(screen.getByRole('checkbox', { name: /can sign in/i }))
 
-    expect(screen.getByLabelText(/^role/i)).toHaveValue(role)
+    expect(screen.getByLabelText(/^role/i)).toHaveValue('Staff')
   })
 
   // DT-22: retired names (Hygienist, Clinic admin) were still offered

@@ -23,7 +23,7 @@ function member(name: string, access: Partial<StaffAccessSummary> | null, isActi
     specialty: null, colorHex: null, biography: null, licenseNumber: null, licenseExpiry: null, npiNumber: null,
     isActive, hireDate: null, terminationDate: null, address: null, city: null, postalCode: null,
     createdAt: '2026-01-01T00:00:00Z', updatedAt: null, isBookable: isActive,
-    access: access && { userId: `u${n}`, role: 'Dentist', isActive: true, mustChangePassword: false, lastLoginAt: null, ...access },
+    access: access && { userId: `u${n}`, role: 'Staff', isActive: true, mustChangePassword: false, lastLoginAt: null, ...access },
   }
 }
 
@@ -85,7 +85,7 @@ describe('StaffPage (people-merge plan 4.4, B7)', () => {
   })
 
   it('hides "+ Add Staff" and row actions from other roles', async () => {
-    signIn(['Receptionist'])
+    signIn(['Staff'])
     renderWithProviders(<StaffPage />)
     await rowOf('Nada')
 

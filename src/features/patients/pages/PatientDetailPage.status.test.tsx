@@ -58,7 +58,7 @@ describe('PatientDetailPage status', () => {
   beforeEach(() => { vi.clearAllMocks() })
   afterEach(() => { useAuthStore.getState().clearAuth() })
 
-  it.each(['ClinicOwner', 'Dentist', 'DentalNurse', 'Receptionist'])('lets %s deactivate with an optional reason', async (role) => {
+  it.each(['ClinicOwner', 'Staff'])('lets %s deactivate with an optional reason', async (role) => {
     svc.getById.mockResolvedValue(patient())
     svc.deactivate.mockResolvedValue(patient({ status: 'Inactive' }))
     const user = userEvent.setup()
@@ -83,7 +83,7 @@ describe('PatientDetailPage status', () => {
       ] } },
     }))
     const user = userEvent.setup()
-    renderAs('Receptionist')
+    renderAs('Staff')
 
     await user.click(await screen.findByRole('button', { name: /^deactivate$/i }))
     await user.click((await dialog()).getByRole('button', { name: /^deactivate$/i }))
@@ -95,7 +95,7 @@ describe('PatientDetailPage status', () => {
     svc.getById.mockResolvedValue(patient({ status: 'Inactive', deactivatedAt: '2026-10-20T09:00:00Z', deactivationReason: 'Moved away' }))
     svc.reactivate.mockResolvedValue(patient())
     const user = userEvent.setup()
-    renderAs('Receptionist')
+    renderAs('Staff')
 
     const banner = await screen.findByRole('status')
     expect(banner).toHaveTextContent(/inactive/i)
@@ -109,7 +109,7 @@ describe('PatientDetailPage status', () => {
     svc.getById.mockResolvedValue(patient())
     svc.delete.mockRejectedValue(fastEndpointsError('x', 'patient.HasHistory', 409))
     const user = userEvent.setup()
-    renderAs('Receptionist')
+    renderAs('Staff')
 
     await user.click(await screen.findByRole('button', { name: /delete duplicate/i }))
     await user.click((await dialog()).getByRole('button', { name: /delete duplicate/i }))
@@ -118,9 +118,9 @@ describe('PatientDetailPage status', () => {
   })
 
   // B0: a Dentist got 403 on emergency contacts, and the UI hid the controls too
-  it('lets a Dentist remove an emergency contact', async () => {
+  it('lets Staff remove an emergency contact', async () => {
     svc.getById.mockResolvedValue(patient())
-    renderAs('Dentist', '/patients/p1?tab=medical')
+    renderAs('Staff', '/patients/p1?tab=medical')
 
     expect(await screen.findByRole('button', { name: /remove contact/i })).toBeInTheDocument()
   })
@@ -130,7 +130,7 @@ describe('PatientDetailPage status', () => {
     svc.getById.mockResolvedValue(patient())
     svc.listAllergies.mockResolvedValue([{ id: 'a1', allergen: 'Penicillin', severity: 'Severe', reaction: null, notes: null, reportedAt: null }] as never)
     const user = userEvent.setup()
-    renderAs('Dentist', '/patients/p1?tab=medical')
+    renderAs('Staff', '/patients/p1?tab=medical')
 
     await user.click(await screen.findByRole('button', { name: /remove allergy penicillin/i }))
     await user.click((await dialog()).getByRole('button', { name: /cancel/i }))
@@ -146,7 +146,7 @@ describe('PatientDetailPage status', () => {
   // DT-19: both actions were offered and then refused by the API
   it('offers "Delete duplicate" only for a patient without history', async () => {
     svc.getById.mockResolvedValue(patient({ hasHistory: true } as never))
-    renderAs('Receptionist')
+    renderAs('Staff')
 
     await screen.findByRole('button', { name: /^deactivate$/i })
     expect(screen.queryByRole('button', { name: /delete duplicate/i })).not.toBeInTheDocument()
@@ -154,7 +154,7 @@ describe('PatientDetailPage status', () => {
 
   it('does not offer booking for an inactive patient', async () => {
     svc.getById.mockResolvedValue(patient({ status: 'Inactive' }))
-    renderAs('Receptionist')
+    renderAs('Staff')
 
     await screen.findByRole('status')
     expect(screen.queryByRole('button', { name: /book appointment/i })).not.toBeInTheDocument()

@@ -152,12 +152,12 @@
     "turnOffTitle": "Anmeldung deaktivieren?",
     "turnOffBody": "{{name}} kann sich nicht mehr anmelden. Profil und Verlauf bleiben erhalten.",
     "turnOn": "Anmeldung wieder aktivieren",
-    "selfHint": "Das sind Sie. Ihr eigenes Konto ändern Sie unter Profil & Einstellungen.",
+    "selfHint": "Das sind Sie. Ihr eigenes Konto ändern Sie unter Mein Profil.",
     "tempPassword": "Temporäres Passwort",
     "roleChanged": "Rolle geändert.",
     "failed": "Zugang konnte nicht geändert werden. Bitte erneut versuchen.",
     "errors": {
-      "self": "Ihren eigenen Zugang können Sie hier nicht ändern. Nutzen Sie Profil & Einstellungen.",
+      "self": "Ihren eigenen Zugang können Sie hier nicht ändern. Nutzen Sie Mein Profil.",
       "lastOwner": "Eine Praxis muss mindestens einen aktiven Inhaber behalten.",
       "ownerOnly": "Nur ein Praxisinhaber kann einen anderen Inhaber ändern."
     },

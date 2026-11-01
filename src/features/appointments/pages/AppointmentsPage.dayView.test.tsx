@@ -70,7 +70,7 @@ describe('AppointmentsPage day view', () => {
     vi.clearAllMocks()
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(new Date(2026, 9, 29, 8, 0))
-    useAuthStore.getState().setAuth('t', { userId: 'u1', email: 'desk@x.ba', fullName: 'Desk', roles: ['Receptionist'] })
+    useAuthStore.getState().setAuth('t', { userId: 'u1', email: 'desk@x.ba', fullName: 'Desk', roles: ['Staff'] })
   })
   afterEach(() => { vi.useRealTimers(); useAuthStore.getState().clearAuth() })
 

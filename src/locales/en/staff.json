@@ -152,12 +152,12 @@
     "turnOffTitle": "Turn off sign-in?",
     "turnOffBody": "{{name}} will no longer be able to sign in. The profile and its history stay.",
     "turnOn": "Turn sign-in back on",
-    "selfHint": "This is you. Change your own account in Profile & Settings.",
+    "selfHint": "This is you. Change your own account in My profile.",
     "tempPassword": "Temporary password",
     "roleChanged": "Role changed.",
     "failed": "Could not change access. Please try again.",
     "errors": {
-      "self": "You can't change your own access here. Use Profile & Settings for your own account.",
+      "self": "You can't change your own access here. Use My profile for your own account.",
       "lastOwner": "A clinic must keep at least one active owner.",
       "ownerOnly": "Only a clinic owner can change another owner."
     },

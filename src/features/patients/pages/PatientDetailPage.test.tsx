@@ -80,7 +80,7 @@ describe('PatientDetailPage booking', () => {
   // UX Phase A: there was no way to book from a patient — reception had to go to
   // Appointments and search for the same patient again
   it('books an appointment for this patient with the patient already selected', async () => {
-    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'r@x', fullName: 'Rec', roles: ['Receptionist'] })
+    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'r@x', fullName: 'Rec', roles: ['Staff'] })
     renderWithProviders(
       <Routes><Route path="/patients/:id" element={<PatientDetailPage />} /></Routes>,
       { route: '/patients/p1' },

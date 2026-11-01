@@ -103,10 +103,8 @@
   "role": {
     "staff": "Osoblje",
     "SuperAdmin": "Super admin",
-    "ClinicOwner": "Vlasnik klinike",
-    "Dentist": "Stomatolog",
-    "Receptionist": "Recepcioner",
-    "DentalNurse": "Stomatološki tehničar"
+    "ClinicOwner": "Administrator",
+    "Staff": "Osoblje"
   },
   "pagination": {
     "pageOfTotal": "Stranica {{page}} od {{totalPages}} ({{totalCount}} ukupno)",

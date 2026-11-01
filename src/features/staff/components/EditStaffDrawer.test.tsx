@@ -27,7 +27,7 @@ describe('EditStaffDrawer', () => {
   // DT-20: the sign-in email was editable, and Save then failed
   it('makes the sign-in email read-only and says why', () => {
     useAuthStore.getState().setAuth('t', { userId: 'u', email: 'o@x', fullName: 'O', roles: ['ClinicOwner'] })
-    renderWithProviders(<EditStaffDrawer staff={staff({ userId: 'u1', role: 'Dentist', isActive: true, mustChangePassword: false, lastLoginAt: null })} onClose={() => {}} />)
+    renderWithProviders(<EditStaffDrawer staff={staff({ userId: 'u1', role: 'Staff', isActive: true, mustChangePassword: false, lastLoginAt: null })} onClose={() => {}} />)
 
     expect(screen.getByLabelText(/^email/i)).toHaveAttribute('readonly')
     expect(screen.getByText(/sign-in email/i)).toBeInTheDocument()

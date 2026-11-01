@@ -22,7 +22,7 @@ describe('RoleGuard', () => {
 
   // QA-022: a Receptionist got an empty table (the API's 403 was swallowed)
   it('tells an unauthorised user they have no access', () => {
-    renderAs('Receptionist')
+    renderAs('Staff')
     expect(screen.queryByText('team page')).not.toBeInTheDocument()
     expect(screen.getByRole('alert')).toHaveTextContent(/don.t have access/i)
   })

@@ -60,7 +60,7 @@ describe('routes', () => {
   })
 
   it('keeps clinic settings to the owner', async () => {
-    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'r@x', fullName: 'Desk', roles: ['Receptionist'] })
+    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'r@x', fullName: 'Desk', roles: ['Staff'] })
     renderWithProviders(<ThemeProvider><AppRouter /></ThemeProvider>, { route: '/settings/hours' })
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/access/i)

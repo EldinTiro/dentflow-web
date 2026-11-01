@@ -40,7 +40,7 @@ function staff(overrides: Partial<StaffMemberResponse> = {}): StaffMemberRespons
 }
 
 const account = (overrides: Partial<StaffAccessSummary> = {}): StaffAccessSummary => ({
-  userId: 'u-amra', role: 'Dentist', isActive: true, mustChangePassword: false,
+  userId: 'u-amra', role: 'Staff', isActive: true, mustChangePassword: false,
   lastLoginAt: '2026-10-20T08:00:00Z', ...overrides,
 })
 
@@ -70,11 +70,11 @@ describe('StaffDetailPage — app access (people-merge plan 4.3)', () => {
 
     const section = await accessSection()
     expect(section.getByText(/can't sign in yet/i)).toBeInTheDocument()
-    await user.selectOptions(section.getByLabelText(/^role/i), 'DentalNurse')
+    await user.selectOptions(section.getByLabelText(/^role/i), 'ClinicOwner')
     await user.click(section.getByRole('button', { name: /give access/i }))
 
     expect(await screen.findByText('Tmp-777-xyz')).toBeInTheDocument()
-    expect(svc.grantAccess).toHaveBeenCalledWith('s1', 'DentalNurse')
+    expect(svc.grantAccess).toHaveBeenCalledWith('s1', 'ClinicOwner')
   })
 
   it('shows role, last sign-in and the first-sign-in badge; resets a password after confirming', async () => {
@@ -85,7 +85,7 @@ describe('StaffDetailPage — app access (people-merge plan 4.3)', () => {
     renderPage()
 
     const section = await accessSection()
-    expect(section.getByLabelText(/^role/i)).toHaveValue('Dentist')
+    expect(section.getByLabelText(/^role/i)).toHaveValue('Staff')
     expect(section.getByText(/must change password/i)).toBeInTheDocument()
     expect(section.getByText(/last sign-in/i)).toBeInTheDocument()
 
@@ -103,11 +103,11 @@ describe('StaffDetailPage — app access (people-merge plan 4.3)', () => {
     const user = userEvent.setup()
     renderPage()
 
-    await user.selectOptions((await accessSection()).getByLabelText(/^role/i), 'Receptionist')
+    await user.selectOptions((await accessSection()).getByLabelText(/^role/i), 'ClinicOwner')
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /change role/i }))
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/at least one active owner/i)))
-    expect(svc.changeRole).toHaveBeenCalledWith('u-amra', 'Receptionist')
+    expect(svc.changeRole).toHaveBeenCalledWith('u-amra', 'ClinicOwner')
   })
 
   // DT-06: one click on the dropdown made someone Clinic owner
@@ -124,7 +124,7 @@ describe('StaffDetailPage — app access (people-merge plan 4.3)', () => {
     await user.click(dialog.getByRole('button', { name: /cancel/i }))
 
     expect(svc.changeRole).not.toHaveBeenCalled()
-    expect(section.getByRole('combobox', { name: /^role/i })).toHaveValue('Dentist')
+    expect(section.getByRole('combobox', { name: /^role/i })).toHaveValue('Staff')
   })
 
   it('confirms every successful role change with a toast', async () => {
@@ -134,7 +134,7 @@ describe('StaffDetailPage — app access (people-merge plan 4.3)', () => {
     const user = userEvent.setup()
     renderPage()
 
-    await user.selectOptions((await accessSection()).getByLabelText(/^role/i), 'DentalNurse')
+    await user.selectOptions((await accessSection()).getByLabelText(/^role/i), 'ClinicOwner')
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /change role/i }))
 
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(expect.stringMatching(/role changed/i)))
@@ -161,11 +161,11 @@ describe('StaffDetailPage — app access (people-merge plan 4.3)', () => {
     const section = await accessSection()
     expect(section.getByLabelText(/^role/i)).toBeDisabled()
     expect(section.getByRole('button', { name: /turn off sign-in/i })).toBeDisabled()
-    expect(section.getByText(/profile & settings/i)).toBeInTheDocument()
+    expect(section.getByText(/my profile/i)).toBeInTheDocument()
   })
 
   it('is read-only without people.manage', async () => {
-    signIn(['Receptionist'])
+    signIn(['Staff'])
     svc.getById.mockResolvedValue(staff({ access: account() }))
     renderPage()
 
@@ -175,7 +175,7 @@ describe('StaffDetailPage — app access (people-merge plan 4.3)', () => {
     expect(section.queryByRole('combobox')).not.toBeInTheDocument()
     // DT-34: colleagues' role and last sign-in are for the owner
     expect(section.queryByText(/last sign-in/i)).not.toBeInTheDocument()
-    expect(section.queryByText('Dentist')).not.toBeInTheDocument()
+    expect(section.queryByText('Staff')).not.toBeInTheDocument()
   })
 })
 
@@ -229,7 +229,7 @@ describe('StaffDetailPage — deactivate instead of delete (people-merge plan B7
   })
 
   it('shows neither to other roles', async () => {
-    signIn(['Dentist'])
+    signIn(['Staff'])
     svc.getById.mockResolvedValue(staff())
     renderPage()
 
@@ -244,7 +244,7 @@ describe('StaffDetailPage — tab from the URL', () => {
 
   // The dashboard's "who is away" links straight to the person's absences
   it('opens the absence tab for ?tab=absence', async () => {
-    signIn(['Receptionist'])
+    signIn(['Staff'])
     svc.getById.mockResolvedValue(staff())
     renderWithProviders(
       <Routes><Route path="/staff/:id" element={<StaffDetailPage />} /></Routes>,

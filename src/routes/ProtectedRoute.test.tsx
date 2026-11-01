@@ -18,7 +18,7 @@ function renderAt(route: string) {
 }
 
 const signIn = (mustChangePassword: boolean) => {
-  useAuthStore.getState().setAuth('t', { userId: 'u', email: 'e@x', fullName: 'U', roles: ['Receptionist'], mustChangePassword })
+  useAuthStore.getState().setAuth('t', { userId: 'u', email: 'e@x', fullName: 'U', roles: ['Staff'], mustChangePassword })
   useAuthStore.getState().finishRestoring()
 }
 

@@ -23,7 +23,7 @@ describe('PatientsPage', () => {
       items: [row('P-1', 'Selma Aganović', 'Active'), row('P-2', 'Old Patient', 'Inactive')],
       totalCount: 2, page: 1, pageSize: 20, totalPages: 1, hasPreviousPage: false, hasNextPage: false,
     } as never)
-    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'e@x', fullName: 'U', roles: ['Receptionist'] })
+    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'e@x', fullName: 'U', roles: ['Staff'] })
   })
   afterEach(() => { useAuthStore.getState().clearAuth() })
 
