@@ -264,7 +264,7 @@ describe('StaffDetailPage — naming (DT-22)', () => {
     svc.getById.mockResolvedValue(staff({ staffType: 'DentalAssistant' }))
     renderPage()
 
-    expect((await screen.findAllByText('Dental nurse')).length).toBeGreaterThan(0)
+    expect((await screen.findAllByText('Dental technician')).length).toBeGreaterThan(0)
     expect(screen.queryByText('Dental Assistant')).not.toBeInTheDocument()
   })
 })

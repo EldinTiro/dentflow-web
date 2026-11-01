@@ -104,7 +104,7 @@
     "ClinicOwner": "Praxisinhaber",
     "Dentist": "Zahnarzt",
     "Receptionist": "Empfang",
-    "DentalNurse": "Zahnmedizinische Fachangestellte"
+    "DentalNurse": "Zahntechniker/in"
   },
   "pagination": {
     "pageOfTotal": "Seite {{page}} von {{totalPages}} ({{totalCount}} gesamt)",

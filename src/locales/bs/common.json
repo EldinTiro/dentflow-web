@@ -104,7 +104,7 @@
     "ClinicOwner": "Vlasnik klinike",
     "Dentist": "Stomatolog",
     "Receptionist": "Recepcioner",
-    "DentalNurse": "Medicinska sestra / tehničar"
+    "DentalNurse": "Stomatološki tehničar"
   },
   "pagination": {
     "pageOfTotal": "Stranica {{page}} od {{totalPages}} ({{totalCount}} ukupno)",

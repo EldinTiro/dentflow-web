@@ -101,6 +101,6 @@ describe('CreateStaffDrawer', () => {
 
     const types = [...(screen.getByLabelText(/^staff type/i) as HTMLSelectElement).options]
     expect(types.map((o) => o.value)).toEqual(['Dentist', 'DentalAssistant', 'Receptionist', 'OfficeManager'])
-    expect(types.map((o) => o.textContent)).toContain('Dental nurse')
+    expect(types.map((o) => o.textContent)).toContain('Dental technician')
   })
 })
