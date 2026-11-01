@@ -22,5 +22,12 @@
       "label": "New temporary password",
       "warning": "Share this with the user. It will not be shown again."
     }
+  },
+  "clinic": {
+    "title": "Clinic settings",
+    "nav": {
+      "hours": "Working hours",
+      "sms": "SMS reminders"
+    }
   }
 }

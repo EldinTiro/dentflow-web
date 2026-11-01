@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router'
+import { Routes, Route, Navigate, useSearchParams } from 'react-router'
 import { ProtectedRoute } from './ProtectedRoute'
 import { RoleGuard } from './RoleGuard'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
@@ -15,6 +15,7 @@ import { StaffPage } from '@/features/staff/pages/StaffPage'
 import { StaffDetailPage } from '@/features/staff/pages/StaffDetailPage'
 import { AppointmentsPage } from '@/features/appointments/pages/AppointmentsPage'
 import { AppointmentTypesPage } from '@/features/appointments/pages/AppointmentTypesPage'
+import { SettingsLayout, ClinicHoursPage, NotificationSettingsPage, PlanPage } from '@/features/settings'
 import { ProfilePage } from '@/features/auth/pages/ProfilePage'
 import { ChangePasswordRequiredPage } from '@/features/auth/pages/ChangePasswordRequiredPage'
 import { InvoicesPage } from '@/features/billing/pages/InvoicesPage'
@@ -31,6 +32,17 @@ function RootRedirect() {
   return <Navigate to={isSuperAdmin ? '/admin' : '/dashboard'} replace />
 }
 
+
+/** /settings/profile?tab=… was one page for the person and the clinic; send each tab on. */
+function LegacyProfileRedirect() {
+  const tab = useSearchParams()[0].get('tab')
+  const to =
+    tab === 'clinic' ? '/settings/hours'
+    : tab === 'notifications' ? '/settings/notifications'
+    : tab === 'appearance' ? '/profile?tab=appearance'
+    : '/profile'
+  return <Navigate to={to} replace />
+}
 
 export function AppRouter() {
   return (
@@ -71,12 +83,21 @@ export function AppRouter() {
             <Route path="invoices" element={<Navigate to="/finance/invoices" replace />} />
           </Route>
           <Route path="invoices/:id" element={<InvoiceDetailPage />} />
+          {/* Clinic settings (owner) apart from the personal profile */}
           <Route element={<RoleGuard allowedRoles={['ClinicOwner']} />}>
-            <Route path="settings/appointment-types" element={<AppointmentTypesPage />} />
+            <Route path="settings" element={<SettingsLayout />}>
+              <Route index element={<Navigate to="/settings/hours" replace />} />
+              <Route path="hours" element={<ClinicHoursPage />} />
+              <Route path="appointment-types" element={<AppointmentTypesPage />} />
+              <Route path="notifications" element={<NotificationSettingsPage />} />
+              <Route path="plan" element={<PlanPage />} />
+            </Route>
           </Route>
           {/* Team merged into Staff (people-merge plan D5); keep old bookmarks working. */}
           <Route path="settings/users" element={<Navigate to="/staff" replace />} />
-          <Route path="settings/profile" element={<ProfilePage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          {/* The old "Profil i postavke" page: its tabs now live on two pages */}
+          <Route path="settings/profile" element={<LegacyProfileRedirect />} />
         </Route>
       </Route>
 

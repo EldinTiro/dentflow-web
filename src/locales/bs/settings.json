@@ -22,5 +22,12 @@
       "label": "Nova privremena lozinka",
       "warning": "Podijelite ovo sa korisnikom. Neće biti ponovo prikazano."
     }
+  },
+  "clinic": {
+    "title": "Postavke klinike",
+    "nav": {
+      "hours": "Radno vrijeme",
+      "sms": "SMS podsjetnici"
+    }
   }
 }

@@ -22,5 +22,12 @@
       "label": "Neues temporäres Passwort",
       "warning": "Teilen Sie dies mit dem Benutzer. Es wird nicht erneut angezeigt."
     }
+  },
+  "clinic": {
+    "title": "Praxiseinstellungen",
+    "nav": {
+      "hours": "Öffnungszeiten",
+      "sms": "SMS-Erinnerungen"
+    }
   }
 }

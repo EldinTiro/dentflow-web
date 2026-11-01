@@ -8,9 +8,11 @@
     "finance": "Finansije",
     "appointmentTypes": "Vrste usluga",
     "adminPanel": "Admin panel",
-    "profileSettings": "Profil i postavke",
     "signOut": "Odjavi se",
-    "appName": "DentFlow"
+    "appName": "DentFlow",
+    "settings": "Postavke",
+    "myProfile": "Moj profil",
+    "clinicSettings": "Postavke klinike"
   },
   "button": {
     "save": "Sačuvaj",
@@ -123,7 +125,8 @@
     "toggleDarkMode": "Prebaci tamni režim",
     "close": "Zatvori",
     "hidePassword": "Sakrij lozinku",
-    "showPassword": "Prikaži lozinku"
+    "showPassword": "Prikaži lozinku",
+    "userMenu": "Korisnički meni"
   },
   "errorBoundary": {
     "title": "Nešto je pošlo po zlu",
