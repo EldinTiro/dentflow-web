@@ -4,8 +4,12 @@
  * TODO(roles step 4): read permissions from the API at sign-in instead of mirroring the map.
  */
 
-/** The four roles a clinic account can hold (`Roles.TenantRoles`), owner first. */
-export const TENANT_ROLES = ['ClinicOwner', 'Dentist', 'DentalNurse', 'Receptionist'] as const
+/**
+ * The two roles a clinic account can hold (`Roles.TenantRoles`): the Administrator (code
+ * ClinicOwner) and Staff ("Osoblje"). A role says what someone may do; the job title is the
+ * staff type, which also decides who can be booked.
+ */
+export const TENANT_ROLES = ['ClinicOwner', 'Staff'] as const
 export type TenantRole = (typeof TENANT_ROLES)[number]
 
 export type Permission =
@@ -16,7 +20,7 @@ export type Permission =
   | 'finance.view'
   | 'people.manage'
   | 'patients.manage'
-  /** Treatment plans and their items. The API checks it with a role list (DT-12). */
+  /** Treatment plans and their items. The API checks it with Roles.TenantRoles. */
   | 'treatments.manage'
 
 const ALL: readonly Permission[] = [
@@ -26,9 +30,7 @@ const ALL: readonly Permission[] = [
 
 const ROLE_PERMISSIONS: Record<string, readonly Permission[]> = {
   ClinicOwner: ALL,
-  Dentist: ['dashboard.view', 'billing.view', 'patients.manage', 'treatments.manage'],
-  DentalNurse: ['dashboard.view', 'billing.view', 'billing.collect', 'patients.manage', 'treatments.manage'],
-  Receptionist: ['dashboard.view', 'billing.view', 'billing.collect', 'patients.manage'],
+  Staff: ['dashboard.view', 'billing.view', 'billing.collect', 'patients.manage', 'treatments.manage'],
   SuperAdmin: ['dashboard.view'],
 }
 

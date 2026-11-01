@@ -103,10 +103,8 @@
   "role": {
     "staff": "Personal",
     "SuperAdmin": "Super-Admin",
-    "ClinicOwner": "Praxisinhaber",
-    "Dentist": "Zahnarzt",
-    "Receptionist": "Empfang",
-    "DentalNurse": "Zahntechniker/in"
+    "ClinicOwner": "Administrator",
+    "Staff": "Mitarbeiter"
   },
   "pagination": {
     "pageOfTotal": "Seite {{page}} von {{totalPages}} ({{totalCount}} gesamt)",

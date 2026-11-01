@@ -7,7 +7,7 @@ import { UsersPage } from './UsersPage'
 import { userAdminService, type UserAdminResponse } from '../services/userAdminService'
 
 const user = (o: Partial<UserAdminResponse>): UserAdminResponse => ({
-  id: 'x', email: 'x@x', fullName: 'X', firstName: 'X', lastName: 'X', role: 'Receptionist',
+  id: 'x', email: 'x@x', fullName: 'X', firstName: 'X', lastName: 'X', role: 'Staff',
   tenantId: null, isActive: true, lastLoginAt: null, createdAt: '2026-10-01T00:00:00Z', ...o,
 })
 
@@ -16,7 +16,7 @@ vi.mock('../services/userAdminService', () => ({
     list: vi.fn(async () => ({
       items: [
         user({ id: 'me', fullName: 'Platform Admin', role: 'SuperAdmin' }),
-        user({ id: 'r1', fullName: 'Clinic Receptionist', role: 'Receptionist', tenantId: 't1' }),
+        user({ id: 'r1', fullName: 'Clinic Receptionist', role: 'Staff', tenantId: 't1' }),
       ],
       totalCount: 2, page: 1, pageSize: 20,
     })),

@@ -29,7 +29,7 @@ describe('AppShell navigation', () => {
   afterEach(() => useAuthStore.getState().clearAuth())
 
   // People-merge plan 4.5 (D5): Team merged into Staff — one list of people
-  it.each(['ClinicOwner', 'Dentist', 'DentalNurse', 'Receptionist'])('has no Team link for %s', (role) => {
+  it.each(['ClinicOwner', 'Staff'])('has no Team link for %s', (role) => {
     renderAs(role)
     expect(screen.queryByRole('link', { name: 'Team' })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Staff' })).toHaveAttribute('href', '/staff')
@@ -70,7 +70,7 @@ describe('AppShell finance link', () => {
   })
 
   it('does not link Finance for a receptionist', () => {
-    renderAs('Receptionist')
+    renderAs('Staff')
     expect(screen.queryByRole('link', { name: 'Finance' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Billing' })).not.toBeInTheDocument()
   })
@@ -81,7 +81,7 @@ describe('AppShell account and settings', () => {
   afterEach(() => useAuthStore.getState().clearAuth())
 
   it('puts the account menu in the header, not name and sign-out in the sidebar', () => {
-    renderAs('Dentist')
+    renderAs('Staff')
     expect(screen.getByRole('button', { name: 'Account menu' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Profile & Settings' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument()
@@ -94,7 +94,7 @@ describe('AppShell account and settings', () => {
   })
 
   it('has no Settings link for a receptionist', () => {
-    renderAs('Receptionist')
+    renderAs('Staff')
     expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument()
   })
 })

@@ -71,7 +71,7 @@ describe('InvoiceDetailPage back link', () => {
   // from a patient was sent back to an "access denied" page
   it.each([
     ['ClinicOwner', '/finance/invoices'],
-    ['Receptionist', '/patients/pat-1?tab=billing'],
+    ['Staff', '/patients/pat-1?tab=billing'],
   ])('goes back somewhere a %s may open', async (role, href) => {
     useAuthStore.getState().setAuth('t', { userId: 'u', email: 'x@x', fullName: 'X', roles: [role] })
     renderInvoice('Draft')

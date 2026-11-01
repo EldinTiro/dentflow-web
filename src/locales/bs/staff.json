@@ -153,12 +153,12 @@
     "turnOffTitle": "Isključiti prijavu?",
     "turnOffBody": "{{name}} se više neće moći prijaviti. Profil i njegova historija ostaju.",
     "turnOn": "Ponovo uključi prijavu",
-    "selfHint": "Ovo ste vi. Svoj račun mijenjate u Profilu i postavkama.",
+    "selfHint": "Ovo ste vi. Svoj račun mijenjate u Mom profilu.",
     "tempPassword": "Privremena lozinka",
     "roleChanged": "Uloga promijenjena.",
     "failed": "Promjena pristupa nije uspjela. Pokušajte ponovo.",
     "errors": {
-      "self": "Ovdje ne možete mijenjati vlastiti pristup. Za svoj račun koristite Profil i postavke.",
+      "self": "Ovdje ne možete mijenjati vlastiti pristup. Za svoj račun koristite Moj profil.",
       "lastOwner": "Klinika mora imati barem jednog aktivnog vlasnika.",
       "ownerOnly": "Samo vlasnik klinike može mijenjati drugog vlasnika."
     },

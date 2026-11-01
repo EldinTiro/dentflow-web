@@ -1,57 +1,51 @@
 import { describe, it, expect } from 'vitest'
 import { can, canViewFinance, TENANT_ROLES } from './permissions'
 
+// Two clinic roles (2026-11-02): the role says what someone may do, the staff type says
+// what they are. Mirrors Roles / RolePermissions in the API, which is what enforces it.
 describe('TENANT_ROLES', () => {
-  // Mirrors Roles.TenantRoles in the API: the four roles a clinic account can hold
-  it('is the four clinic roles, owner first', () => {
-    expect(TENANT_ROLES).toEqual(['ClinicOwner', 'Dentist', 'DentalNurse', 'Receptionist'])
+  it('is the Administrator and Staff, Administrator first', () => {
+    expect(TENANT_ROLES).toEqual(['ClinicOwner', 'Staff'])
   })
 })
 
 describe('can', () => {
-  // Mirrors RolePermissions in the API, which is what actually enforces it
-  it.each(TENANT_ROLES)('lets %s manage patients', (role) => {
+  it.each(TENANT_ROLES)('lets %s manage patients and treatment plans', (role) => {
     expect(can([role], 'patients.manage')).toBe(true)
+    expect(can([role], 'treatments.manage')).toBe(true)
+  })
+
+  it("lets Staff see and collect a patient's bill", () => {
+    expect(can(['Staff'], 'billing.view')).toBe(true)
+    expect(can(['Staff'], 'billing.collect')).toBe(true)
+  })
+
+  it('keeps clinic money and people with the Administrator', () => {
+    for (const permission of ['finance.view', 'finance.adjust', 'people.manage'] as const) {
+      expect(can(['ClinicOwner'], permission)).toBe(true)
+      expect(can(['Staff'], permission)).toBe(false)
+    }
   })
 
   it('does not let the platform admin manage clinic patients', () => {
     expect(can(['SuperAdmin'], 'patients.manage')).toBe(false)
   })
 
-  it('keeps people.manage with the owner', () => {
-    expect(can(['ClinicOwner'], 'people.manage')).toBe(true)
-    for (const role of ['Dentist', 'DentalNurse', 'Receptionist', 'SuperAdmin']) {
-      expect(can([role], 'people.manage')).toBe(false)
+  it('is false for retired and unknown roles', () => {
+    for (const role of ['Dentist', 'DentalNurse', 'Receptionist', 'ClinicAdmin', 'ReadOnly']) {
+      expect(can([role], 'patients.manage')).toBe(false)
     }
   })
 
-  it('lets the desk collect payments but not a dentist', () => {
-    expect(can(['Receptionist'], 'billing.collect')).toBe(true)
-    expect(can(['DentalNurse'], 'billing.collect')).toBe(true)
-    expect(can(['Dentist'], 'billing.collect')).toBe(false)
-  })
-
-  // DT-12: a receptionist created plans it couldn't fill; plans are for clinical roles
-  it('keeps treatment plans with clinical roles', () => {
-    for (const role of ['ClinicOwner', 'Dentist', 'DentalNurse']) expect(can([role], 'treatments.manage')).toBe(true)
-    for (const role of ['Receptionist', 'SuperAdmin']) expect(can([role], 'treatments.manage')).toBe(false)
-  })
-
-  it('is false for retired and unknown roles', () => {
-    expect(can(['ClinicAdmin'], 'people.manage')).toBe(false)
-    expect(can(['ReadOnly'], 'finance.view')).toBe(false)
-  })
-
   it('is true when any of several roles grants it', () => {
-    expect(can(['Dentist', 'ClinicOwner'], 'people.manage')).toBe(true)
+    expect(can(['Staff', 'ClinicOwner'], 'people.manage')).toBe(true)
   })
 })
 
 describe('canViewFinance', () => {
-  it('is the owner only', () => {
+  it('is the Administrator only', () => {
     expect(canViewFinance(['ClinicOwner'])).toBe(true)
-    for (const role of ['Dentist', 'DentalNurse', 'Receptionist', 'SuperAdmin']) {
-      expect(canViewFinance([role])).toBe(false)
-    }
+    expect(canViewFinance(['Staff'])).toBe(false)
+    expect(canViewFinance(['SuperAdmin'])).toBe(false)
   })
 })

@@ -26,7 +26,7 @@ export function AddTenantUserModal({ tenantId, tenantName, onClose }: Props) {
   const [created, setCreated] = useState<{ email: string; tempPassword: string } | null>(null)
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
-    defaultValues: { role: 'Receptionist' },
+    defaultValues: { role: 'Staff' },
   })
 
   const provision = useMutation({

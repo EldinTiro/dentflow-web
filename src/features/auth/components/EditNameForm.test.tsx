@@ -16,7 +16,7 @@ describe('EditNameForm', () => {
 
   // QA-037: the user's own name could not be edited
   it('saves the new name and shows it in the app right away', async () => {
-    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'a@x', fullName: 'Amra Hadzic', roles: ['Receptionist'] })
+    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'a@x', fullName: 'Amra Hadzic', roles: ['Staff'] })
     vi.mocked(userService.updateProfile).mockResolvedValue({
       id: 'u', email: 'a@x', firstName: 'Amra', lastName: 'Hadžić', fullName: 'Amra Hadžić', avatarUrl: null, lastLoginAt: null,
     })
