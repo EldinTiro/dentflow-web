@@ -228,6 +228,9 @@ export function DashboardPage() {
         </Link>
       </div>
 
+      {/* Free-slot check first: it is what the front desk uses most */}
+      <SlotCheckerWidget />
+
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <StatCard
@@ -352,7 +355,7 @@ export function DashboardPage() {
         </div>
       )}
 
-      {/* From 1280px: schedule and slot check on the left, people on the right.
+      {/* From 1280px: today's schedule on the left, people on the right.
           Below that the cards stack in this same order. */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 xl:items-start">
       {/* Today's schedule */}
@@ -423,7 +426,7 @@ export function DashboardPage() {
         )}
       </div>
 
-      <div className="space-y-6 xl:row-span-2">
+      <div className="space-y-6">
       {/* Appointments by provider */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
@@ -466,10 +469,6 @@ export function DashboardPage() {
       <AbsencesWidget />
       </div>
 
-      {/* Quick slot availability check */}
-      <div className="xl:col-span-2">
-        <SlotCheckerWidget />
-      </div>
       </div>
 
       {/* Act on today's visits without leaving the dashboard */}
