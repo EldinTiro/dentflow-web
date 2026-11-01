@@ -107,7 +107,7 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
     },
   })
 
-  const inputClass = 'w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600'
+  const inputClass = 'w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
   const labelClass = 'block text-xs font-medium text-gray-600 mb-1 dark:text-gray-300'
   const errorClass = 'text-xs text-red-500 mt-0.5'
   const sectionClass = 'pt-4 border-t border-gray-100 dark:border-gray-800'
