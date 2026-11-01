@@ -36,6 +36,19 @@ describe('WeekCalendar click-to-book', () => {
     expect(onSlotClick).toHaveBeenCalledWith('2026-10-22T10:30')
   })
 
+  // User request: only the clinic's working hours, so the grid starts at opening time
+  it('starts the grid at the clinic opening hour and books from there', () => {
+    const onSlotClick = vi.fn()
+    const { container } = render(
+      <WeekCalendar {...props} appointments={[]} onSlotClick={onSlotClick} openHours={{ start: 10, end: 19 }} />)
+
+    expect(screen.getByText('10:00')).toBeInTheDocument()
+    expect(screen.queryByText('06:00')).not.toBeInTheDocument()
+    expect(screen.queryByText('19:00')).not.toBeInTheDocument()
+    fireEvent.click(dayColumn(container, '2026-10-22'), { clientY: 56 + 32 }) // 1h 34min after 10:00
+    expect(onSlotClick).toHaveBeenCalledWith('2026-10-22T11:30')
+  })
+
   it('opens an existing appointment instead of booking over it', () => {
     const onSlotClick = vi.fn()
     const onAppointmentClick = vi.fn()
