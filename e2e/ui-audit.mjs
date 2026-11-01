@@ -9,8 +9,13 @@ import { writeFileSync } from 'node:fs'
 
 const WEB = process.env.AUDIT_WEB ?? 'http://localhost:5173'
 const API = process.env.AUDIT_API ?? 'http://localhost:5199'
-const EMAIL = process.env.AUDIT_EMAIL ?? 'superadmin@DentFlow.local'
-const PASSWORD = process.env.AUDIT_PASSWORD ?? 'SuperAdmin123!@#'
+// No fallback: these repos are public, so credentials only ever come from the environment.
+const EMAIL = process.env.AUDIT_EMAIL
+const PASSWORD = process.env.AUDIT_PASSWORD
+if (!EMAIL || !PASSWORD) {
+  console.error('Set AUDIT_EMAIL and AUDIT_PASSWORD to run the audit.')
+  process.exit(1)
+}
 
 const IDS = {
   patient: process.env.AUDIT_PATIENT_ID ?? '',

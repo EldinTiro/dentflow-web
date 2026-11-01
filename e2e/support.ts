@@ -3,12 +3,14 @@ import { expect, test, type Page } from '@playwright/test'
 /**
  * Accounts for the people / patients specs come from the environment, never from the
  * repository: E2E_OWNER_EMAIL / E2E_OWNER_PASSWORD (a ClinicOwner) and
- * E2E_RECEPTIONIST_EMAIL / E2E_RECEPTIONIST_PASSWORD (a Receptionist of the same clinic).
- * Both accounts must have English as their language preference.
+ * E2E_RECEPTIONIST_EMAIL / E2E_RECEPTIONIST_PASSWORD (a Receptionist of the same clinic),
+ * and for the session spec E2E_OTHER_OWNER_EMAIL / E2E_OTHER_OWNER_PASSWORD (the owner of a
+ * second clinic). The accounts must have English as their language preference.
+ * These repos are public: never write a password into a spec (SEC-01).
  */
 export interface Account { email: string; password: string }
 
-export function account(role: 'OWNER' | 'RECEPTIONIST'): Account {
+export function account(role: 'OWNER' | 'RECEPTIONIST' | 'OTHER_OWNER'): Account {
   const email = process.env[`E2E_${role}_EMAIL`]
   const password = process.env[`E2E_${role}_PASSWORD`]
   test.skip(!email || !password, `set E2E_${role}_EMAIL and E2E_${role}_PASSWORD to run this spec`)

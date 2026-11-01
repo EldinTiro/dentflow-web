@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { account, login } from './support'
 
 /**
  * Session handling: where the access token lives, whether a reload survives, and
@@ -9,27 +10,21 @@ import { test, expect, type Page } from '@playwright/test'
  * query cache outlived the logout.
  */
 
-const SMILE = {
-  email: 'tiro.eldin@gmail.com',
-  password: 'Tmp_996dd03a6efa428c900d75bf00ccd420!A1',
-  clinic: 'Smile :)))',
+// Accounts come from the environment (see support.ts); the repos are public (SEC-01).
+// Clinic names are not secret: the defaults match the local seed, override them for other data.
+/** E2E_OWNER_*: owner of the first clinic. */
+const smile = () => ({
+  ...account('OWNER'),
+  clinic: process.env.E2E_OWNER_CLINIC ?? 'Smile :)))',
   /** Exists only in this clinic, so seeing it elsewhere proves a cache leak. */
-  onlyStaff: 'Dr SmileOnly',
-}
+  onlyStaff: process.env.E2E_OWNER_ONLY_STAFF ?? 'Dr SmileOnly',
+})
 
-const PINK = {
-  email: 'pink@dentflow.local',
-  password: 'Tmp_ebeb16502fe54a8ca15144ad6b230c61!A1',
-  clinic: 'Pink Dent',
-}
-
-async function login(page: Page, user: { email: string; password: string }) {
-  await page.goto('/login')
-  await page.locator('#email').fill(user.email)
-  await page.locator('#password').fill(user.password)
-  await page.locator('button[type="submit"]').click()
-  await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 15000 })
-}
+/** E2E_OTHER_OWNER_*: owner of a second clinic. */
+const pink = () => ({
+  ...account('OTHER_OWNER'),
+  clinic: process.env.E2E_OTHER_OWNER_CLINIC ?? 'Pink Dent',
+})
 
 async function logout(page: Page) {
   await page.getByRole('button', { name: /odjavi se|sign out|abmelden/i }).click()
@@ -49,6 +44,7 @@ async function persistedStorage(page: Page) {
 }
 
 test('keeps the access token out of persistent storage', async ({ page }) => {
+  const SMILE = smile()
   await login(page, SMILE)
 
   const stored = await persistedStorage(page)
@@ -81,6 +77,7 @@ test('clears a token left behind by an earlier build', async ({ page }) => {
 })
 
 test('survives a page reload', async ({ page }) => {
+  const SMILE = smile()
   await login(page, SMILE)
   await expect(page.getByText(SMILE.clinic)).toBeVisible({ timeout: 15000 })
 
@@ -93,6 +90,8 @@ test('survives a page reload', async ({ page }) => {
 })
 
 test('does not show the previous user clinic after switching accounts', async ({ page }) => {
+  const SMILE = smile()
+  const PINK = pink()
   await login(page, SMILE)
   await expect(page.getByText(SMILE.clinic)).toBeVisible({ timeout: 15000 })
 
@@ -111,6 +110,8 @@ test('does not show the previous user clinic after switching accounts', async ({
 })
 
 test('does not serve the previous clinic cached data to the next user', async ({ page }) => {
+  const SMILE = smile()
+  const PINK = pink()
   // The sidebar name refetches immediately (staleTime 0), so it self-corrects and
   // hides the problem. The real exposure is in the queries that deliberately do not
   // refetch: staff-all-active holds for 5 minutes, dashboard-stats for 1, and
@@ -134,6 +135,7 @@ test('does not serve the previous clinic cached data to the next user', async ({
 })
 
 test('recovers from an expired access token without bouncing the user', async ({ page }) => {
+  const SMILE = smile()
   await login(page, SMILE)
 
   let refreshCalls = 0
@@ -161,6 +163,7 @@ test('recovers from an expired access token without bouncing the user', async ({
 })
 
 test('refreshes only once when several calls fail together', async ({ page }) => {
+  const SMILE = smile()
   await login(page, SMILE)
   await page.waitForTimeout(1500) // let the initial queries settle
 
@@ -193,6 +196,7 @@ test('refreshes only once when several calls fail together', async ({ page }) =>
 })
 
 test('revokes the session on the server when logging out', async ({ page }) => {
+  const SMILE = smile()
   await login(page, SMILE)
   await logout(page)
 
