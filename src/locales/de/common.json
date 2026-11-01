@@ -8,9 +8,11 @@
     "finance": "Finanzen",
     "appointmentTypes": "Leistungsarten",
     "adminPanel": "Admin-Bereich",
-    "profileSettings": "Profil & Einstellungen",
     "signOut": "Abmelden",
-    "appName": "DentFlow"
+    "appName": "DentFlow",
+    "settings": "Einstellungen",
+    "myProfile": "Mein Profil",
+    "clinicSettings": "Praxiseinstellungen"
   },
   "button": {
     "save": "Speichern",
@@ -123,7 +125,8 @@
     "toggleDarkMode": "Dunkelmodus umschalten",
     "close": "Schließen",
     "hidePassword": "Passwort ausblenden",
-    "showPassword": "Passwort anzeigen"
+    "showPassword": "Passwort anzeigen",
+    "userMenu": "Kontomenü"
   },
   "errorBoundary": {
     "title": "Etwas ist schiefgelaufen",

@@ -8,9 +8,11 @@
     "finance": "Finance",
     "appointmentTypes": "Types of Services",
     "adminPanel": "Admin Panel",
-    "profileSettings": "Profile & Settings",
     "signOut": "Sign out",
-    "appName": "DentFlow"
+    "appName": "DentFlow",
+    "settings": "Settings",
+    "myProfile": "My profile",
+    "clinicSettings": "Clinic settings"
   },
   "button": {
     "save": "Save",
@@ -123,7 +125,8 @@
     "toggleDarkMode": "Toggle dark mode",
     "close": "Close",
     "hidePassword": "Hide password",
-    "showPassword": "Show password"
+    "showPassword": "Show password",
+    "userMenu": "Account menu"
   },
   "errorBoundary": {
     "title": "Something went wrong",

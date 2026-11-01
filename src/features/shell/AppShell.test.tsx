@@ -75,3 +75,26 @@ describe('AppShell finance link', () => {
     expect(screen.queryByRole('link', { name: 'Billing' })).not.toBeInTheDocument()
   })
 })
+
+// User request: profile apart from clinic settings; the person is a menu top right
+describe('AppShell account and settings', () => {
+  afterEach(() => useAuthStore.getState().clearAuth())
+
+  it('puts the account menu in the header, not name and sign-out in the sidebar', () => {
+    renderAs('Dentist')
+    expect(screen.getByRole('button', { name: 'Account menu' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Profile & Settings' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument()
+  })
+
+  it('gives the owner one Settings link, which holds the service types', () => {
+    renderAs('ClinicOwner')
+    expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute('href', '/settings')
+    expect(screen.queryByRole('link', { name: 'Types of Services' })).not.toBeInTheDocument()
+  })
+
+  it('has no Settings link for a receptionist', () => {
+    renderAs('Receptionist')
+    expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument()
+  })
+})

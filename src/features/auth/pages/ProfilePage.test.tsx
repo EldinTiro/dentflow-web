@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import i18n from 'i18next'
 import { renderWithProviders } from '@/test/render'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { ThemeProvider } from '@/shared/context/ThemeContext'
@@ -25,24 +23,20 @@ vi.mock('@/features/admin/services/tenantService', () => ({
   },
 }))
 
-describe('ProfilePage notifications tab', () => {
-  afterEach(async () => {
-    useAuthStore.getState().clearAuth()
-    await i18n.changeLanguage('en')
-  })
+// User request: the profile is about the person; the clinic lives in Postavke klinike
+describe('ProfilePage holds personal things only', () => {
+  afterEach(() => useAuthStore.getState().clearAuth())
 
-  // DR-11: the plan upsell was a hard-coded Bosnian sentence in every language
-  it.each([
-    ['en', 'Notifications', 'SMS reminders are available on the Pro and Enterprise plans.'],
-    ['de', 'Benachrichtigungen', 'SMS-Erinnerungen sind in den Tarifen Pro und Enterprise verfügbar.'],
-  ])('shows the SMS upsell in the UI language (%s)', async (lang, tabName, upsell) => {
-    await i18n.changeLanguage(lang)
+  it('has Profile and Appearance, even for the owner', async () => {
     useAuthStore.getState().setAuth('t', { userId: 'u', email: 'p@x', fullName: 'Pink Owner', roles: ['ClinicOwner'] })
-    renderWithProviders(<ThemeProvider><ProfilePage /></ThemeProvider>)
+    renderWithProviders(<ThemeProvider><ProfilePage /></ThemeProvider>, { route: '/profile' })
 
-    await userEvent.click(screen.getByRole('button', { name: tabName }))
-
-    expect(await screen.findByText(upsell)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'My profile', level: 1 })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Profile' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Appearance' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Clinic' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Notifications' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Subscription Plan')).not.toBeInTheDocument()
   })
 })
 
@@ -52,7 +46,7 @@ describe('ProfilePage tabs', () => {
 
   it('opens the tab named in ?tab=', async () => {
     useAuthStore.getState().setAuth('t', { userId: 'u', email: 'p@x', fullName: 'Pink Owner', roles: ['ClinicOwner'] })
-    renderWithProviders(<ThemeProvider><ProfilePage /></ThemeProvider>, { route: '/settings/profile?tab=appearance' })
+    renderWithProviders(<ThemeProvider><ProfilePage /></ThemeProvider>, { route: '/profile?tab=appearance' })
 
     expect(await screen.findByRole('button', { name: 'Appearance' })).toHaveAttribute('aria-pressed', 'true')
   })

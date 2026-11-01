@@ -3,7 +3,6 @@ import { Outlet, NavLink, Link, useLocation } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/features/auth/store/authStore'
-import { logout } from '@/features/auth/services/authService'
 import { tenantService } from '@/features/admin/services/tenantService'
 import { cn } from '@/shared/lib/utils'
 import { canViewFinance } from '@/shared/lib/permissions'
@@ -11,17 +10,16 @@ import { useTheme } from '@/shared/context/ThemeContext'
 import { FeatureProvider } from '@/shared/context/FeatureContext'
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary'
 import { useUserPreferences, useUpdateUserPreferences } from '@/features/auth/hooks/useUserPreferences'
+import { UserMenu } from './UserMenu'
 import {
   LayoutDashboard,
   Users,
   UserCog,
   CalendarDays,
   Settings2,
-  LogOut,
   Moon,
   Sun,
-  Stethoscope,
-  UserCircle,
+  Settings,
   Menu,
   X,
   Globe,
@@ -48,7 +46,7 @@ export function AppShell() {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
   const isSuperAdmin = user?.roles?.includes('SuperAdmin') ?? false
-  // Owner-only settings (appointment types). Team is gone: people live in Staff (people-merge D5).
+  // Owner-only clinic settings. Team is gone: people live in Staff (people-merge D5).
   const canManageSettings = user?.roles?.includes('ClinicOwner') ?? false
   const canFinance = canViewFinance(user?.roles ?? [])
   const { theme, setTheme } = useTheme()
@@ -118,8 +116,9 @@ export function AppShell() {
 
       {canManageSettings && (
         <div className="px-3 pb-2 space-y-1">
+          {/* Clinic settings hold working hours, service types, SMS and plan */}
           <NavLink
-            to="/settings/appointment-types"
+            to="/settings"
             onClick={() => setSidebarOpen(false)}
             className={({ isActive }) =>
               cn(
@@ -130,8 +129,8 @@ export function AppShell() {
               )
             }
           >
-            <Stethoscope size={16} className="shrink-0" />
-            {t('nav.appointmentTypes')}
+            <Settings size={16} className="shrink-0" />
+            {t('nav.settings')}
           </NavLink>
         </div>
       )}
@@ -148,34 +147,6 @@ export function AppShell() {
         </div>
       )}
 
-      <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-3">
-        <p className="truncate text-xs font-medium text-gray-700 dark:text-gray-300">{user?.fullName}</p>
-        <p className="truncate text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
-        <div className="mt-2 space-y-0.5">
-          <NavLink
-            to="/settings/profile"
-            onClick={() => setSidebarOpen(false)}
-            className={({ isActive }) =>
-              cn(
-                'w-full flex items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs transition-colors',
-                isActive
-                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
-                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
-              )
-            }
-          >
-            <UserCircle size={13} className="shrink-0" />
-            {t('nav.profileSettings')}
-          </NavLink>
-          <button
-            onClick={logout}
-            className="w-full flex items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-          >
-            <LogOut size={13} className="shrink-0" />
-            {t('nav.signOut')}
-          </button>
-        </div>
-      </div>
     </>
   )
 
@@ -257,6 +228,7 @@ export function AppShell() {
             >
               {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
+            <UserMenu />
           </div>
         </header>
 
