@@ -72,7 +72,7 @@
     "createTitle": "New Patient",
     "patientNumber": "Patient Number",
     "autoGenerate": "(leave blank to auto-generate)",
-    "patientNumberPlaceholder": "e.g. P-000123",
+    "patientNumberPlaceholder": "e.g. 3453",
     "firstName": "First Name *",
     "lastName": "Last Name *",
     "preferredName": "Preferred Name",

@@ -72,7 +72,7 @@
     "createTitle": "Novi pacijent",
     "patientNumber": "Broj pacijenta",
     "autoGenerate": "(ostavi prazno za automatsko generisanje)",
-    "patientNumberPlaceholder": "npr. P-000123",
+    "patientNumberPlaceholder": "npr. 3453",
     "firstName": "Ime *",
     "lastName": "Prezime *",
     "preferredName": "Nadimak",

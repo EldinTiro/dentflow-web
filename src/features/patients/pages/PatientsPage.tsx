@@ -165,7 +165,7 @@ export function PatientsPage() {
                 className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer ${p.status === 'Inactive' ? 'opacity-60' : ''}`}
                 onClick={() => navigate(`/patients/${p.id}`)}
               >
-                <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-gray-500 dark:text-gray-400">{p.patientNumber}</td>
+                <td className="px-4 py-3 text-sm font-bold tabular-nums whitespace-nowrap text-gray-800 dark:text-gray-100">{p.patientNumber}</td>
                 <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{p.fullName}</td>
                 <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
                   {p.dateOfBirth
