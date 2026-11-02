@@ -233,6 +233,11 @@ export const staffService = {
     return apiClient.put(`/api/v1/users/${userId}/role`, { role }).then((r) => r.data);
   },
 
+  /** The sign-in email; the API updates the linked profile's email with it. */
+  changeSignInEmail(userId: string, email: string) {
+    return apiClient.put(`/api/v1/users/${userId}/email`, { email }).then((r) => r.data);
+  },
+
   setAccessActive(userId: string, isActive: boolean) {
     return apiClient.put(`/api/v1/users/${userId}/status`, { isActive }).then((r) => r.data);
   },

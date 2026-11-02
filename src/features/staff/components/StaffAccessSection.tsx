@@ -12,6 +12,8 @@ import { peopleErrorMessage } from '../lib/peopleErrors'
 
 const selectClass =
   'border border-gray-300 rounded-md px-2 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-600 text-gray-900 dark:text-gray-100 disabled:opacity-50'
+const inputClass =
+  'border border-gray-300 rounded-md px-2 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500'
 const buttonClass =
   'px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50'
 
@@ -35,11 +37,14 @@ export function StaffAccessSection({ staff }: { staff: StaffMemberResponse }) {
   const queryClient = useQueryClient()
   const headingId = useId()
   const roleId = useId()
+  const emailId = useId()
   const canManage = can(useAuthStore(selectRoles), 'people.manage')
   const currentUserId = useAuthStore((s) => s.user?.userId)
   const confirm = useConfirm()
   const [newRole, setNewRole] = useState<TenantRole>('Staff')
   const [tempPassword, setTempPassword] = useState<string | null>(null)
+  // null: the form is closed; otherwise the email being typed
+  const [newEmail, setNewEmail] = useState<string | null>(null)
 
   const access = staff.access ?? null
   const isSelf = !!access && access.userId === currentUserId
@@ -59,6 +64,15 @@ export function StaffAccessSection({ staff }: { staff: StaffMemberResponse }) {
   })
   const setActive = useMutation({
     mutationFn: (isActive: boolean) => staffService.setAccessActive(access!.userId, isActive),
+    onError,
+    onSettled: refresh,
+  })
+  const changeEmail = useMutation({
+    mutationFn: (email: string) => staffService.changeSignInEmail(access!.userId, email),
+    onSuccess: (_, email) => {
+      toast.success(t('access.emailChanged', { name: staff.fullName, email }))
+      setNewEmail(null)
+    },
     onError,
     onSettled: refresh,
   })
@@ -159,8 +173,31 @@ export function StaffAccessSection({ staff }: { staff: StaffMemberResponse }) {
                   {t('access.turnOn')}
                 </button>
               )}
+              <button type="button" className={buttonClass} disabled={isSelf || newEmail !== null}
+                onClick={() => setNewEmail(staff.email ?? '')}>
+                {t('access.changeEmail')}
+              </button>
               {isSelf && <p className="w-full text-xs text-gray-500 dark:text-gray-400">{t('access.selfHint')}</p>}
             </div>
+          )}
+
+          {/* User report: a wrong sign-in email could not be fixed; the profile email follows it */}
+          {canManage && newEmail !== null && (
+            <form noValidate className="flex flex-wrap items-end gap-2"
+              onSubmit={(e) => { e.preventDefault(); changeEmail.mutate(newEmail.trim()) }}>
+              <div className="min-w-64 flex-1">
+                <label htmlFor={emailId} className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{t('access.newEmail')}</label>
+                <input id={emailId} type="email" className={`${inputClass} w-full`} value={newEmail} autoFocus
+                  onChange={(e) => setNewEmail(e.target.value)} />
+              </div>
+              <button type="submit" className={buttonClass} disabled={changeEmail.isPending || !newEmail.trim()}>
+                {t('access.saveEmail')}
+              </button>
+              <button type="button" className={buttonClass} onClick={() => setNewEmail(null)}>
+                {tc('button.cancel')}
+              </button>
+              <p className="w-full text-xs text-gray-500 dark:text-gray-400">{t('access.newEmailHint')}</p>
+            </form>
           )}
         </div>
       )}
