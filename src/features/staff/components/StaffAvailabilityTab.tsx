@@ -141,7 +141,7 @@ export function StaffAvailabilityTab({ staffId }: Props) {
                         type="time"
                         value={form.startTime}
                         onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
-                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full border border-control dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
                     <div>
@@ -150,7 +150,7 @@ export function StaffAvailabilityTab({ staffId }: Props) {
                         type="time"
                         value={form.endTime}
                         onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
-                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full border border-control dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
                     <div>
@@ -159,7 +159,7 @@ export function StaffAvailabilityTab({ staffId }: Props) {
                         type="date"
                         value={form.effectiveFrom}
                         onChange={(e) => setForm((f) => ({ ...f, effectiveFrom: e.target.value }))}
-                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full border border-control dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
                     <div>
@@ -168,7 +168,7 @@ export function StaffAvailabilityTab({ staffId }: Props) {
                         type="date"
                         value={form.effectiveTo}
                         onChange={(e) => setForm((f) => ({ ...f, effectiveTo: e.target.value }))}
-                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full border border-control dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
                   </div>

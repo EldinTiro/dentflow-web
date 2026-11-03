@@ -128,7 +128,7 @@ export function ToothChart({ patientId, canEdit }: { patientId: string; canEdit:
       </div>
 
       {selected === null ? (
-        <p className="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400">{t('teeth.pickTooth')}</p>
+        <p className="rounded-xl border border-dashed border-control p-4 text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400">{t('teeth.pickTooth')}</p>
       ) : (
         <ToothPanel
           key={selected}
@@ -240,7 +240,7 @@ function ToothPanel({ tooth, summary, work, canEdit, conditionLabel, itemStatusL
               id={`finding-${tooth}`}
               value={condition}
               onChange={(e) => setCondition(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+              className="w-full rounded-lg border border-control bg-white px-2 py-1.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
             >
               {CONDITIONS.map((c) => <option key={c} value={c}>{conditionLabel(c)}</option>)}
             </select>
@@ -259,7 +259,7 @@ function ToothPanel({ tooth, summary, work, canEdit, conditionLabel, itemStatusL
                     className={`h-8 w-8 rounded-md border text-sm font-semibold ${
                       surfaces.includes(s)
                         ? 'border-primary-500 bg-primary-600 text-white'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
+                        : 'border-control text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
                     }`}
                   >
                     {s}
@@ -274,7 +274,7 @@ function ToothPanel({ tooth, summary, work, canEdit, conditionLabel, itemStatusL
             placeholder={t('teeth.notesPlaceholder')}
             aria-label={t('teeth.notes')}
             maxLength={500}
-            className="w-full rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+            className="w-full rounded-lg border border-control bg-white px-2 py-1.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
           />
           <button
             type="submit"

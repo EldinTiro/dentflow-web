@@ -73,7 +73,33 @@ export function layoutDay(appts: AppointmentResponse[]): Map<string, { col: numb
   return layout;
 }
 
-export const HOUR_PX = 56;
+/**
+ * An hour is at least this tall, so 15 minutes (20px) still holds a line of text. When there
+ * is more room the hours grow to fill it; when there is less, the grid scrolls.
+ */
+export const MIN_HOUR_PX = 80;
+
+/** Height of one hour for a grid of `hours` in `available` pixels. */
+export function hourHeightFor(available: number, hours: number): number {
+  return Math.max(MIN_HOUR_PX, Math.floor(available / Math.max(hours, 1)));
+}
+
+/**
+ * Hour height that fills an element's height (less `reservedPx`, e.g. a sticky header inside
+ * it), following it as the window resizes. Returns a callback ref: the grid may mount later
+ * than the calendar (e.g. once the doctors load), and measuring has to start when it does.
+ */
+export function useHourHeight(hours: number, reservedPx = 0): [(el: HTMLElement | null) => void, number] {
+  const [element, setElement] = useState<HTMLElement | null>(null);
+  const [available, setAvailable] = useState(0);
+  useEffect(() => {
+    if (!element || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) => setAvailable(entry.contentRect.height));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [element]);
+  return [setElement, hourHeightFor(available - reservedPx, hours)];
+}
 
 /** The current time, refreshed every minute so the now-line keeps moving. */
 export function useNow(intervalMs = 60_000) {

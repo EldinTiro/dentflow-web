@@ -13,7 +13,7 @@ function Badge({ active, t }: { active: boolean; t: (key: string) => string }) {
   return (
     <span
       className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-        active ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300'
+        active ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300'
       }`}
     >
       {active ? t('status.active') : t('status.inactive')}
@@ -75,7 +75,7 @@ export function TenantsPage() {
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
           placeholder={ta('tenants.search.placeholder')}
           aria-label={ta('tenants.search.placeholder')}
-          className="w-72 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          className="w-72 border border-control rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
         />
       </div>
 

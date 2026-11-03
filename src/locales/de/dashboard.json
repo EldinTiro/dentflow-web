@@ -1,9 +1,5 @@
 {
   "title": "Startseite",
-  "quickAction": {
-    "bookAppointment": "Termin buchen",
-    "registerPatient": "Patient registrieren"
-  },
   "stat": {
     "todaysAppointments": "Heutige Termine",
     "pendingConfirmation": "Ausstehende Bestätigung",
@@ -29,23 +25,13 @@
     "overdue": "Überfälliger Recall",
     "dueSoon": "Fällig in 30 Tagen"
   },
-  "schedule": {
-    "title": "Heutiger Zeitplan",
-    "completedOfTotal": "{{completed}} von {{total}} abgeschlossen",
-    "viewAll": "Alle anzeigen →",
-    "emptyState": "Keine Termine für heute geplant.",
-    "bookNow": "Jetzt buchen →",
-    "moreCount": "+{{count}} weitere —",
-    "viewAllLink": "alle anzeigen"
-  },
   "provider": {
     "title": "Heute nach Arzt",
     "emptyState": "Keine klinischen Ärzte gefunden."
   },
   "slotChecker": {
-    "title": "Schnelle Terminprüfung",
+    "title": "Termine & freie Slots",
     "closedDay": "Die Praxis ist an diesem Tag geschlossen",
-    "todayBadge": "Heute",
     "allProviders": "Alle Ärzte",
     "freeCount": "{{count}} frei",
     "bookedCount": "{{count}} gebucht",
@@ -54,8 +40,12 @@
     "bookedTooltip": "Gebucht",
     "freeTooltip": "Frei – klicken zum Buchen",
     "footer": "{{startHour}} – {{endHour}} · {{minutes}}-Min-Slots · Klicken Sie auf einen freien Slot zum Buchen",
-    "previousDay": "Vorheriger Tag",
-    "nextDay": "Nächster Tag"
+    "prevWeek": "Vorherige Woche",
+    "nextWeek": "Nächste Woche",
+    "thisWeek": "Diese Woche",
+    "dayFree": "{{count}} frei",
+    "dayFull": "Ausgebucht",
+    "pastTooltip": "Vorbei"
   },
   "absences": {
     "title": "Abwesenheiten",

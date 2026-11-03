@@ -33,7 +33,7 @@ const TABS: Tab[] = ['overview', 'appointments', 'teeth', 'treatments', 'medical
 
 const STATUS_STYLES: Record<PatientStatus, string> = {
   Active: 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300',
-  Inactive: 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300',
+  Inactive: 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
   Transferred: 'bg-blue-100 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300',
 }
 
@@ -172,14 +172,14 @@ export function PatientDetailPage() {
           )}
           <button
             onClick={() => setShowEdit(true)}
-            className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="border border-control dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             {tc('button.edit')}
           </button>
           {canManage && patient.status !== 'Inactive' && (
             <button
               onClick={() => setConfirmDeactivate(true)}
-              className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="border border-control dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               {t('status.deactivate')}
             </button>
@@ -508,7 +508,7 @@ function MedicalTab({ patientId, canManage }: { patientId: string; canManage: bo
   })
 
   const cardCls = 'bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700'
-  const inputCls = 'w-full border border-gray-200 dark:border-gray-700 rounded px-2.5 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500'
+  const inputCls = 'w-full border border-control dark:border-gray-700 rounded px-2.5 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500'
   const labelCls = 'text-xs text-gray-500 dark:text-gray-400 font-medium'
 
   const SEVERITY_COLORS: Record<string, string> = {

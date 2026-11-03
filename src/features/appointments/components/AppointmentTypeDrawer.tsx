@@ -87,7 +87,7 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
           <input id="appt-type-name"
             type="text"
             {...register('name')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="w-full border border-control rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
           {errors.name && <p className="mt-1 text-xs text-red-600">{i18n.t(errors.name.message ?? '')}</p>}
         </div>
@@ -102,7 +102,7 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
               min={1}
               max={480}
               {...register('defaultDurationMinutes')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              className="w-full border border-control rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             />
             {errors.defaultDurationMinutes && (
               <p className="mt-1 text-xs text-red-600">{i18n.t(errors.defaultDurationMinutes.message ?? '')}</p>
@@ -116,7 +116,7 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
               step="0.01"
               {...register('defaultFee')}
               placeholder="0.00"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              className="w-full border border-control rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             />
           </div>
         </div>
@@ -126,7 +126,7 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
           <textarea id="appt-type-description"
             {...register('description')}
             rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="w-full border border-control rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           />
         </div>
 
@@ -135,7 +135,7 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
           <input id="appt-type-colorHex"
             type="color"
             {...register('colorHex')}
-            className="h-9 w-20 border border-gray-300 rounded-lg px-1 py-1 cursor-pointer dark:border-gray-600"
+            className="h-9 w-20 border border-control rounded-lg px-1 py-1 cursor-pointer dark:border-gray-600"
           />
           {errors.colorHex && <p className="mt-1 text-xs text-red-600">{i18n.t(errors.colorHex.message ?? '')}</p>}
         </div>
@@ -147,7 +147,7 @@ export function AppointmentTypeDrawer({ type, onClose }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-control rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
           >
             Cancel
           </button>

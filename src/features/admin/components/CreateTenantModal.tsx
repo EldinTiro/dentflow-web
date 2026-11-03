@@ -152,7 +152,7 @@ export function CreateTenantModal({ onClose }: Props) {
             {logoBase64 && (
               <img src={logoBase64} alt="Logo preview" className="h-12 w-12 object-contain rounded border border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700" />
             )}
-            <label className="cursor-pointer inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-xs text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600">
+            <label className="cursor-pointer inline-flex items-center px-3 py-1.5 border border-control rounded-md text-xs text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600">
               {logoBase64 ? t('tenants.create.logoChange') : t('tenants.create.logoUpload')}
               <input type="file" accept="image/*" className="sr-only" onChange={handleLogoChange} />
             </label>

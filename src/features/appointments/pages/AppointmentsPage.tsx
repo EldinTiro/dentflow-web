@@ -457,7 +457,7 @@ export function AppointmentsPage() {
                   placeholder={t('search.placeholder')}
                   value={searchTerm}
                   onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-8 pr-8 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full border border-control dark:border-gray-600 rounded-lg pl-8 pr-8 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 {searchTerm && (
                   <button
@@ -471,7 +471,7 @@ export function AppointmentsPage() {
               </div>
               <button
                 onClick={exportCSV}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
               >
                 <Download size={14} />
                 {tc('button.exportCsv')}
@@ -499,7 +499,7 @@ export function AppointmentsPage() {
                     className={`px-2.5 py-1 text-xs rounded-md border transition-colors ${
                       dateFrom === p.from && dateTo === p.to
                         ? 'bg-primary-600 text-white border-primary-600'
-                        : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        : 'border-control dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                   >
                     {p.label}
@@ -514,7 +514,7 @@ export function AppointmentsPage() {
                 aria-label={t('filter.from')}
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="border border-control dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
               <span className="text-gray-500 dark:text-gray-400 text-xs">→</span>
               <input
@@ -522,7 +522,7 @@ export function AppointmentsPage() {
                 aria-label={t('filter.to')}
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="border border-control dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
 
               <div className="h-4 w-px bg-gray-200" />
@@ -531,7 +531,7 @@ export function AppointmentsPage() {
                 aria-label={t('filter.status')}
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as AppointmentStatus | '')}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="border border-control dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">{t('filter.allStatuses')}</option>
                 {ALL_STATUSES.map((s) => (
@@ -543,7 +543,7 @@ export function AppointmentsPage() {
                 aria-label={t('filter.provider')}
                 value={providerFilter}
                 onChange={(e) => setProviderFilter(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="border border-control dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">{t('filter.allProviders')}</option>
                 {/* Only people who take appointments (DT-25); names of others still resolve from staffData */}
@@ -557,7 +557,7 @@ export function AppointmentsPage() {
                   type="checkbox"
                   checked={showPast}
                   onChange={(e) => setShowPast(e.target.checked)}
-                  className="rounded border-gray-300 dark:border-gray-600"
+                  className="rounded border-control dark:border-gray-600"
                 />
                 {t('filter.showPast')}
               </label>
@@ -643,9 +643,9 @@ export function AppointmentsPage() {
               <span>{tc('pagination.showingRange', { from: (page - 1) * pageSize + 1, to: Math.min(page * pageSize, total), total })}</span>
               <div className="flex gap-2">
                 <button disabled={page === 1} onClick={() => setPage(page - 1)}
-                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700">{tc('button.prev')}</button>
+                  className="px-3 py-1 rounded border border-control dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700">{tc('button.prev')}</button>
                 <button disabled={page === totalPages} onClick={() => setPage(page + 1)}
-                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700">{tc('button.next')}</button>
+                  className="px-3 py-1 rounded border border-control dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700">{tc('button.next')}</button>
               </div>
             </div>
           )}
@@ -673,17 +673,17 @@ export function AppointmentsPage() {
             </div>
             {calendarView === 'day' ? (
               <>
-                <button onClick={() => shiftDay(-1)} aria-label={t('calendar.prevDay')} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">←</button>
+                <button onClick={() => shiftDay(-1)} aria-label={t('calendar.prevDay')} className="px-3 py-1 text-sm border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">←</button>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300 tabular-nums">{dayLabel(day)}</span>
-                <button onClick={() => shiftDay(1)} aria-label={t('calendar.nextDay')} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">→</button>
+                <button onClick={() => shiftDay(1)} aria-label={t('calendar.nextDay')} className="px-3 py-1 text-sm border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">→</button>
               </>
             ) : (
               <>
-                <button onClick={prevWeek} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.prev')}</button>
+                <button onClick={prevWeek} className="px-3 py-1 text-sm border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.prev')}</button>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300 tabular-nums">
                   {formatDay(weekStart)} — {formatDay(weekEnd)}
                 </span>
-                <button onClick={nextWeek} className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.next')}</button>
+                <button onClick={nextWeek} className="px-3 py-1 text-sm border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.next')}</button>
               </>
             )}
             <button

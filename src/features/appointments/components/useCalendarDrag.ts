@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AppointmentResponse } from '../services/appointmentService';
-import { HOUR_PX } from './calendarGrid';
 
 /** Visits snap to quarter hours when dropped. */
 const SNAP_MINUTES = 15;
@@ -28,24 +27,26 @@ interface Grab {
  * Drag a visit chip to another time (and, in the day view, another doctor's column).
  * Columns mark themselves with `data-drop-day` (and `data-provider-id`).
  */
-export function useCalendarDrag({ hourStart, hourEnd, onMove }: {
+export function useCalendarDrag({ hourStart, hourEnd, hourPx, onMove }: {
   hourStart: number;
   hourEnd: number;
+  /** Height of an hour on the grid, which follows the space the calendar has. */
+  hourPx: number;
   onMove?: (appt: AppointmentResponse, newStartAt: string, newProviderId?: string) => void;
 }) {
   const grab = useRef<Grab | null>(null);
   const justDragged = useRef(false);
   const [dragged, setDragged] = useState<AppointmentResponse | null>(null);
   const [preview, setPreview] = useState<DropTarget | null>(null);
-  const latest = useRef({ hourStart, hourEnd, onMove });
-  latest.current = { hourStart, hourEnd, onMove };
+  const latest = useRef({ hourStart, hourEnd, hourPx, onMove });
+  latest.current = { hourStart, hourEnd, hourPx, onMove };
 
   function targetAt(x: number, y: number, g: Grab): DropTarget | null {
     const column = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-drop-day]');
     if (!column) return null;
-    const { hourStart: hs, hourEnd: he } = latest.current;
+    const { hourStart: hs, hourEnd: he, hourPx } = latest.current;
     const top = column.getBoundingClientRect().top;
-    const raw = hs * 60 + ((y - top - g.offsetPx) / HOUR_PX) * 60;
+    const raw = hs * 60 + ((y - top - g.offsetPx) / hourPx) * 60;
     const snapped = Math.round(raw / SNAP_MINUTES) * SNAP_MINUTES;
     const startMinutes = Math.min(Math.max(snapped, hs * 60), he * 60 - g.appt.durationMinutes);
     return { day: column.dataset.dropDay!, providerId: column.dataset.providerId, startMinutes };

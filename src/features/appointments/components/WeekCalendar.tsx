@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { AppointmentResponse, AppointmentStatus } from '../services/appointmentService';
 import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
 import { useTheme } from '@/shared/context/ThemeContext';
-import { HOUR_PX, SLOT_MINUTES, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
+import { SLOT_MINUTES, useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
 import { useCalendarDrag } from './useCalendarDrag';
 import { AppointmentChipBody, CHIP_LAYOUT } from './AppointmentChipBody';
 
@@ -68,7 +68,9 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
   );
   const HOURS = HOUR_END - HOUR_START;
   const totalMinutes = HOURS * 60;
-  const drag = useCalendarDrag({ hourStart: HOUR_START, hourEnd: HOUR_END, onMove });
+  // Hours fill the space the calendar has, at least MIN_hourPx each (15 min = one line)
+  const [scrollRef, hourPx] = useHourHeight(HOURS);
+  const drag = useCalendarDrag({ hourStart: HOUR_START, hourEnd: HOUR_END, hourPx, onMove });
   // Where "now" falls in the grid, or null when the grid does not show this hour
   const nowOffsetMin = now.getHours() * 60 + now.getMinutes() - HOUR_START * 60;
   const nowTopPct = nowOffsetMin >= 0 && nowOffsetMin < totalMinutes ? (nowOffsetMin / totalMinutes) * 100 : null;
@@ -107,15 +109,15 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
       </div>
 
       {/* Scrollable time grid */}
-      <div className="overflow-y-auto flex-1 min-w-[57rem] bg-white dark:bg-gray-900">
-        <div className="relative flex" style={{ minHeight: `${HOURS * 56}px` }}>
+      <div ref={scrollRef} className="overflow-y-auto flex-1 min-w-[57rem] bg-white dark:bg-gray-900">
+        <div className="relative flex" style={{ minHeight: `${HOURS * hourPx}px` }}>
           {/* Time labels */}
           <div className="w-14 shrink-0">
             {Array.from({ length: HOURS }, (_, i) => (
               <div
                 key={i}
-                className="h-14 border-b border-gray-100 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5"
-                style={{ lineHeight: '14px' }}
+                className="border-b border-gray-100 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5"
+                style={{ height: hourPx, lineHeight: '14px' }}
               >
                 {`${String(HOUR_START + i).padStart(2, '0')}:00`}
               </div>
@@ -137,7 +139,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                   data-drop-day={dateStr}
                   onClick={onSlotClick ? (e) => {
                     const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
-                    const slot = Math.floor((y / HOUR_PX) * (60 / SLOT_MINUTES));
+                    const slot = Math.floor((y / hourPx) * (60 / SLOT_MINUTES));
                     const minutes = Math.min(Math.max(HOUR_START * 60 + slot * SLOT_MINUTES, HOUR_START * 60), HOUR_END * 60 - SLOT_MINUTES);
                     const hh = String(Math.floor(minutes / 60)).padStart(2, '0');
                     const mm = String(minutes % 60).padStart(2, '0');
@@ -152,7 +154,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                     <div
                       key={i}
                       className="absolute w-full border-b border-gray-100 dark:border-gray-700/50"
-                      style={{ top: `${i * 56}px`, height: '56px' }}
+                      style={{ top: `${i * hourPx}px`, height: `${hourPx}px` }}
                     />
                   ))}
 

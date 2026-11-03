@@ -4,10 +4,9 @@ import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import {
   CalendarDays, Users, UserCog, Clock, TrendingUp, TrendingDown,
-  CheckCircle2, CalendarPlus, UserPlus, DollarSign, Wallet, Bell,
+  CheckCircle2, UserPlus, DollarSign, Wallet, Bell,
 } from 'lucide-react'
-import { appointmentService, AppointmentStatus, STATUS_COLORS, type AppointmentResponse } from '@/features/appointments/services/appointmentService'
-import { useAppointmentStatusLabels } from '@/features/appointments/hooks/useAppointmentStatusLabels'
+import { appointmentService, type AppointmentResponse } from '@/features/appointments/services/appointmentService'
 import { AppointmentDetailPanel } from '@/features/appointments/components/AppointmentDetailPanel'
 import { RescheduleModal } from '@/features/appointments/components/RescheduleModal'
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
@@ -17,7 +16,6 @@ import { staffService } from '@/features/staff/services/staffService'
 import { dashboardService } from './dashboardService'
 import { SlotCheckerWidget } from './SlotCheckerWidget'
 import { AbsencesWidget } from './AbsencesWidget'
-import { StatusBadge } from '@/shared/components/StatusBadge'
 import { toLocalIsoDate } from '@/shared/lib/dates'
 
 interface StatCardProps {
@@ -46,47 +44,6 @@ function StatCard({ label, value, icon: Icon, iconBg, iconColor, sub, to }: Stat
   if (to) return <Link to={to}>{inner}</Link>
   return inner
 }
-
-interface RecentApptRowProps {
-  time: string
-  status: AppointmentStatus
-  complaint: string | null
-  duration: number
-  patientName?: string
-  providerName?: string
-  onOpen: () => void
-}
-
-function RecentApptRow({ time, status, complaint, duration, patientName, providerName, onOpen }: RecentApptRowProps) {
-  const statusLabels = useAppointmentStatusLabels()
-  const rowBg =
-    status === 'Completed' ? 'bg-gray-50/80 dark:bg-gray-800/50 opacity-70' :
-    status === 'Cancelled' ? 'bg-red-50/60 dark:bg-red-950/20' :
-    status === 'NoShow'    ? 'bg-red-50/40 dark:bg-red-950/10' : ''
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className={`w-full text-left flex items-center justify-between py-3 px-2 -mx-2 rounded-lg border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer ${rowBg}`}
-    >
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="text-sm font-medium text-gray-800 dark:text-gray-200 shrink-0">{time}</div>
-        <StatusBadge status={status} colorMap={STATUS_COLORS} labelMap={statusLabels} className="shrink-0" />
-        {patientName && (
-          <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{patientName}</span>
-        )}
-        {providerName && (
-          <span className="text-xs text-gray-500 dark:text-gray-400 truncate hidden sm:block">· {providerName}</span>
-        )}
-      </div>
-      <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 shrink-0">
-        {complaint && <span className="truncate max-w-[120px] hidden md:block">{complaint}</span>}
-        <span>{duration} min</span>
-      </div>
-    </button>
-  )
-}
-
 
 export function DashboardPage() {
   const [selected, setSelected] = useState<AppointmentResponse | null>(null)
@@ -164,25 +121,6 @@ export function DashboardPage() {
 
   const weeklyTrend = completedThisWeek - completedLastWeek
 
-  const recentAppointments = todayAppts?.items.slice(0, 8) ?? []
-  const completedToday = todayAppts?.items.filter(a => a.status === 'Completed').length ?? 0
-  const doneOrGone = todayAppts?.items.filter(a =>
-    ['Completed', 'NoShow', 'Cancelled'].includes(a.status)
-  ).length ?? 0
-
-  const providerNames = useMemo(() => {
-    const map: Record<string, string> = {}
-    for (const s of allStaff?.items ?? []) map[s.id] = s.fullName
-    return map
-  }, [allStaff])
-
-  // The appointment list carries the names; no need to download every patient (QA-033).
-  const patientNames = useMemo(() => {
-    const map: Record<string, string> = {}
-    for (const a of todayAppts?.items ?? []) if (a.patientName) map[a.patientId] = a.patientName
-    return map
-  }, [todayAppts])
-
   const byProvider = useMemo(() => {
     const countMap = new Map<string, number>()
     for (const a of todayAppts?.items ?? []) {
@@ -193,9 +131,6 @@ export function DashboardPage() {
       .map(member => ({ id: member.id, count: countMap.get(member.id) ?? 0, member }))
       .sort((a, b) => b.count - a.count)
   }, [todayAppts, allStaff])
-
-  const formatTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
 
   return (
     // Wide but capped: past ~1600px the cards stop gaining anything and lines get long
@@ -208,28 +143,10 @@ export function DashboardPage() {
         </p>
       </div>
 
-      {/* Quick actions */}
-      <div className="flex flex-wrap gap-3">
-        <Link
-          to="/appointments"
-          state={{ openCreate: true }}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 transition-colors"
-        >
-          <CalendarPlus size={16} />
-          {t('quickAction.bookAppointment')}
-        </Link>
-        <Link
-          to="/patients"
-          state={{ openCreate: true }}
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-        >
-          <UserPlus size={16} />
-          {t('quickAction.registerPatient')}
-        </Link>
-      </div>
-
-      {/* Free-slot check first: it is what the front desk uses most */}
-      <SlotCheckerWidget />
+      {/* The day first, it is what the front desk uses most: free slots and, below them,
+          the calendar per doctor (replaces the list of today's visits). A visit opened
+          there opens here, in place. */}
+      <SlotCheckerWidget onAppointmentClick={setSelected} />
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -355,78 +272,8 @@ export function DashboardPage() {
         </div>
       )}
 
-      {/* From 1280px: today's schedule on the left, people on the right.
-          Below that the cards stack in this same order. */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 xl:items-start">
-      {/* Today's schedule */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 xl:col-span-2">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 size={16} className="text-primary-500" />
-            <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t('schedule.title')}</h2>
-            {todayCount > 0 && (
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {t('schedule.completedOfTotal', { completed: completedToday, total: todayCount })}
-              </span>
-            )}
-          </div>
-          <Link
-            to="/appointments"
-            className="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
-          >
-            {t('schedule.viewAll')}
-          </Link>
-        </div>
-
-        {todayCount > 0 && (
-          <div className="mb-4">
-            <div className="h-1.5 w-full rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary-500 transition-all"
-                style={{ width: `${Math.round((doneOrGone / todayCount) * 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {recentAppointments.length === 0 ? (
-          <div className="py-8 text-center">
-            <TrendingUp size={28} className="mx-auto text-gray-200 dark:text-gray-500 mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">{t('schedule.emptyState')}</p>
-            <Link
-              to="/appointments"
-              className="mt-2 inline-block text-xs text-primary-600 dark:text-primary-400 hover:underline"
-            >
-              {t('schedule.bookNow')}
-            </Link>
-          </div>
-        ) : (
-          <div>
-            {recentAppointments.map((a) => (
-              <RecentApptRow
-                key={a.id}
-                time={formatTime(a.startAt)}
-                status={a.status}
-                complaint={a.chiefComplaint}
-                duration={a.durationMinutes}
-                patientName={patientNames[a.patientId]}
-                providerName={providerNames[a.providerId]}
-                onOpen={() => setSelected(a)}
-              />
-            ))}
-            {todayCount > 8 && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center pt-3">
-                {t('schedule.moreCount', { count: todayCount - 8 })}{' '}
-                <Link to="/appointments" className="text-primary-600 dark:text-primary-400 hover:underline">
-                  {t('schedule.viewAllLink')}
-                </Link>
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-6">
+      {/* Who works today and who is away, side by side from 1024px */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
       {/* Appointments by provider */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
@@ -467,8 +314,6 @@ export function DashboardPage() {
 
       {/* Who is away today and in the next two weeks */}
       <AbsencesWidget />
-      </div>
-
       </div>
 
       {/* Act on today's visits without leaving the dashboard */}

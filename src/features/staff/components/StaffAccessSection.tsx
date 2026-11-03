@@ -11,9 +11,9 @@ import { staffService, type StaffMemberResponse } from '../services/staffService
 import { peopleErrorMessage } from '../lib/peopleErrors'
 
 const selectClass =
-  'border border-gray-300 rounded-md px-2 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-600 text-gray-900 dark:text-gray-100 disabled:opacity-50'
+  'border border-control rounded-md px-2 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-600 text-gray-900 dark:text-gray-100 disabled:opacity-50'
 const buttonClass =
-  'px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50'
+  'px-3 py-1.5 text-sm font-medium rounded-md border border-control dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50'
 
 function Badge({ tone, children }: { tone: 'green' | 'gray' | 'amber'; children: React.ReactNode }) {
   const tones = {

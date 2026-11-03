@@ -12,7 +12,7 @@ interface Props {
 }
 
 const INPUT =
-  'w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500'
+  'w-full rounded-lg border border-control dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500'
 
 /** The user's own name — it could not be changed at all before (QA-037). */
 export function EditNameForm({ firstName, lastName }: Props) {

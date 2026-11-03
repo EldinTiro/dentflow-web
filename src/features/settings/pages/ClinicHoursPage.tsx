@@ -17,7 +17,7 @@ const MINUTES = ['00', '15', '30', '45']
 
 function TimePicker24({ value, onChange, disabled }: { value: string; onChange: (v: string) => void; disabled?: boolean }) {
   const [h = '08', m = '00'] = value.split(':')
-  const cls = `border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-40 disabled:cursor-not-allowed`
+  const cls = `border border-control dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-40 disabled:cursor-not-allowed`
   return (
     <div className="flex items-center gap-0.5">
       <select value={h} disabled={disabled} onChange={e => onChange(`${e.target.value}:${m}`)} className={cls}>
@@ -127,7 +127,7 @@ export function ClinicHoursPage() {
         <select
           value={localDuration}
           onChange={e => setLocalDuration(Number(e.target.value))}
-          className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500"
+          className="rounded-lg border border-control dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500"
         >
           {SLOT_DURATION_OPTIONS.map(d => (
             <option key={d} value={d}>{d} min</option>

@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import i18n from 'i18next'
 import { appointmentFixture } from '@/test/fixtures/appointment'
 import { WeekCalendar } from './WeekCalendar'
+import { MIN_HOUR_PX as H } from './calendarGrid'
 
 const visit = appointmentFixture({
   id: 'a1', patientId: 'pat-1', status: 'Scheduled', durationMinutes: 60,
@@ -19,7 +20,7 @@ const props = {
 }
 
 function pin(el: HTMLElement) {
-  el.getBoundingClientRect = () => ({ top: 0, left: 0, right: 100, bottom: 840, width: 100, height: 840, x: 0, y: 0, toJSON: () => ({}) })
+  el.getBoundingClientRect = () => ({ top: 0, left: 0, right: 100, bottom: 15 * H, width: 100, height: 15 * H, x: 0, y: 0, toJSON: () => ({}) })
   return el
 }
 
@@ -35,13 +36,13 @@ describe('WeekCalendar drag and drop', () => {
     const onMove = vi.fn()
     const { container } = render(<WeekCalendar {...props} onMove={onMove} />)
     const chip = screen.getByRole('button', { name: /Miroslav Vuletić/ })
-    chip.getBoundingClientRect = () => ({ top: 3 * 56, left: 0, right: 100, bottom: 4 * 56, width: 100, height: 56, x: 0, y: 3 * 56, toJSON: () => ({}) })
+    chip.getBoundingClientRect = () => ({ top: 3 * H, left: 0, right: 100, bottom: 4 * H, width: 100, height: H, x: 0, y: 3 * H, toJSON: () => ({}) })
     const friday = pin(container.querySelector<HTMLElement>('[data-day="2026-10-23"]')!)
     document.elementFromPoint = vi.fn(() => friday)
 
-    fireEvent.pointerDown(chip, { clientX: 10, clientY: 3 * 56, button: 0 })
-    fireEvent.pointerMove(window, { clientX: 400, clientY: 4 * 56 })
-    fireEvent.pointerUp(window, { clientX: 400, clientY: 4 * 56 })
+    fireEvent.pointerDown(chip, { clientX: 10, clientY: 3 * H, button: 0 })
+    fireEvent.pointerMove(window, { clientX: 400, clientY: 4 * H })
+    fireEvent.pointerUp(window, { clientX: 400, clientY: 4 * H })
 
     expect(onMove).toHaveBeenCalledWith(visit, '2026-10-23T10:00', undefined)
   })

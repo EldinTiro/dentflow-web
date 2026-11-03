@@ -4,7 +4,7 @@ import type { AppointmentResponse } from '../services/appointmentService';
 import type { StaffBlockedTimeResponse } from '@/features/staff/services/staffService';
 import { ABSENCE_EMOJI } from '@/features/staff/lib/absence';
 import { useTheme } from '@/shared/context/ThemeContext';
-import { HOUR_PX, SLOT_MINUTES, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
+import { SLOT_MINUTES, useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
 import { useCalendarDrag } from './useCalendarDrag';
 import { AppointmentChipBody, CHIP_LAYOUT } from './AppointmentChipBody';
 
@@ -31,6 +31,9 @@ interface Props {
   openHours?: { start: number; end: number } | null;
 }
 
+/** The sticky row of doctor names inside the scroll box. */
+const DOCTOR_HEADER_PX = 45;
+
 const fmtTime = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
 /** One day, one column per doctor: how the front desk plans the day. */
@@ -51,7 +54,9 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
   const totalMinutes = HOURS * 60;
   const pct = (minutesSinceGridStart: number) => (minutesSinceGridStart / totalMinutes) * 100;
 
-  const drag = useCalendarDrag({ hourStart: HOUR_START, hourEnd: HOUR_END, onMove });
+  // Hours fill the space the calendar has, at least MIN_hourPx each (15 min = one line)
+  const [scrollRef, hourPx] = useHourHeight(HOURS, DOCTOR_HEADER_PX);
+  const drag = useCalendarDrag({ hourStart: HOUR_START, hourEnd: HOUR_END, hourPx, onMove });
 
   const dayStart = new Date(`${date}T00:00:00`).getTime();
   const gridStart = dayStart + HOUR_START * 3_600_000;
@@ -67,7 +72,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
 
   return (
     // One scroll box for both ways, so the names stay over their columns (U-02)
-    <div className="h-full overflow-auto bg-white dark:bg-gray-900">
+    <div ref={scrollRef} className="h-full overflow-auto bg-white dark:bg-gray-900">
       <div style={{ minWidth: `calc(56px + ${providers.length} * 11rem)` }}>
       {/* Doctor header */}
       <div className="sticky top-0 z-30 grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: columnsTemplate }}>
@@ -82,10 +87,10 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
 
       {/* Time grid */}
       <div>
-        <div className="relative grid" style={{ gridTemplateColumns: columnsTemplate, minHeight: `${HOURS * HOUR_PX}px` }}>
+        <div className="relative grid" style={{ gridTemplateColumns: columnsTemplate, minHeight: `${HOURS * hourPx}px` }}>
           <div>
             {Array.from({ length: HOURS }, (_, i) => (
-              <div key={i} className="h-14 border-b border-gray-100 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5" style={{ lineHeight: '14px' }}>
+              <div key={i} className="border-b border-gray-100 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5" style={{ height: hourPx, lineHeight: '14px' }}>
                 {`${String(HOUR_START + i).padStart(2, '0')}:00`}
               </div>
             ))}
@@ -105,14 +110,14 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                 data-provider-id={p.id}
                 onClick={onSlotClick ? (e) => {
                   const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
-                  const slot = Math.floor((y / HOUR_PX) * (60 / SLOT_MINUTES));
+                  const slot = Math.floor((y / hourPx) * (60 / SLOT_MINUTES));
                   const minutes = Math.min(Math.max(HOUR_START * 60 + slot * SLOT_MINUTES, HOUR_START * 60), HOUR_END * 60 - SLOT_MINUTES);
                   onSlotClick(`${date}T${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`, p.id);
                 } : undefined}
                 className={`relative border-l border-gray-100 dark:border-gray-700/50 ${onSlotClick ? 'cursor-copy hover:bg-gray-50/60 dark:hover:bg-gray-800/40' : ''}`}
               >
                 {Array.from({ length: HOURS }, (_, i) => (
-                  <div key={i} className="absolute w-full border-b border-gray-100 dark:border-gray-700/50" style={{ top: `${i * HOUR_PX}px`, height: `${HOUR_PX}px` }} />
+                  <div key={i} className="absolute w-full border-b border-gray-100 dark:border-gray-700/50" style={{ top: `${i * hourPx}px`, height: `${hourPx}px` }} />
                 ))}
 
                 {/* Absence: striped, and not bookable */}

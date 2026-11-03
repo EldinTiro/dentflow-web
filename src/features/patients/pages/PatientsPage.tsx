@@ -21,7 +21,7 @@ const STATUS_KEYS: { value: StatusFilter; labelKey: string }[] = [
 
 const STATUS_STYLES: Record<PatientStatus, string> = {
   Active: 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300',
-  Inactive: 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300',
+  Inactive: 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
   Transferred: 'bg-blue-100 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300',
 }
 
@@ -100,13 +100,13 @@ export function PatientsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('search.placeholder')}
-          className="w-full sm:w-72 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full sm:w-72 border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
         <select
           aria-label={t('filter.status')}
           value={status}
           onChange={(e) => setStatus(e.target.value as StatusFilter)}
-          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           {STATUS_KEYS.map((o) => (
             <option key={o.value} value={o.value}>{tc(o.labelKey)}</option>

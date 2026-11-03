@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, fireEvent, screen } from '@testing-library/react'
 import { appointmentFixture } from '@/test/fixtures/appointment'
 import { WeekCalendar } from './WeekCalendar'
+import { MIN_HOUR_PX as H } from './calendarGrid'
 
 const props = {
   weekStart: new Date(2026, 9, 19), // Monday 19 Oct 2026
@@ -15,7 +16,7 @@ const props = {
 function dayColumn(container: HTMLElement, date: string) {
   const col = container.querySelector<HTMLElement>(`[data-day="${date}"]`)
   if (!col) throw new Error(`no column for ${date}`)
-  col.getBoundingClientRect = () => ({ top: 0, left: 0, right: 100, bottom: 840, width: 100, height: 840, x: 0, y: 0, toJSON: () => ({}) })
+  col.getBoundingClientRect = () => ({ top: 0, left: 0, right: 100, bottom: 15 * H, width: 100, height: 15 * H, x: 0, y: 0, toJSON: () => ({}) })
   return col
 }
 
@@ -30,8 +31,8 @@ describe('WeekCalendar click-to-book', () => {
     const onSlotClick = vi.fn()
     const { container } = render(<WeekCalendar {...props} appointments={[]} onSlotClick={onSlotClick} />)
 
-    // Grid starts at 06:00 with 56px per hour: 4h + 32px ≈ 10:34 → rounds down to 10:30
-    fireEvent.click(dayColumn(container, '2026-10-22'), { clientY: 4 * 56 + 32 })
+    // Grid starts at 06:00 with H px per hour: 4h 34min → rounds down to 10:30
+    fireEvent.click(dayColumn(container, '2026-10-22'), { clientY: 4 * H + (34 / 60) * H })
 
     expect(onSlotClick).toHaveBeenCalledWith('2026-10-22T10:30')
   })
@@ -45,7 +46,7 @@ describe('WeekCalendar click-to-book', () => {
     expect(screen.getByText('10:00')).toBeInTheDocument()
     expect(screen.queryByText('06:00')).not.toBeInTheDocument()
     expect(screen.queryByText('19:00')).not.toBeInTheDocument()
-    fireEvent.click(dayColumn(container, '2026-10-22'), { clientY: 56 + 32 }) // 1h 34min after 10:00
+    fireEvent.click(dayColumn(container, '2026-10-22'), { clientY: H + (34 / 60) * H }) // 1h 34min after 10:00
     expect(onSlotClick).toHaveBeenCalledWith('2026-10-22T11:30')
   })
 

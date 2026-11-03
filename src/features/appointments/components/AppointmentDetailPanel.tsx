@@ -284,7 +284,7 @@ export function AppointmentDetailPanel({
                     value={notesDraft}
                     onChange={(e) => setNotesDraft(e.target.value)}
                     rows={3}
-                    className="w-full border border-gray-300 rounded text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600"
+                    className="w-full border border-control rounded text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600"
                   />
                   <div className="flex gap-2">
                     <button
@@ -438,7 +438,7 @@ export function AppointmentDetailPanel({
                 <button
                   onClick={() => statusMutation.mutate('InProgress')}
                   disabled={statusMutation.isPending}
-                  className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                  className="flex-1 border border-control dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                 >
                   {td('detail.startTreatment')}
                 </button>
@@ -469,7 +469,7 @@ export function AppointmentDetailPanel({
                 <button
                   onClick={() => statusMutation.mutate('NoShow')}
                   disabled={statusMutation.isPending}
-                  className="flex-1 border border-gray-300 text-gray-600 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-300"
+                  className="flex-1 border border-control text-gray-600 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-300"
                 >
                   {td('detail.noShow')}
                 </button>
@@ -477,7 +477,7 @@ export function AppointmentDetailPanel({
               {notStarted && (
                 <button
                   onClick={() => onReschedule(a)}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-300"
+                  className="flex-1 border border-control text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-300"
                 >
                   {td('detail.reschedule')}
                 </button>
@@ -521,7 +521,7 @@ export function AppointmentDetailPanel({
                 className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
                   a.status === 'Completed'
                     ? 'bg-primary-600 text-white hover:bg-primary-700'
-                    : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    : 'border border-control dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 {a.status === 'Completed' ? td('detail.billPatient') : td('detail.createInvoice')}

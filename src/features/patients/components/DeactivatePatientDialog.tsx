@@ -29,7 +29,7 @@ export function DeactivatePatientDialog({ name, isPending, onConfirm, onCancel }
             {t('status.reason')}
           </label>
           <textarea id={reasonId} value={reason} maxLength={500} rows={2} onChange={(e) => setReason(e.target.value)}
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
+            className="w-full border border-control dark:border-gray-600 rounded-md px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
         </div>
         <div className="flex gap-3">
           <button type="button" disabled={isPending} onClick={() => onConfirm(reason)}
@@ -37,7 +37,7 @@ export function DeactivatePatientDialog({ name, isPending, onConfirm, onCancel }
             {t('status.deactivate')}
           </button>
           <button type="button" disabled={isPending} onClick={onCancel}
-            className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50">
+            className="flex-1 border border-control dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50">
             {tc('button.cancel')}
           </button>
         </div>

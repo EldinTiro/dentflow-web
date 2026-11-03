@@ -83,7 +83,7 @@ export function AddTenantUserModal({ tenantId, tenantName, onClose }: Props) {
               <input id="tenant-user-firstName"
                 {...register('firstName', { required: 'Required' })}
                 placeholder="Jane"
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full border border-control rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               />
               {errors.firstName && <p className="text-xs text-red-500 mt-0.5">{errors.firstName.message}</p>}
             </div>
@@ -92,7 +92,7 @@ export function AddTenantUserModal({ tenantId, tenantName, onClose }: Props) {
               <input id="tenant-user-lastName"
                 {...register('lastName', { required: 'Required' })}
                 placeholder="Smith"
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full border border-control rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               />
               {errors.lastName && <p className="text-xs text-red-500 mt-0.5">{errors.lastName.message}</p>}
             </div>
@@ -102,7 +102,7 @@ export function AddTenantUserModal({ tenantId, tenantName, onClose }: Props) {
                 {...register('email', { required: 'Required' })}
                 type="email"
                 placeholder="jane@clinic.com"
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full border border-control rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               />
               {errors.email && <p className="text-xs text-red-500 mt-0.5">{errors.email.message}</p>}
             </div>
@@ -110,7 +110,7 @@ export function AddTenantUserModal({ tenantId, tenantName, onClose }: Props) {
               <label htmlFor="tenant-user-role" className="block text-xs font-medium text-gray-600 mb-1 dark:text-gray-300">{t('tenant.users.addModal.roleLabel')}</label>
               <select id="tenant-user-role"
                 {...register('role')}
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full border border-control rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               >
                 {TENANT_ROLES.map((r) => <option key={r} value={r}>{tc(`role.${r}`)}</option>)}
               </select>
@@ -125,7 +125,7 @@ export function AddTenantUserModal({ tenantId, tenantName, onClose }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-gray-300 text-gray-600 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
+              className="flex-1 border border-control text-gray-600 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
             >
               {tc('button.cancel')}
             </button>
