@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatDate, formatMoney, formatTime } from './format'
+import { formatDate, formatMoney, formatTime, formatDayMonth } from './format'
 
 describe('formatDate', () => {
   // QA-032: lists showed US "10/22/2026" for a BiH clinic; staff hire date showed raw ISO
@@ -31,5 +31,21 @@ describe('formatMoney', () => {
   it('always shows the currency', () => {
     expect(formatMoney(75, 'bs')).toBe('75,00 KM')
     expect(formatMoney(1234.5, 'en')).toBe('1,234.50 KM')
+  })
+})
+
+// User report: Bosnian showed Croatian dates ("utorak, 3. studenoga 2026.", "25. lis")
+describe('formatDayMonth', () => {
+  const tuesday = new Date(2026, 10, 3, 10, 30)
+
+  it('writes Bosnian month names, not Croatian ones', () => {
+    expect(formatDayMonth(tuesday, { weekday: 'long', month: 'long', year: true }, 'bs')).toBe('utorak, 3. novembra 2026.')
+    expect(formatDayMonth(tuesday, { month: 'short' }, 'bs')).toBe('3. nov')
+    expect(formatDayMonth(new Date(2026, 9, 31, 1, 0), { weekday: 'short', month: 'short', time: true }, 'bs')).toBe('sub, 31. okt, 01:00')
+  })
+
+  it('follows the app language, not the browser', () => {
+    expect(formatDayMonth(tuesday, { weekday: 'long', month: 'long', year: true }, 'en')).toMatch(/Tuesday.*3 November 2026/)
+    expect(formatDayMonth(tuesday, { weekday: 'long', month: 'long', year: true }, 'de')).toMatch(/Dienstag.*3\. November 2026/)
   })
 })

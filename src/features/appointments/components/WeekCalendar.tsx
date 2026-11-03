@@ -37,6 +37,8 @@ function addDays(date: Date, n: number) {
 export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, openHours }: Props) {
   const { t } = useTranslation('appointments');
   const dayLabels = t('calendar.weekdays', { returnObjects: true }) as string[];
+  // Full names where there is room; phones keep the short ones
+  const dayLabelsLong = t('calendar.weekdaysLong', { returnObjects: true }) as string[];
   const [tooltip, setTooltip] = useState<TooltipState>(null);
   const { theme } = useTheme();
   const statusLabels = useAppointmentStatusLabels();
@@ -95,7 +97,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                 isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'
               }`}
             >
-              <div>{dayLabels[i]}</div>
+              <div><span className="sm:hidden">{dayLabels[i]}</span><span className="hidden sm:inline">{dayLabelsLong[i]}</span></div>
               <div
                 className={`mx-auto mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-sm font-semibold ${
                   isToday ? 'bg-primary-600 text-white' : 'text-gray-800 dark:text-gray-200'

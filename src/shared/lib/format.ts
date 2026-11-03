@@ -29,6 +29,36 @@ export function formatDateTime(value: string | Date | null | undefined, lang: st
   return `${formatDate(d, lang)} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
+// Bosnian by hand: browsers often lack bs data, and the hr fallback wrote Croatian months
+// ("studenoga", "lis") and weekdays. Months with a day take the genitive: "3. novembra".
+const BS_WEEKDAYS = ['nedjelja', 'ponedjeljak', 'utorak', 'srijeda', 'četvrtak', 'petak', 'subota']
+const BS_WEEKDAYS_SHORT = ['ned', 'pon', 'uto', 'sri', 'čet', 'pet', 'sub']
+const BS_MONTHS = ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna', 'jula', 'augusta', 'septembra', 'oktobra', 'novembra', 'decembra']
+const BS_MONTHS_SHORT = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
+
+export interface DayMonthOptions {
+  weekday?: 'long' | 'short'
+  month: 'long' | 'short'
+  year?: boolean
+  time?: boolean
+}
+
+/** A day with its month written out, in the UI language: "utorak, 3. novembra 2026.", "sub, 31. okt, 01:00". */
+export function formatDayMonth(value: string | Date, opts: DayMonthOptions, lang: string = i18n.language): string {
+  const d = toDate(value)
+  const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`
+  if (lang.startsWith('bs')) {
+    const weekday = opts.weekday ? `${(opts.weekday === 'long' ? BS_WEEKDAYS : BS_WEEKDAYS_SHORT)[d.getDay()]}, ` : ''
+    const month = (opts.month === 'long' ? BS_MONTHS : BS_MONTHS_SHORT)[d.getMonth()]
+    const year = opts.year ? ` ${d.getFullYear()}.` : ''
+    return `${weekday}${d.getDate()}. ${month}${year}${opts.time ? `, ${time}` : ''}`
+  }
+  const text = d.toLocaleDateString(lang.startsWith('de') ? 'de-DE' : 'en-GB', {
+    weekday: opts.weekday, month: opts.month, day: 'numeric', year: opts.year ? 'numeric' : undefined,
+  })
+  return opts.time ? `${text}, ${time}` : text
+}
+
 /** "08:00:00" → "08:00". */
 export function formatTime(value: string): string {
   return value.slice(0, 5)

@@ -53,6 +53,8 @@ describe('WeekCalendar drag and drop', () => {
     render(<WeekCalendar {...props} />)
 
     expect(screen.getByText('Pon')).toBeInTheDocument()
+    // Full names where there is room (user request); the short ones stay for phones
+    expect(screen.getByText('Ponedjeljak')).toHaveClass('hidden', 'sm:inline')
     expect(screen.getByText('Ned')).toBeInTheDocument()
   })
 })

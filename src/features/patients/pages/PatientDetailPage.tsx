@@ -27,6 +27,7 @@ import { toast } from 'sonner'
 import { getApiErrorCodes, getApiErrorMessage } from '@/shared/utils/apiError'
 import { formatDate } from '@/shared/lib/format'
 import { can } from '@/shared/lib/permissions'
+import { formatDayMonth } from '@/shared/lib/format'
 
 type Tab = 'overview' | 'appointments' | 'teeth' | 'treatments' | 'files' | 'billing' | 'medical'
 const TABS: Tab[] = ['overview', 'appointments', 'teeth', 'treatments', 'medical', 'files', 'billing']
@@ -384,14 +385,8 @@ function AppointmentHistoryTab({
     )
   }
 
-  const formatDT = (iso: string) =>
-    new Date(iso).toLocaleString([], {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+  // In the app's language, not the browser's
+  const formatDT = (iso: string) => formatDayMonth(iso, { month: 'short', year: true, time: true })
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">

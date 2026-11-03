@@ -16,8 +16,8 @@
     "unpaidInvoices": "Neplaćeni računi",
     "newPatientsThisMonth": "Novi pacijenti",
     "firstVisitThisMonth": "Prva posjeta ovog mjeseca",
-    "completedThisWeek": "Završeno ovaj tjedan",
-    "vsLastWeek": "u odnosu na prošli tjedan",
+    "completedThisWeek": "Završeno ove sedmice",
+    "vsLastWeek": "u odnosu na prošlu sedmicu",
     "vsLastWeekSame": "Isto kao prošle sedmice"
   },
   "recall": {

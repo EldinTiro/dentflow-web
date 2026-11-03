@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import i18n from 'i18next'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { dashboardService } from './dashboardService'
 import { renderWithProviders } from '@/test/render'
@@ -135,6 +136,22 @@ describe('DashboardPage, the top of the page', () => {
     renderWithProviders(<DashboardPage />)
 
     expect(screen.queryByRole('heading', { name: /today's schedule/i })).not.toBeInTheDocument()
+  })
+})
+
+// User report: Bosnian showed Croatian ("utorak, 3. studenoga 2026.", "tjedan")
+describe('DashboardPage in Bosnian', () => {
+  afterEach(async () => { vi.useRealTimers(); await i18n.changeLanguage('en') })
+
+  it('writes the date with Bosnian month names', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 10, 3, 9, 0))
+    await i18n.changeLanguage('bs')
+    renderWithProviders(<DashboardPage />)
+
+    expect(screen.getByText('utorak, 3. novembra 2026.')).toBeInTheDocument()
+    expect(screen.getByText('3. nov')).toBeInTheDocument()
+    expect(document.body).not.toHaveTextContent(/studenoga|tjedan/)
   })
 })
 

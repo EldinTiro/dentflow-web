@@ -30,7 +30,8 @@ export function AbsencesWidget() {
   })
   // Same query as the slot checker, so the dashboard loads the staff list once
   const { data: staff } = useQuery({
-    queryKey: ['staff-all-active'],
+    // Under 'staff' so saving a profile (e.g. a new colour) refreshes it here too
+    queryKey: ['staff', 'all-active'],
     queryFn: () => staffService.list({ isActive: true, pageSize: 50 }),
   })
 

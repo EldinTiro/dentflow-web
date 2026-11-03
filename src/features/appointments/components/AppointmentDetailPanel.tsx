@@ -35,6 +35,7 @@ import { billingService, INVOICE_STATUS_COLORS, INVOICE_STATUS_LABELS } from '@/
 import { CreateInvoiceDrawer } from '@/features/billing/components/CreateInvoiceDrawer'
 import { AllergyAlert } from '@/features/patients/components/AllergyAlert'
 import { useEscapeKey } from '@/shared/lib/useEscapeKey'
+import { formatDayMonth } from '@/shared/lib/format'
 
 interface Props {
   appointment: AppointmentResponse
@@ -175,18 +176,9 @@ export function AppointmentDetailPanel({
   // Mirrors the API: only a visit that has not started can be moved or cancelled (QA-034).
   const notStarted = ['Scheduled', 'CheckedIn'].includes(a.status)
 
-  const formatDT = (iso: string) =>
-    new Date(iso).toLocaleString([], {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    })
-
-  const formatShortDate = (iso: string) =>
-    new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
+  // In the app's language, not the browser's (it showed "Sat, Oct 31" in Bosnian)
+  const formatDT = (iso: string) => formatDayMonth(iso, { weekday: 'short', month: 'short', time: true })
+  const formatShortDate = (iso: string) => formatDayMonth(iso, { month: 'short', year: true })
 
   return (
     <>
@@ -408,7 +400,7 @@ export function AppointmentDetailPanel({
                         )}
                         {h.reason && <p className="text-gray-500 mt-0.5 dark:text-gray-400">{h.reason}</p>}
                         <p className="text-gray-500 mt-0.5 dark:text-gray-400">
-                          {new Date(h.changedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                          {formatDayMonth(h.changedAt, { month: 'short', year: true, time: true })}
                         </p>
                       </div>
                     </div>

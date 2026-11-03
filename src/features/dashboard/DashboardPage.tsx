@@ -17,6 +17,7 @@ import { dashboardService } from './dashboardService'
 import { SlotCheckerWidget } from './SlotCheckerWidget'
 import { AbsencesWidget } from './AbsencesWidget'
 import { toLocalIsoDate } from '@/shared/lib/dates'
+import { formatDayMonth } from '@/shared/lib/format'
 
 interface StatCardProps {
   label: string
@@ -53,8 +54,6 @@ export function DashboardPage() {
   const canManage = isClinicMember(roles) || roles.includes('SuperAdmin')
   const { t, i18n } = useTranslation('dashboard')
 
-  const localeMap: Record<string, string> = { bs: 'hr', en: 'en', de: 'de' }
-  const displayLocale = localeMap[i18n.language] ?? i18n.language
   const today = toLocalIsoDate(new Date())
   const tomorrow = toLocalIsoDate(new Date(Date.now() + 86400000))
 
@@ -85,7 +84,8 @@ export function DashboardPage() {
   })
 
   const { data: allStaff } = useQuery({
-    queryKey: ['staff-all-active'],
+    // Under 'staff' so saving a profile (e.g. a new colour) refreshes it here too
+    queryKey: ['staff', 'all-active'],
     queryFn: () => staffService.list({ isActive: true, pageSize: 50 }),
   })
 
@@ -139,7 +139,7 @@ export function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-          {new Date().toLocaleDateString(displayLocale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+          {formatDayMonth(new Date(), { weekday: 'long', month: 'long', year: true }, i18n.language)}
         </p>
       </div>
 
@@ -156,7 +156,7 @@ export function DashboardPage() {
           icon={CalendarDays}
           iconBg="bg-primary-50 dark:bg-primary-400/10"
           iconColor="text-primary-600 dark:text-primary-400"
-          sub={`${new Date().toLocaleDateString(displayLocale, { month: 'short', day: 'numeric' })}`}
+          sub={formatDayMonth(new Date(), { month: 'short' }, i18n.language)}
           to="/appointments"
         />
         <StatCard
