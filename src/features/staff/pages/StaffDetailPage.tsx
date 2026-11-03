@@ -65,7 +65,6 @@ export function StaffDetailPage() {
     onSuccess: (s, active) => {
       toast.success(active ? t('status.reactivated', { name: s.fullName }) : t('status.deactivated', { name: s.fullName }))
       queryClient.invalidateQueries({ queryKey: ['staff'] })
-      queryClient.invalidateQueries({ queryKey: ['staff-all-active'] })
     },
     onError: (err) => toast.error(peopleErrorMessage(err, t, staff?.fullName ?? '')),
   })

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/test/render'
+import { staffService } from '@/features/staff/services/staffService'
 import { SlotCheckerWidget } from './SlotCheckerWidget'
 
 vi.mock('@/features/admin/services/tenantService', () => ({
@@ -84,9 +85,9 @@ describe('SlotCheckerWidget — days of the week', () => {
 
     const tabs = await screen.findAllByRole('tab')
     expect(tabs.map((t) => t.textContent)).toEqual([
-      expect.stringMatching(/^Mon\s*26\.10\./), expect.stringMatching(/^Tue\s*27\.10\./),
-      expect.stringMatching(/^Wed\s*28\.10\./), expect.stringMatching(/^Thu\s*29\.10\./),
-      expect.stringMatching(/^Fri\s*30\.10\./),
+      expect.stringMatching(/^MonMonday\s*26\.10\./), expect.stringMatching(/^TueTuesday\s*27\.10\./),
+      expect.stringMatching(/^WedWednesday\s*28\.10\./), expect.stringMatching(/^ThuThursday\s*29\.10\./),
+      expect.stringMatching(/^FriFriday\s*30\.10\./),
     ])
     expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
     // Monday: 19 slots, all bookable with at least one doctor free
@@ -108,9 +109,9 @@ describe('SlotCheckerWidget — days of the week', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Next week' }))
 
-    expect((await screen.findAllByRole('tab'))[0]).toHaveTextContent(/^Mon\s*2\.11\./)
+    expect((await screen.findAllByRole('tab'))[0]).toHaveTextContent(/^MonMonday\s*2\.11\./)
     await userEvent.click(screen.getByRole('button', { name: 'This week' }))
-    expect(screen.getAllByRole('tab')[0]).toHaveTextContent(/^Mon\s*26\.10\./)
+    expect(screen.getAllByRole('tab')[0]).toHaveTextContent(/^MonMonday\s*26\.10\./)
   })
 
   // Booking 08:00 at 10:15 makes no sense, and days already gone can't be picked
@@ -139,7 +140,7 @@ describe('SlotCheckerWidget — closed days (DT-29)', () => {
     renderWithProviders(<SlotCheckerWidget />)
 
     const tabs = await screen.findAllByRole('tab')
-    expect(tabs[0]).toHaveTextContent(/^Mon\s*26\.10\./)
+    expect(tabs[0]).toHaveTextContent(/^MonMonday\s*26\.10\./)
     expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
     expect(screen.queryByText(/closed on this day/i)).not.toBeInTheDocument()
   })
@@ -177,6 +178,37 @@ describe('SlotCheckerWidget — calendar under the slots', () => {
     await userEvent.click(await screen.findByRole('button', { name: /Miroslav Vuletić/ }))
 
     expect(onAppointmentClick).toHaveBeenCalledWith(expect.objectContaining({ id: 'a1' }))
+  })
+})
+
+// User report: a doctor's new colour showed in Appointments but not on the dashboard calendar
+describe('SlotCheckerWidget — staff changes', () => {
+  it('refreshes the doctors when staff data changes', async () => {
+    const { queryClient } = renderWithProviders(<SlotCheckerWidget />)
+    await screen.findByRole('option', { name: 'Ana Rozić' })
+    const calls = vi.mocked(staffService.list).mock.calls.length
+
+    // What saving a staff profile does
+    await queryClient.invalidateQueries({ queryKey: ['staff'] })
+
+    await vi.waitFor(() => expect(vi.mocked(staffService.list).mock.calls.length).toBeGreaterThan(calls))
+  })
+})
+
+// User request: there is room for full day names; phones keep the short ones
+describe('SlotCheckerWidget — day names', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-26T07:00:00'))
+  })
+  afterEach(() => vi.useRealTimers())
+
+  it('names the day in full, and short only on small screens', async () => {
+    renderWithProviders(<SlotCheckerWidget />)
+    const tab = (await screen.findAllByRole('tab'))[0]
+
+    expect(tab.querySelector('[class="sm:hidden"]')).toHaveTextContent('Mon')
+    expect(tab.querySelector('[class="hidden sm:inline"]')).toHaveTextContent('Monday')
   })
 })
 

@@ -19,7 +19,7 @@ import { WeekCalendar } from '../components/WeekCalendar';
 import { DayCalendar, type DayProvider } from '../components/DayCalendar';
 import { useConfirm } from '@/shared/components/ConfirmDialog';
 import { getApiErrorMessage } from '@/shared/utils/apiError';
-import { formatDate as formatDay } from '@/shared/lib/format';
+import { formatDate as formatDay, formatDayMonth } from '@/shared/lib/format';
 import { toast } from 'sonner';
 import { AppointmentDetailPanel } from '../components/AppointmentDetailPanel';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
@@ -44,14 +44,9 @@ function getMondayOfWeek(date: Date): Date {
   return d;
 }
 
+/** In the app's language, not the browser's. */
 function formatDate(isoStr: string) {
-  return new Date(isoStr).toLocaleString([], {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
+  return formatDayMonth(isoStr, { month: 'short', time: true });
 }
 
 const NEXT_STATUS_MAP: Partial<Record<AppointmentStatus, { labelKey: string; next: AppointmentStatus }>> = {

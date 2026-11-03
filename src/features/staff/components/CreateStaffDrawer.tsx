@@ -58,7 +58,6 @@ export function CreateStaffDrawer({ onClose }: Props) {
       staffService.create(canSignIn ? { ...profile, access: { role } } : profile),
     onSuccess: (staff) => {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
-      queryClient.invalidateQueries({ queryKey: ['staff-all-active'] });
       if (staff.tempPassword) setCreated(staff);
       else onClose();
     },

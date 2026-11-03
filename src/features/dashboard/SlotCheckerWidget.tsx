@@ -95,7 +95,8 @@ export function SlotCheckerWidget({ onAppointmentClick }: { onAppointmentClick?:
   )
 
   const { data: allStaff } = useQuery({
-    queryKey: ['staff-all-active'],
+    // Under 'staff' so saving a profile (e.g. a new colour) refreshes it here too
+    queryKey: ['staff', 'all-active'],
     queryFn: () => staffService.list({ isActive: true, pageSize: 50 }),
     staleTime: 5 * 60 * 1000,
   })
@@ -159,6 +160,8 @@ export function SlotCheckerWidget({ onAppointmentClick }: { onAppointmentClick?:
   const typeNames = Object.fromEntries((types ?? []).map((tp) => [tp.id, tp.name]))
 
   const weekdays = ta('calendar.weekdays', { returnObjects: true }) as string[]
+  // Full names where there is room; phones keep the short ones
+  const weekdaysLong = ta('calendar.weekdaysLong', { returnObjects: true }) as string[]
   const thisWeek = mondayOf(today)
   const goToWeek = (monday: string) => {
     setWeekStart(monday)
@@ -183,7 +186,7 @@ export function SlotCheckerWidget({ onAppointmentClick }: { onAppointmentClick?:
           value={providerId}
           onChange={e => setProviderId(e.target.value)}
           aria-label={t('slotChecker.allProviders')}
-          className="text-sm bg-white dark:bg-gray-700 border border-control dark:border-gray-600 rounded-lg px-3 py-1.5 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 transition"
+          className="text-sm font-semibold bg-white dark:bg-gray-700 border border-control dark:border-gray-600 rounded-lg px-3 py-1.5 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 transition"
         >
           <option value="all">{t('slotChecker.allProviders')}</option>
           {providers.map(p => (
@@ -219,7 +222,7 @@ export function SlotCheckerWidget({ onAppointmentClick }: { onAppointmentClick?:
                 }`}
               >
                 <span className="flex items-baseline gap-1.5">
-                  <span className={`text-sm font-semibold ${selected ? 'text-primary-700 dark:text-primary-200' : 'text-gray-800 dark:text-gray-100'}`}>{weekdays[(d.getDay() + 6) % 7]}</span>
+                  <span className={`text-sm font-semibold ${selected ? 'text-primary-700 dark:text-primary-200' : 'text-gray-800 dark:text-gray-100'}`}><span className="sm:hidden">{weekdays[(d.getDay() + 6) % 7]}</span><span className="hidden sm:inline">{weekdaysLong[(d.getDay() + 6) % 7]}</span></span>
                   <span className="text-xs text-gray-600 dark:text-gray-400 tabular-nums">{d.getDate()}.{d.getMonth() + 1}.</span>
                   {day === today && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary-500" aria-hidden />}
                 </span>
