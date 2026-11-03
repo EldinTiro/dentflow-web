@@ -114,7 +114,7 @@ export function StaffDetailPage() {
               <span className="text-sm text-gray-500 dark:text-gray-400">{t(`staffType.${staff.staffType}`)}</span>
               <span
                 className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                  staff.isActive ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300'
+                  staff.isActive ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300'
                 }`}
               >
                 {staff.isActive ? tc('status.active') : tc('status.inactive')}
@@ -134,7 +134,7 @@ export function StaffDetailPage() {
                   onConfirm: () => setActive.mutate(false),
                 })}
                 disabled={setActive.isPending}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
               >
                 {t('status.deactivate')}
               </button>
@@ -142,7 +142,7 @@ export function StaffDetailPage() {
               <button
                 onClick={() => setActive.mutate(true)}
                 disabled={setActive.isPending}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
               >
                 {t('status.reactivate')}
               </button>

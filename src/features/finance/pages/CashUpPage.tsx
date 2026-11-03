@@ -33,7 +33,7 @@ export function CashUpPage() {
   const methods = useMemo(() => totalsByMethod(payments), [payments])
   const total = payments.reduce((s, p) => s + p.amount, 0)
 
-  const navBtn = 'rounded-lg border border-gray-300 p-1.5 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
+  const navBtn = 'rounded-lg border border-control p-1.5 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
 
   return (
     <div className="space-y-6 px-4 py-6 sm:px-6">
@@ -46,19 +46,19 @@ export function CashUpPage() {
           aria-label={t('period.date')}
           value={date}
           onChange={(e) => e.target.value && setDate(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          className="rounded-lg border border-control bg-white px-3 py-1.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
         />
         <button type="button" className={navBtn} onClick={() => setDate(shiftDay(date, 1))} aria-label={t('period.nextDay')}>
           <ChevronRight size={16} />
         </button>
         {date !== todayLocal() && (
           <button type="button" onClick={() => setDate(todayLocal())}
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+            className="rounded-lg border border-control px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
             {t('period.today')}
           </button>
         )}
         <button type="button" onClick={() => window.print()}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+          className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-control px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
           <Printer size={14} aria-hidden="true" /> {t('cashUp.print')}
         </button>
       </div>

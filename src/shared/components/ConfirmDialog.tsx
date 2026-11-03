@@ -55,7 +55,7 @@ export function ConfirmDialog({
           <button
             onClick={onCancel}
             disabled={isPending}
-            className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+            className="flex-1 border border-control dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
           >
             {cancelLabel}
           </button>

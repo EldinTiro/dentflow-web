@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { appointmentFixture } from '@/test/fixtures/appointment'
 import { DayCalendar } from './DayCalendar'
+import { MIN_HOUR_PX as H } from './calendarGrid'
 
 const providers = [
   { id: 'p1', fullName: 'Eldina Muhić', colorHex: '#ef4444' },
@@ -27,9 +28,9 @@ const baseProps = {
   appointmentTypeNames: {},
 }
 
-/** jsdom has no layout: a column 840px tall (06:00–21:00 at 56px/h) at the top of the viewport. */
+/** jsdom has no layout: a column 840px tall (06:00–21:00 at Hpx/h) at the top of the viewport. */
 function pin(el: HTMLElement, left = 0) {
-  el.getBoundingClientRect = () => ({ top: 0, left, right: left + 200, bottom: 840, width: 200, height: 840, x: left, y: 0, toJSON: () => ({}) })
+  el.getBoundingClientRect = () => ({ top: 0, left, right: left + 200, bottom: 15 * H, width: 200, height: 15 * H, x: left, y: 0, toJSON: () => ({}) })
   return el
 }
 const column = (container: HTMLElement, providerId: string) =>
@@ -81,7 +82,7 @@ describe('DayCalendar', () => {
     const onSlotClick = vi.fn()
     const { container } = render(<DayCalendar {...baseProps} onSlotClick={onSlotClick} />)
 
-    fireEvent.click(pin(column(container, 'p2')), { clientY: 4 * 56 + 40 }) // 10:42 → 10:30
+    fireEvent.click(pin(column(container, 'p2')), { clientY: 4 * H + 40 }) // 10:42 → 10:30
 
     expect(onSlotClick).toHaveBeenCalledWith('2026-10-29T10:30', 'p2')
   })
@@ -113,7 +114,7 @@ describe('DayCalendar drag and drop', () => {
     const utils = render(<DayCalendar {...baseProps} appointments={[appt]} onMove={onMove} onAppointmentClick={onAppointmentClick} />)
     const chip = screen.getByRole('button', { name: /Miroslav Vuletić/ })
     // The chip starts at 09:00 = 3h below 06:00
-    chip.getBoundingClientRect = () => ({ top: 3 * 56, left: 0, right: 200, bottom: 4 * 56, width: 200, height: 56, x: 0, y: 3 * 56, toJSON: () => ({}) })
+    chip.getBoundingClientRect = () => ({ top: 3 * H, left: 0, right: 200, bottom: 4 * H, width: 200, height: H, x: 0, y: 3 * H, toJSON: () => ({}) })
     pin(column(utils.container, 'p1'), 0)
     pin(column(utils.container, 'p2'), 200)
     return { ...utils, chip, onMove, onAppointmentClick }
@@ -122,7 +123,7 @@ describe('DayCalendar drag and drop', () => {
   /** Grab the chip at its top edge and let go over `target` at `y`. */
   function drag(chip: HTMLElement, target: HTMLElement, x: number, y: number) {
     document.elementFromPoint = vi.fn(() => target)
-    fireEvent.pointerDown(chip, { clientX: 10, clientY: 3 * 56, button: 0 })
+    fireEvent.pointerDown(chip, { clientX: 10, clientY: 3 * H, button: 0 })
     fireEvent.pointerMove(window, { clientX: x, clientY: y })
     fireEvent.pointerUp(window, { clientX: x, clientY: y })
   }
@@ -130,7 +131,7 @@ describe('DayCalendar drag and drop', () => {
   it("moves a visit to another doctor and time, snapped to 15 minutes", () => {
     const { container, chip, onMove } = setup()
 
-    drag(chip, column(container, 'p2'), 250, 5 * 56 + 20) // 11:21 → 11:15
+    drag(chip, column(container, 'p2'), 250, 5 * H + 20) // 11:21 → 11:15
 
     expect(onMove).toHaveBeenCalledWith(visit, '2026-10-29T11:15', 'p2')
   })
@@ -139,8 +140,8 @@ describe('DayCalendar drag and drop', () => {
     const { container, chip } = setup()
     document.elementFromPoint = vi.fn(() => column(container, 'p2'))
 
-    fireEvent.pointerDown(chip, { clientX: 10, clientY: 3 * 56, button: 0 })
-    fireEvent.pointerMove(window, { clientX: 250, clientY: 5 * 56 })
+    fireEvent.pointerDown(chip, { clientX: 10, clientY: 3 * H, button: 0 })
+    fireEvent.pointerMove(window, { clientX: 250, clientY: 5 * H })
 
     expect(column(container, 'p2').querySelector('[data-testid="drop-preview"]')).toHaveTextContent('11:00')
   })
@@ -148,7 +149,7 @@ describe('DayCalendar drag and drop', () => {
   it('treats a tiny movement as a click', () => {
     const { container, chip, onMove, onAppointmentClick } = setup()
 
-    drag(chip, column(container, 'p1'), 12, 3 * 56 + 2)
+    drag(chip, column(container, 'p1'), 12, 3 * H + 2)
     fireEvent.click(chip)
 
     expect(onMove).not.toHaveBeenCalled()
@@ -158,7 +159,7 @@ describe('DayCalendar drag and drop', () => {
   it('does not open the visit after it was dragged', () => {
     const { container, chip, onAppointmentClick } = setup()
 
-    drag(chip, column(container, 'p2'), 250, 5 * 56)
+    drag(chip, column(container, 'p2'), 250, 5 * H)
     fireEvent.click(chip)
 
     expect(onAppointmentClick).not.toHaveBeenCalled()
@@ -169,8 +170,53 @@ describe('DayCalendar drag and drop', () => {
     const done = { ...visit, status: 'Completed' as const }
     const { container, chip, onMove } = setup(done)
 
-    drag(chip, column(container, 'p2'), 250, 5 * 56)
+    drag(chip, column(container, 'p2'), 250, 5 * H)
 
     expect(onMove).not.toHaveBeenCalled()
+  })
+})
+
+// User request: use the empty space under the grid, so 15-minute visits can be read
+describe('DayCalendar height', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 9, 20, 12, 0))
+  })
+  afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals() })
+
+  it("shows the clinic's opening hours only", () => {
+    render(<DayCalendar {...baseProps} openHours={{ start: 10, end: 19 }} appointments={[]} />)
+
+    expect(screen.getByText('10:00')).toBeInTheDocument()
+    expect(screen.getByText('18:00')).toBeInTheDocument()
+    expect(screen.queryByText('09:00')).not.toBeInTheDocument()
+    expect(screen.queryByText('19:00')).not.toBeInTheDocument()
+  })
+
+  it('stretches the hours to fill the height there is', () => {
+    vi.stubGlobal('ResizeObserver', class {
+      constructor(private cb: (entries: { contentRect: { height: number } }[]) => void) {}
+      observe() { this.cb([{ contentRect: { height: 945 } }]) }
+      disconnect() {}
+    })
+    render(<DayCalendar {...baseProps} openHours={{ start: 10, end: 19 }} appointments={[]} />)
+
+    // 9 hours in 945px, less the 45px doctor row
+    expect(screen.getByText('10:00')).toHaveStyle({ height: '100px' })
+  })
+
+  // Bug: the doctors load after the calendar, so the grid appeared later than the
+  // measuring started, and the hours never grew (229px left empty in the browser)
+  it('still fills the height when the doctors arrive later', () => {
+    vi.stubGlobal('ResizeObserver', class {
+      constructor(private cb: (entries: { contentRect: { height: number } }[]) => void) {}
+      observe() { this.cb([{ contentRect: { height: 945 } }]) }
+      disconnect() {}
+    })
+    const { rerender } = render(<DayCalendar {...baseProps} providers={[]} openHours={{ start: 10, end: 19 }} appointments={[]} />)
+
+    rerender(<DayCalendar {...baseProps} openHours={{ start: 10, end: 19 }} appointments={[]} />)
+
+    expect(screen.getByText('10:00')).toHaveStyle({ height: '100px' })
   })
 })

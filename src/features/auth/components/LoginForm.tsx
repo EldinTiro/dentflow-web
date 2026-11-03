@@ -68,7 +68,7 @@ export function LoginForm() {
               'w-full rounded-lg border px-3 py-2 text-base sm:text-sm outline-none transition',
               'bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100',
               'focus:ring-2 focus:ring-primary-500 focus:border-primary-500',
-              errors.email ? 'border-red-400' : 'border-gray-300 dark:border-gray-600',
+              errors.email ? 'border-red-400' : 'border-control dark:border-gray-600',
             )}
           />
           {errors.email && (
@@ -90,7 +90,7 @@ export function LoginForm() {
                 'w-full rounded-lg border px-3 py-2 pr-10 text-base sm:text-sm outline-none transition',
                 'bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100',
                 'focus:ring-2 focus:ring-primary-500 focus:border-primary-500',
-                errors.password ? 'border-red-400' : 'border-gray-300 dark:border-gray-600',
+                errors.password ? 'border-red-400' : 'border-control dark:border-gray-600',
               )}
             />
             <button

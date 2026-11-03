@@ -22,7 +22,7 @@ interface Props {
 }
 
 const inputClass =
-  'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100';
+  'w-full border border-control rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100';
 const labelClass = 'block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300';
 
 export function EditStaffDrawer({ staff, onClose }: Props) {
@@ -140,7 +140,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
         <div>
           <label htmlFor="staff-edit-colorHex" className={labelClass}>{t('create.color')}</label>
           <input id="staff-edit-colorHex" type="color" {...register('colorHex')}
-            className="h-9 w-20 border border-gray-300 rounded-lg px-1 py-1 cursor-pointer dark:border-gray-600" />
+            className="h-9 w-20 border border-control rounded-lg px-1 py-1 cursor-pointer dark:border-gray-600" />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -172,7 +172,7 @@ export function EditStaffDrawer({ staff, onClose }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-control rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
             >
               {tc('button.cancel')}
             </button>

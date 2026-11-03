@@ -76,12 +76,12 @@ export function FinanceOverviewPage() {
     <div className="space-y-6 px-4 py-6 sm:px-6">
       <div className="flex items-center gap-2">
         <button type="button" onClick={() => goTo(prevMonth)} aria-label={t('period.previousMonth')}
-          className="rounded-lg border border-gray-300 p-1.5 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+          className="rounded-lg border border-control p-1.5 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
           <ChevronLeft size={16} />
         </button>
         <h2 className="min-w-32 text-center text-lg font-semibold text-gray-900 dark:text-white">{monthLabel(month)}</h2>
         <button type="button" onClick={() => goTo(monthKey(month, 1))} aria-label={t('period.nextMonth')}
-          className="rounded-lg border border-gray-300 p-1.5 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+          className="rounded-lg border border-control p-1.5 text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
           <ChevronRight size={16} />
         </button>
       </div>

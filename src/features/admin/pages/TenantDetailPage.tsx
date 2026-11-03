@@ -101,7 +101,7 @@ function DetailsTab({ id }: { id: string }) {
               })}
               aria-label={t('tenant.detail.practiceName')}
               aria-invalid={!!nameErrors.name}
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full border border-control dark:border-gray-600 rounded-md px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
             {nameErrors.name && <p className="mt-1 text-xs text-red-500">{nameErrors.name.message}</p>}
           </div>
@@ -122,7 +122,7 @@ function DetailsTab({ id }: { id: string }) {
           <select
             {...regPlan('plan')}
             aria-label={t('tenant.detail.subscriptionPlan')}
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none"
+            className="border border-control dark:border-gray-600 rounded-md px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none"
           >
             {PLANS.map((p) => (
               <option key={p.value} value={p.value}>{t(p.labelKey)}</option>
@@ -273,7 +273,7 @@ function UsersTab({ id, tenantName }: { id: string; tenantName: string }) {
                 </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                    u.isActive ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300'
+                    u.isActive ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300'
                   }`}>
                     {u.isActive ? tc('status.active') : tc('status.inactive')}
                   </span>
@@ -365,7 +365,7 @@ export function TenantDetailPage() {
       <div className="flex items-center gap-3 mb-5">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{tenant.name}</h1>
         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-          tenant.isActive ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300'
+          tenant.isActive ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300'
         }`}>
           {tenant.isActive ? tc('status.active') : tc('status.inactive')}
         </span>

@@ -28,10 +28,10 @@ function accessState(m: StaffMemberResponse): 'none' | 'canSignIn' | 'waiting' |
 }
 
 const ACCESS_TONE = {
-  none: 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300',
+  none: 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
   canSignIn: 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300',
   waiting: 'bg-amber-100 text-amber-800 dark:bg-amber-400/10 dark:text-amber-300',
-  disabled: 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300',
+  disabled: 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
 } as const
 
 export function StaffPage() {
@@ -111,12 +111,12 @@ export function StaffPage() {
           placeholder={t('search.placeholder')}
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm w-64 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm w-64 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
         <select
           value={staffTypeFilter}
           onChange={(e) => { setStaffTypeFilter(e.target.value as StaffType | ''); setPage(1); }}
-          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           <option value="">{tc('staffType.allTypes')}</option>
           {ALL_STAFF_TYPES.map((type) => (
@@ -127,7 +127,7 @@ export function StaffPage() {
           aria-label={t('filter.status')}
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value as StatusFilter); setPage(1); }}
-          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           <option value="active">{tc('status.active')}</option>
           <option value="inactive">{tc('status.inactive')}</option>
@@ -137,7 +137,7 @@ export function StaffPage() {
           aria-label={t('filter.access')}
           value={accessFilter}
           onChange={(e) => setAccessFilter(e.target.value as AccessFilter)}
-          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           <option value="">{t('filter.anyAccess')}</option>
           <option value="with">{t('filter.withAccess')}</option>
@@ -193,7 +193,7 @@ export function StaffPage() {
                       className={`dot-badge inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                         m.isActive
                           ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300'
-                          : 'bg-gray-100 text-gray-500 dark:bg-gray-700/60 dark:text-gray-300'
+                          : 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300'
                       }`}
                     >
                       {m.isActive ? tc('status.active') : tc('status.inactive')}
@@ -241,14 +241,14 @@ export function StaffPage() {
             <button
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
-              className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-3 py-1 rounded border border-control dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               {tc('button.prev')}
             </button>
             <button
               disabled={page === totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-3 py-1 rounded border border-control dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               {tc('button.next')}
             </button>

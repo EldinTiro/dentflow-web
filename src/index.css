@@ -24,6 +24,7 @@
   --p-950: #1e1b4b;
 }
 
+/* 600–800 sit one shade darker than Tailwind rose: #e11d48 was 4.3:1 on rose-50 (needs 4.5:1). */
 [data-color-theme="rose"] {
   --p-50:  #fff1f2;
   --p-100: #ffe4e6;
@@ -31,13 +32,14 @@
   --p-300: #fda4af;
   --p-400: #fb7185;
   --p-500: #f43f5e;
-  --p-600: #e11d48;
-  --p-700: #be123c;
-  --p-800: #9f1239;
+  --p-600: #be123c;
+  --p-700: #9f1239;
+  --p-800: #881337;
   --p-900: #881337;
   --p-950: #4c0519;
 }
 
+/* 600–800 sit one shade darker than Tailwind teal: #0d9488 was 3.7:1 on white (needs 4.5:1). */
 [data-color-theme="teal"] {
   --p-50:  #f0fdfa;
   --p-100: #ccfbf1;
@@ -45,9 +47,9 @@
   --p-300: #5eead4;
   --p-400: #2dd4bf;
   --p-500: #14b8a6;
-  --p-600: #0d9488;
-  --p-700: #0f766e;
-  --p-800: #115e59;
+  --p-600: #0f766e;
+  --p-700: #115e59;
+  --p-800: #134e4a;
   --p-900: #134e4a;
   --p-950: #042f2e;
 }
@@ -101,6 +103,9 @@
 
 /* Brand display face for the wordmark only; loaded by shared/components/Wordmark. */
 @theme {
+  /* Outline of inputs, selects and outline buttons in the light theme: 3.3:1 on white,
+     3.2:1 on the gray-50 page (WCAG 1.4.11 asks 3:1; gray-300 was 1.4:1). */
+  --color-control: #868d99;
   --font-brand: 'Sora', 'Inter', ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -178,7 +183,7 @@
 
 @layer components {
   .input {
-    @apply w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500;
+    @apply w-full border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500;
   }
 
   .dot-badge {

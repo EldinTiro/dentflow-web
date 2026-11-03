@@ -34,7 +34,7 @@ function FieldRow({ label, children }: { label: string; children: React.ReactNod
   )
 }
 
-const INPUT_CLS = 'w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500'
+const INPUT_CLS = 'w-full rounded-lg border border-control dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500'
 const SELECT_CLS = INPUT_CLS
 
 type Tab = 'profile' | 'appearance'

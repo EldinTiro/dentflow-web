@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { appointmentFixture } from '@/test/fixtures/appointment'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { dashboardService } from './dashboardService'
 import { renderWithProviders } from '@/test/render'
@@ -31,7 +30,17 @@ vi.mock('./dashboardService', () => ({
     getFinance: vi.fn(async () => ({ revenueThisMonth: 1234, outstandingBalance: 56 })),
   },
 }))
-vi.mock('./SlotCheckerWidget', () => ({ SlotCheckerWidget: () => <div data-testid="slot-checker" /> }))
+// The widget is tested on its own; here where it sits and what happens with a visit opened in it
+vi.mock('./SlotCheckerWidget', async () => {
+  const { appointmentFixture } = await import('@/test/fixtures/appointment')
+  return {
+    SlotCheckerWidget: ({ onAppointmentClick }: { onAppointmentClick?: (a: unknown) => void }) => (
+      <div data-testid="slot-checker">
+        <button onClick={() => onAppointmentClick?.(appointmentFixture({ patientName: 'Lejla Hasanović' }))}>calendar: Lejla Hasanović</button>
+      </div>
+    ),
+  }
+})
 
 describe('DashboardPage', () => {
   afterEach(() => vi.useRealTimers())
@@ -75,15 +84,13 @@ describe('DashboardPage', () => {
     useAuthStore.getState().clearAuth()
   })
 
-  // UX Phase A: today's schedule rows were read-only; acting on a visit meant a detour via Appointments
-  it("opens the appointment from today's schedule in place", async () => {
+  // UX Phase A: acting on a visit meant a detour via Appointments. Today's schedule is now
+  // the calendar in the slot widget; a visit opened there opens here, in place.
+  it('opens a visit from the schedule in place', async () => {
     useAuthStore.getState().setAuth('t', { userId: 'u', email: 'r@x', fullName: 'Rec', roles: ['Staff'] })
-    vi.mocked(appointmentService.list).mockResolvedValue({
-      items: [appointmentFixture({ patientName: 'Lejla Hasanović' })], totalCount: 1, page: 1, pageSize: 50,
-    } as Awaited<ReturnType<typeof appointmentService.list>>)
     renderWithProviders(<DashboardPage />)
 
-    await userEvent.click(await screen.findByRole('button', { name: /Lejla Hasanović/ }))
+    await userEvent.click(await screen.findByRole('button', { name: 'calendar: Lejla Hasanović' }))
 
     expect(await screen.findByText('Appointment detail')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Check In' })).toBeInTheDocument()
@@ -112,3 +119,22 @@ describe('DashboardPage', () => {
     useAuthStore.getState().clearAuth()
   })
 })
+
+describe('DashboardPage, the top of the page', () => {
+  // User request: "Book appointment" and "Register patient" repeat the Appointments and
+  // Patients pages, and took the top of the dashboard
+  it('has no quick actions', () => {
+    renderWithProviders(<DashboardPage />)
+
+    expect(screen.queryByRole('link', { name: /book appointment/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /register patient/i })).not.toBeInTheDocument()
+  })
+
+  // User request: the list of today's visits is replaced by the calendar under the free slots
+  it("has no separate list of today's visits", () => {
+    renderWithProviders(<DashboardPage />)
+
+    expect(screen.queryByRole('heading', { name: /today's schedule/i })).not.toBeInTheDocument()
+  })
+})
+

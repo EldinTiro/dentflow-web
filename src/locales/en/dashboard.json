@@ -1,9 +1,5 @@
 {
   "title": "Dashboard",
-  "quickAction": {
-    "bookAppointment": "Book Appointment",
-    "registerPatient": "Register Patient"
-  },
   "stat": {
     "todaysAppointments": "Today's Appointments",
     "pendingConfirmation": "Pending Confirmation",
@@ -29,23 +25,13 @@
     "overdue": "Overdue recall",
     "dueSoon": "Due within 30 days"
   },
-  "schedule": {
-    "title": "Today's Schedule",
-    "completedOfTotal": "{{completed}} of {{total}} completed",
-    "viewAll": "View all →",
-    "emptyState": "No appointments scheduled for today.",
-    "bookNow": "Book one now →",
-    "moreCount": "+{{count}} more —",
-    "viewAllLink": "view all"
-  },
   "provider": {
     "title": "Today by Provider",
     "emptyState": "No clinical providers found."
   },
   "slotChecker": {
-    "title": "Quick Slot Check",
+    "title": "Schedule & free slots",
     "closedDay": "The clinic is closed on this day",
-    "todayBadge": "Today",
     "allProviders": "All providers",
     "freeCount": "{{count}} free",
     "bookedCount": "{{count}} booked",
@@ -54,8 +40,12 @@
     "bookedTooltip": "Booked",
     "freeTooltip": "Free – click to book",
     "footer": "{{startHour}} – {{endHour}} · {{minutes}}-min slots · Click a free slot to open the booking form",
-    "previousDay": "Previous day",
-    "nextDay": "Next day"
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week",
+    "thisWeek": "This week",
+    "dayFree": "{{count}} free",
+    "dayFull": "Full",
+    "pastTooltip": "Already past"
   },
   "absences": {
     "title": "Who is away",

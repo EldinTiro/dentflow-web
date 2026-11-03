@@ -243,7 +243,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
                     id={fid('newFirstName')}
                     {...register('newFirstName', { required: isNewPatient ? t('booking.required') : false })}
                     placeholder={t('booking.firstNamePlaceholder')}
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                   {errors.newFirstName && <p className="mt-1 text-xs text-red-600">{errors.newFirstName.message}</p>}
                 </div>
@@ -255,7 +255,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
                     id={fid('newLastName')}
                     {...register('newLastName', { required: isNewPatient ? t('booking.required') : false })}
                     placeholder={t('booking.lastNamePlaceholder')}
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                   {errors.newLastName && <p className="mt-1 text-xs text-red-600">{errors.newLastName.message}</p>}
                 </div>
@@ -266,7 +266,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
                   id={fid('newPhone')}
                   {...register('newPhone')}
                   placeholder="+387 61 123 456"
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -283,7 +283,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
                 <div ref={patientRef} className="relative">
                   <div
                     className={`flex items-center gap-1 w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 ${
-                      errors.patientId ? 'border-red-400' : 'border-gray-300 dark:border-gray-600'
+                      errors.patientId ? 'border-red-400' : 'border-control dark:border-gray-600'
                     } focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500`}
                   >
                     <Search size={14} className="shrink-0 text-gray-500 dark:text-gray-400" />
@@ -387,7 +387,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
             id={fid('provider')}
             {...register('providerId', { required: t('booking.providerRequired') })}
             disabled={isStaffLoading}
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-wait"
+            className="w-full border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-wait"
           >
             <option value="">{isStaffLoading ? t('booking.loading') : t('booking.selectProvider')}</option>
             {providers.map((s) => (
@@ -417,7 +417,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
                   const type = apptTypes.find((t) => t.id === e.target.value);
                   if (type) setValue('durationMinutes', type.defaultDurationMinutes);
                 }}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">{t('booking.selectType')}</option>
                 {apptTypes.map((t) => (
@@ -463,9 +463,9 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
                       const time = watchedStartAt?.split('T')[1] ?? '09:00';
                       setValue('startAt', `${e.target.value}T${time}`, { shouldValidate: true });
                     }}
-                    className="flex-1 min-w-[9.5rem] border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="flex-1 min-w-[9.5rem] border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
-                  <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shrink-0 overflow-hidden">
+                  <div className="flex items-center border border-control dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shrink-0 overflow-hidden">
                     <select
                       aria-label={t('booking.hour')}
                       value={watchedStartAt?.split('T')[1]?.slice(0, 2) ?? '09'}
@@ -505,7 +505,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
                   min={5}
                   step={5}
                   {...register('durationMinutes', { required: true, min: 5, valueAsNumber: true })}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             </div>
@@ -519,7 +519,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
                   const currentTime = watchedStartAt ? watchedStartAt.split('T')[1] : '09:00';
                   setValue('startAt', `${e.target.value}T${currentTime}`);
                 }}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 mb-3"
+                className="w-full border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 mb-3"
               />
               {isLoadingSlots ? (
                 <p className="text-sm text-gray-500 py-4 text-center dark:text-gray-400">{t('booking.loadingSlots')}</p>
@@ -560,7 +560,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
             id={fid('reason')}
             type="text"
             {...register('chiefComplaint')}
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder={t('booking.reasonPlaceholder')}
           />
         </div>
@@ -572,7 +572,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
             id={fid('notes')}
             {...register('notes')}
             rows={2}
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+            className="w-full border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
           />
         </div>
 
@@ -581,7 +581,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
           >
             {t('booking.cancel')}
           </button>

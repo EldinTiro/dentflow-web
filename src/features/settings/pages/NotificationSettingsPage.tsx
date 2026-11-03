@@ -116,7 +116,7 @@ export function NotificationSettingsPage() {
                 type="number"
                 min={1}
                 max={168}
-                className="w-20 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-center text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500"
+                className="w-20 rounded-lg border border-control dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-center text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500"
                 {...notifForm.register('reminder1HoursBefore', { valueAsNumber: true })}
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">{t('profile.clinicSettings.hoursBefore')}</span>
@@ -153,7 +153,7 @@ export function NotificationSettingsPage() {
                   type="number"
                   min={1}
                   max={167}
-                  className="w-20 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-center text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500"
+                  className="w-20 rounded-lg border border-control dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-center text-gray-900 dark:text-gray-100 outline-none focus:border-primary-500"
                   {...notifForm.register('reminder2HoursBefore', { valueAsNumber: true })}
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">{t('profile.clinicSettings.hoursBefore')}</span>
