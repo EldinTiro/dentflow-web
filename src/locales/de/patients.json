@@ -16,7 +16,9 @@
     "dateOfBirth": "Geburtsdatum",
     "mobile": "Mobil",
     "email": "E-Mail",
-    "status": "Status"
+    "status": "Status",
+    "patient": "Patient",
+    "lastVisit": "Letzter Besuch"
   },
   "backToPatients": "← Zurück zu Patienten",
   "notFound": "Patient nicht gefunden.",
@@ -307,5 +309,38 @@
       "planned": "Behandlung geplant",
       "done": "Behandlung abgeschlossen"
     }
+  },
+  "age_one": "{{count}} J.",
+  "age_other": "{{count}} J.",
+  "allergyLabel": "Allergie: {{severity}}",
+  "when": {
+    "today": "Heute {{time}}",
+    "tomorrow": "Morgen {{time}}",
+    "todayDay": "Heute",
+    "tomorrowDay": "Morgen"
+  },
+  "preview": {
+    "firstVisit": "Erster Besuch",
+    "lastVisit": "Letzter Besuch",
+    "openRecord": "Akte öffnen",
+    "visitCount": "Besuche insgesamt",
+    "documentCount": "Dateien insgesamt",
+    "nextAppointment": "Nächster Termin",
+    "nothingBooked": "Nichts gebucht",
+    "balance": "Saldo",
+    "paidUp": "Alles bezahlt",
+    "treatmentPlan": "Behandlungsplan"
+  },
+  "facts": {
+    "title": "Wichtige Angaben"
+  },
+  "timeline": {
+    "title": "Verlauf",
+    "empty": "Noch nichts.",
+    "appointment": "Termin",
+    "treatment": "Behandlung",
+    "invoice": "Rechnung {{number}}",
+    "payment": "Zahlung",
+    "document": "Dokument"
   }
 }
