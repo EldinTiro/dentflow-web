@@ -13,10 +13,12 @@
     "patientNumber": "Patient #",
     "name": "Name",
     "parentName": "Parent name",
-    "dateOfBirth": "Date of Birth",
+    "dateOfBirth": "Date of birth",
     "mobile": "Mobile",
     "email": "Email",
-    "status": "Status"
+    "status": "Status",
+    "patient": "Patient",
+    "lastVisit": "Last visit"
   },
   "backToPatients": "← Back to Patients",
   "notFound": "Patient not found.",
@@ -307,5 +309,38 @@
       "planned": "Treatment planned",
       "done": "Treatment done"
     }
+  },
+  "age_one": "{{count}} y",
+  "age_other": "{{count}} y",
+  "allergyLabel": "Allergy: {{severity}}",
+  "when": {
+    "today": "Today {{time}}",
+    "tomorrow": "Tomorrow {{time}}",
+    "todayDay": "Today",
+    "tomorrowDay": "Tomorrow"
+  },
+  "preview": {
+    "firstVisit": "First visit",
+    "lastVisit": "Last visit",
+    "openRecord": "Open record",
+    "visitCount": "Total visits",
+    "documentCount": "Total files",
+    "nextAppointment": "Next appointment",
+    "nothingBooked": "Nothing booked",
+    "balance": "Balance",
+    "paidUp": "Paid up",
+    "treatmentPlan": "Treatment plan"
+  },
+  "facts": {
+    "title": "Key facts"
+  },
+  "timeline": {
+    "title": "Timeline",
+    "empty": "Nothing yet.",
+    "appointment": "Appointment",
+    "treatment": "Treatment",
+    "invoice": "Invoice {{number}}",
+    "payment": "Payment",
+    "document": "Document"
   }
 }

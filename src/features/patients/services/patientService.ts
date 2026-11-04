@@ -41,6 +41,33 @@ export interface PatientResponse {
   deactivationReason?: string | null
   /** Only on GET /patients/{id}: appointments, plans, invoices or documents exist (DT-19). */
   hasHistory?: boolean
+  /** On the list and the record: last visit, next appointment, balance, allergies (patients redesign). */
+  insights?: PatientInsights
+}
+
+export interface PatientInsights {
+  lastVisitAt: string | null
+  nextAppointment: { id: string; startAt: string; providerId: string } | null
+  balanceDue: number
+  allergyCount: number
+  /** LifeThreatening, Severe, Moderate or Mild. */
+  severestAllergy: string | null
+  /** Completed appointments. */
+  visitCount: number
+  documentCount: number
+  firstVisitAt: string | null
+}
+
+export type TimelineKind = 'appointment' | 'treatment' | 'invoice' | 'payment' | 'document' | 'finding'
+/** One thing that happened to a patient: label = what (type, treatment, invoice no., file), detail = who/where. */
+export interface TimelineEntry {
+  at: string
+  kind: TimelineKind
+  refId: string
+  status: string | null
+  label: string | null
+  detail: string | null
+  amount: number | null
 }
 
 export interface PagedResult<T> {
@@ -200,6 +227,9 @@ export const patientService = {
     apiClient
       .get<PagedResult<PatientResponse>>('/api/v1/patients', { params })
       .then((r) => r.data),
+
+  timeline: (id: string) =>
+    apiClient.get<TimelineEntry[]>(`/api/v1/patients/${id}/timeline`).then((r) => r.data),
 
   getById: (id: string) =>
     apiClient

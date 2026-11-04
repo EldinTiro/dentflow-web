@@ -22,6 +22,9 @@ import { PatientBillingTab } from '@/features/billing/components/PatientBillingT
 import { ConfirmDialog, useConfirm } from '@/shared/components/ConfirmDialog'
 import { Trash2, Plus, AlertTriangle, Phone, User, Heart, CalendarPlus } from 'lucide-react'
 import { AllergyAlert } from '../components/AllergyAlert'
+import { PatientKeyFacts } from '../components/PatientKeyFacts'
+import { PatientTimeline } from '../components/PatientTimeline'
+import { ageOn, avatarTint, genderKey, initialsOf } from '../lib/patientDisplay'
 import { DeactivatePatientDialog } from '../components/DeactivatePatientDialog'
 import { toast } from 'sonner'
 import { getApiErrorCodes, getApiErrorMessage } from '@/shared/utils/apiError'
@@ -143,23 +146,35 @@ export function PatientDetailPage() {
         {t('backToPatients')}
       </Link>
 
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{patient.fullName}</h1>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[patient.status]}`}>
-              {tc(`status.${patient.status.toLowerCase()}`)}
-            </span>
+      {/* Header: who the patient is, at a glance (patients redesign C) */}
+      <section aria-label={patient.fullName} className="mb-6 flex flex-wrap items-start justify-between gap-4 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+        <div className="flex min-w-0 items-start gap-4">
+          <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-semibold ${avatarTint(patient.id)}`}>{initialsOf(patient.fullName)}</div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{patient.fullName}</h1>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[patient.status]}`}>
+                {tc(`status.${patient.status.toLowerCase()}`)}
+              </span>
+            </div>
+            <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-gray-600 dark:text-gray-400">
+              <span className="font-bold tabular-nums text-gray-800 dark:text-gray-100">{patient.patientNumber}</span>
+              {(() => {
+                const gender = genderKey(patient.gender)
+                const age = ageOn(patient.dateOfBirth)
+                const who = [gender && tc(gender), age !== null && t('age', { count: age })].filter(Boolean).join(' · ')
+                return who ? <span>{who}</span> : null
+              })()}
+              {patient.phoneMobile && <a href={`tel:${patient.phoneMobile}`} className="inline-flex items-center gap-1 hover:text-primary-600"><Phone size={13} aria-hidden /> {patient.phoneMobile}</a>}
+            </p>
+            {patient.preferredName && (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{t('goesBy', { name: patient.preferredName })}</p>
+            )}
+            {patient.parentName && (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{t('parentGuardian')} <span className="font-medium text-gray-700 dark:text-gray-300">{patient.parentName}</span></p>
+            )}
+            <AllergyAlert patientId={patient.id} className="mt-2" />
           </div>
-          <p className="text-lg font-bold text-gray-800 dark:text-gray-100 mt-1 tabular-nums">{patient.patientNumber}</p>
-          {patient.preferredName && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t('goesBy', { name: patient.preferredName })}</p>
-          )}
-          <AllergyAlert patientId={patient.id} className="mt-2" />
-          {patient.parentName && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t('parentGuardian')} <span className="font-medium text-gray-700 dark:text-gray-300">{patient.parentName}</span></p>
-          )}
         </div>
         <div className="flex flex-wrap gap-2">
           {canManage && patient.status !== 'Inactive' && (
@@ -195,7 +210,7 @@ export function PatientDetailPage() {
             </button>
           )}
         </div>
-      </div>
+      </section>
 
       {patient.status === 'Inactive' && (
         <div role="status" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200">
@@ -263,10 +278,14 @@ export function PatientDetailPage() {
         <PatientBillingTab patientId={id!} />
       ) : (
       <div className="space-y-4">
+        <PatientKeyFacts patient={patient} />
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
+        <PatientTimeline patientId={patient.id} />
+        <div className="space-y-4">
         {/* Demographics */}
         <Section title={t('section.demographics')}>
           <Field label={t('field.dateOfBirth')} value={formatDate(patient.dateOfBirth)} />
-          <Field label={t('field.gender')} value={patient.gender} />
+          <Field label={t('field.gender')} value={genderKey(patient.gender) ? tc(genderKey(patient.gender)!) : null} />
           <Field label={t('field.preferredContact')} value={patient.preferredContactMethod} />
           <Field label={t('field.firstVisit')} value={formatDate(patient.firstVisitDate)} />
           <Field label={t('field.lastVisit')} value={formatDate(patient.lastVisitDate)} />
@@ -309,6 +328,8 @@ export function PatientDetailPage() {
           {patient.updatedAt && (
             <span>{t('meta.updated')} {formatDate(patient.updatedAt)}</span>
           )}
+        </div>
+        </div>
         </div>
       </div>
       )} {/* end tab === overview */}

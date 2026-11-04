@@ -1,7 +1,8 @@
-import { useForm } from 'react-hook-form'
+import { useForm, useController } from 'react-hook-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Drawer } from '@/shared/components/Drawer'
+import { getApiErrorMessage } from '@/shared/utils/apiError'
 import {
   patientService,
   type PatientResponse,
@@ -9,16 +10,17 @@ import {
   type Gender,
   type ContactMethod,
 } from '../services/patientService'
+import { DialPicker, isPlausibleLocalNumber, joinPhone, splitPhone } from './PhoneField'
 
 interface FormValues {
   firstName: string
   lastName: string
   preferredName: string
   parentName: string
-  pronouns: string
   dateOfBirth: string
   gender: Gender | ''
   email: string
+  phoneDialCode: string
   phoneMobile: string
   phoneHome: string
   phoneWork: string
@@ -29,7 +31,6 @@ interface FormValues {
   stateProvince: string
   postalCode: string
   countryCode: string
-  occupation: string
   notes: string
   smsOptIn: boolean
   emailOptIn: boolean
@@ -40,37 +41,40 @@ interface Props {
   onClose: () => void
 }
 
+/** Laid out like CreatePatientDrawer, with the fields only an edit has (other phones, address) below. */
 export function EditPatientDrawer({ patient, onClose }: Props) {
   const { t } = useTranslation('patients')
   const { t: tc } = useTranslation('common')
   const queryClient = useQueryClient()
+  const mobile = splitPhone(patient.phoneMobile)
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
       firstName: patient.firstName,
       lastName: patient.lastName,
       preferredName: patient.preferredName ?? '',
       parentName: patient.parentName ?? '',
-      pronouns: '',
       dateOfBirth: patient.dateOfBirth ?? '',
-      gender: (patient.gender as Gender) ?? '',
+      gender: patient.gender ?? '',
       email: patient.email ?? '',
-      phoneMobile: patient.phoneMobile ?? '',
+      phoneDialCode: mobile.dial,
+      phoneMobile: mobile.local,
       phoneHome: patient.phoneHome ?? '',
       phoneWork: patient.phoneWork ?? '',
-      preferredContactMethod: (patient.preferredContactMethod as ContactMethod) ?? '',
+      preferredContactMethod: patient.preferredContactMethod ?? '',
       addressLine1: patient.addressLine1 ?? '',
       addressLine2: patient.addressLine2 ?? '',
       city: patient.city ?? '',
       stateProvince: patient.stateProvince ?? '',
       postalCode: patient.postalCode ?? '',
       countryCode: patient.countryCode ?? '',
-      occupation: '',
       notes: patient.notes ?? '',
       smsOptIn: patient.smsOptIn,
       emailOptIn: patient.emailOptIn,
     },
   })
+
+  const { field: dialField } = useController({ name: 'phoneDialCode', control })
 
   const update = useMutation({
     mutationFn: (values: FormValues) => {
@@ -79,21 +83,21 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
         lastName: values.lastName,
         preferredName: values.preferredName || null,
         parentName: values.parentName || null,
-        pronouns: values.pronouns || null,
         dateOfBirth: values.dateOfBirth || null,
-        gender: (values.gender as Gender) || null,
+        gender: values.gender || null,
         email: values.email || null,
-        phoneMobile: values.phoneMobile || null,
+        phoneMobile: joinPhone(values.phoneDialCode, values.phoneMobile),
         phoneHome: values.phoneHome || null,
         phoneWork: values.phoneWork || null,
-        preferredContactMethod: (values.preferredContactMethod as ContactMethod) || null,
+        preferredContactMethod: values.preferredContactMethod || null,
         addressLine1: values.addressLine1 || null,
         addressLine2: values.addressLine2 || null,
         city: values.city || null,
         stateProvince: values.stateProvince || null,
         postalCode: values.postalCode || null,
         countryCode: values.countryCode || null,
-        occupation: values.occupation || null,
+        // Not on this form, but an update replaces every field: send it back or it is cleared
+        preferredProviderId: patient.preferredProviderId,
         smsOptIn: values.smsOptIn,
         emailOptIn: values.emailOptIn,
         notes: values.notes || null,
@@ -116,44 +120,39 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
   return (
     <Drawer title={t('drawer.editTitle', { name: patient.fullName })} onClose={onClose}>
       <form noValidate onSubmit={handleSubmit((v) => update.mutate(v))} className="space-y-4">
-        {/* Demographics */}
+        {/* Name row */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>{t('drawer.firstName')}</label>
-            <input {...register('firstName', { required: t('validation.required') })} className={inputClass} />
+            <label htmlFor="patient-firstName" className={labelClass}>{t('drawer.firstName')}</label>
+            <input id="patient-firstName" {...register('firstName', { required: t('validation.required') })} className={inputClass} />
             {errors.firstName && <p className={errorClass}>{errors.firstName.message}</p>}
           </div>
           <div>
-            <label className={labelClass}>{t('drawer.lastName')}</label>
-            <input {...register('lastName', { required: t('validation.required') })} className={inputClass} />
+            <label htmlFor="patient-lastName" className={labelClass}>{t('drawer.lastName')}</label>
+            <input id="patient-lastName" {...register('lastName', { required: t('validation.required') })} className={inputClass} />
             {errors.lastName && <p className={errorClass}>{errors.lastName.message}</p>}
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className={labelClass}>{t('drawer.preferredName')}</label>
-            <input {...register('preferredName')} className={inputClass} />
-          </div>
-          <div>
-            <label className={labelClass}>{t('drawer.pronouns')}</label>
-            <input {...register('pronouns')} className={inputClass} placeholder={t('drawer.pronounsPlaceholder')} />
-          </div>
+        <div>
+          <label htmlFor="patient-preferredName" className={labelClass}>{t('drawer.preferredName')}</label>
+          <input id="patient-preferredName" {...register('preferredName')} className={inputClass} placeholder={t('drawer.nicknamePlaceholder')} />
         </div>
 
         <div>
-          <label className={labelClass}>{t('drawer.parentName')}</label>
-          <input {...register('parentName')} className={inputClass} placeholder={t('drawer.parentNamePlaceholder')} />
+          <label htmlFor="patient-parentName" className={labelClass}>{t('drawer.parentName')}</label>
+          <input id="patient-parentName" {...register('parentName')} className={inputClass} placeholder={t('drawer.parentNamePlaceholder')} />
         </div>
 
+        {/* DOB + Gender */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>{t('drawer.dateOfBirth')}</label>
-            <input type="date" {...register('dateOfBirth')} className={inputClass} />
+            <label htmlFor="patient-dateOfBirth" className={labelClass}>{t('drawer.dateOfBirth')}</label>
+            <input id="patient-dateOfBirth" type="date" {...register('dateOfBirth')} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>{t('field.gender')}</label>
-            <select {...register('gender')} className={inputClass}>
+            <label htmlFor="patient-gender" className={labelClass}>{t('field.gender')}</label>
+            <select id="patient-gender" {...register('gender')} className={inputClass}>
               <option value="">{tc('gender.select')}</option>
               <option value="Male">{tc('gender.male')}</option>
               <option value="Female">{tc('gender.female')}</option>
@@ -164,30 +163,66 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
         </div>
 
         {/* Contact */}
+        <div>
+          <label htmlFor="patient-email" className={labelClass}>{t('drawer.email')}</label>
+          <input id="patient-email" type="email" {...register('email')} className={inputClass} placeholder={t('drawer.emailPlaceholder')} />
+        </div>
+        <div>
+          <label htmlFor="patient-phoneMobile" className={labelClass}>{t('drawer.mobilePhone')}</label>
+          <div className="flex gap-2">
+            <DialPicker value={dialField.value} onChange={dialField.onChange} />
+            <input
+              id="patient-phoneMobile"
+              {...register('phoneMobile', {
+                validate: (v) => isPlausibleLocalNumber(v) || t('validation.phone'),
+              })}
+              className={inputClass}
+              placeholder={t('drawer.phonePlaceholder')}
+            />
+          </div>
+          {errors.phoneMobile && <p className={errorClass}>{errors.phoneMobile.message}</p>}
+        </div>
+
+        {/* Opt-ins */}
+        <div className="flex gap-5">
+          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer dark:text-gray-300">
+            <input type="checkbox" {...register('smsOptIn')} className="rounded" />
+            {t('drawer.smsOptIn')}
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer dark:text-gray-300">
+            <input type="checkbox" {...register('emailOptIn')} className="rounded" />
+            {t('drawer.emailOptIn')}
+          </label>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label htmlFor="patient-notes" className={labelClass}>{t('section.notes')}</label>
+          <textarea id="patient-notes"
+            {...register('notes')}
+            rows={3}
+            className={inputClass + ' resize-none'}
+            placeholder={t('drawer.notesPlaceholder')}
+          />
+        </div>
+
+        {/* Other ways to reach the patient */}
         <div className={sectionClass}>
           <p className={sectionTitle}>{t('drawer.sectionContact')}</p>
           <div className="space-y-3">
-            <div>
-              <label className={labelClass}>{t('drawer.email')}</label>
-              <input type="email" {...register('email')} className={inputClass} />
-            </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelClass}>{t('field.mobile')}</label>
-                <input {...register('phoneMobile')} className={inputClass} />
+                <label htmlFor="patient-phoneHome" className={labelClass}>{t('field.home')}</label>
+                <input id="patient-phoneHome" type="tel" {...register('phoneHome')} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>{t('field.home')}</label>
-                <input {...register('phoneHome')} className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>{t('field.work')}</label>
-                <input {...register('phoneWork')} className={inputClass} />
+                <label htmlFor="patient-phoneWork" className={labelClass}>{t('field.work')}</label>
+                <input id="patient-phoneWork" type="tel" {...register('phoneWork')} className={inputClass} />
               </div>
             </div>
             <div>
-              <label className={labelClass}>{t('field.preferredContact')}</label>
-              <select {...register('preferredContactMethod')} className={inputClass}>
+              <label htmlFor="patient-preferredContact" className={labelClass}>{t('field.preferredContact')}</label>
+              <select id="patient-preferredContact" {...register('preferredContactMethod')} className={inputClass}>
                 <option value="">{tc('gender.select')}</option>
                 <option value="Email">{tc('contactMethod.email')}</option>
                 <option value="Phone">{tc('contactMethod.phone')}</option>
@@ -202,65 +237,36 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
           <p className={sectionTitle}>{t('drawer.sectionAddress')}</p>
           <div className="space-y-3">
             <div>
-              <label className={labelClass}>{t('field.addressLine1')}</label>
-              <input {...register('addressLine1')} className={inputClass} />
+              <label htmlFor="patient-addressLine1" className={labelClass}>{t('field.addressLine1')}</label>
+              <input id="patient-addressLine1" {...register('addressLine1')} className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>{t('field.addressLine2')}</label>
-              <input {...register('addressLine2')} className={inputClass} />
+              <label htmlFor="patient-addressLine2" className={labelClass}>{t('field.addressLine2')}</label>
+              <input id="patient-addressLine2" {...register('addressLine2')} className={inputClass} />
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className={labelClass}>{t('field.city')}</label>
-                <input {...register('city')} className={inputClass} />
+                <label htmlFor="patient-city" className={labelClass}>{t('field.city')}</label>
+                <input id="patient-city" {...register('city')} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>{t('field.stateProvince')}</label>
-                <input {...register('stateProvince')} className={inputClass} />
+                <label htmlFor="patient-stateProvince" className={labelClass}>{t('field.stateProvince')}</label>
+                <input id="patient-stateProvince" {...register('stateProvince')} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>{t('field.postalCode')}</label>
-                <input {...register('postalCode')} className={inputClass} />
+                <label htmlFor="patient-postalCode" className={labelClass}>{t('field.postalCode')}</label>
+                <input id="patient-postalCode" {...register('postalCode')} className={inputClass} />
               </div>
             </div>
             <div>
-              <label className={labelClass}>{t('field.countryCode')}</label>
-              <input {...register('countryCode')} className={inputClass} placeholder={t('drawer.countryCodePlaceholder')} />
-            </div>
-          </div>
-        </div>
-
-        {/* Other */}
-        <div className={sectionClass}>
-          <p className={sectionTitle}>{t('drawer.sectionOther')}</p>
-          <div className="space-y-3">
-            <div>
-              <label className={labelClass}>{t('drawer.occupation')}</label>
-              <input {...register('occupation')} className={inputClass} />
-            </div>
-            <div className="flex gap-5">
-              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer dark:text-gray-300">
-                <input type="checkbox" {...register('smsOptIn')} className="rounded" />
-                {t('drawer.smsOptIn')}
-              </label>
-              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer dark:text-gray-300">
-                <input type="checkbox" {...register('emailOptIn')} className="rounded" />
-                {t('drawer.emailOptIn')}
-              </label>
-            </div>
-            <div>
-              <label className={labelClass}>Notes</label>
-              <textarea
-                {...register('notes')}
-                rows={3}
-                className={inputClass + ' resize-none'}
-              />
+              <label htmlFor="patient-countryCode" className={labelClass}>{t('field.countryCode')}</label>
+              <input id="patient-countryCode" {...register('countryCode')} className={inputClass} placeholder={t('drawer.countryCodePlaceholder')} />
             </div>
           </div>
         </div>
 
         {update.isError && (
-          <p className="text-sm text-red-600">{t('error.updateFailed')}</p>
+          <p className="text-sm text-red-600">{getApiErrorMessage(update.error, t('error.updateFailed'))}</p>
         )}
 
         <div className="flex gap-3 pt-2">
@@ -274,7 +280,7 @@ export function EditPatientDrawer({ patient, onClose }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 border border-control text-gray-700 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-300"
+            className="flex-1 border border-control text-gray-700 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
           >
             {tc('button.cancel')}
           </button>

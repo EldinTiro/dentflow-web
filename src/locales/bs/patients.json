@@ -16,7 +16,9 @@
     "dateOfBirth": "Datum rođenja",
     "mobile": "Mobitel",
     "email": "Email",
-    "status": "Status"
+    "status": "Status",
+    "patient": "Pacijent",
+    "lastVisit": "Zadnja posjeta"
   },
   "backToPatients": "← Nazad na pacijente",
   "notFound": "Pacijent nije pronađen.",
@@ -310,5 +312,39 @@
       "planned": "Planiran tretman",
       "done": "Tretman završen"
     }
+  },
+  "age_one": "{{count}} god",
+  "age_few": "{{count}} god",
+  "age_other": "{{count}} god",
+  "allergyLabel": "Alergija: {{severity}}",
+  "when": {
+    "today": "Danas {{time}}",
+    "tomorrow": "Sutra {{time}}",
+    "todayDay": "Danas",
+    "tomorrowDay": "Sutra"
+  },
+  "preview": {
+    "firstVisit": "Prva posjeta",
+    "lastVisit": "Zadnja posjeta",
+    "openRecord": "Otvori karton",
+    "visitCount": "Ukupan broj posjeta",
+    "documentCount": "Ukupan broj datoteka",
+    "nextAppointment": "Sljedeći termin",
+    "nothingBooked": "Ništa zakazano",
+    "balance": "Saldo",
+    "paidUp": "Sve plaćeno",
+    "treatmentPlan": "Plan tretmana"
+  },
+  "facts": {
+    "title": "Ključne informacije"
+  },
+  "timeline": {
+    "title": "Hronologija",
+    "empty": "Još ništa.",
+    "appointment": "Termin",
+    "treatment": "Tretman",
+    "invoice": "Faktura {{number}}",
+    "payment": "Uplata",
+    "document": "Dokument"
   }
 }
