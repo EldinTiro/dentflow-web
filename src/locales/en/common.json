@@ -12,7 +12,10 @@
     "appName": "DentFlow",
     "settings": "Settings",
     "myProfile": "My profile",
-    "clinicSettings": "Clinic settings"
+    "clinicSettings": "Clinic settings",
+    "groupDaily": "Every day",
+    "groupClinic": "Clinic",
+    "todayCount": "{{count}} today"
   },
   "button": {
     "save": "Save",

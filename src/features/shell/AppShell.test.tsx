@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { userService } from '@/features/auth/services/userService'
 import { renderWithProviders } from '@/test/render'
@@ -13,6 +13,15 @@ vi.mock('@/features/auth/services/userService', () => ({
     updatePreferences: vi.fn(async () => undefined),
   },
 }))
+vi.mock('@/features/appointments/services/appointmentService', () => ({
+  appointmentService: {
+    // Today: three visits still on, one cancelled
+    list: vi.fn(async () => ({
+      items: ['Scheduled', 'CheckedIn', 'Completed', 'Cancelled'].map((status, i) => ({ id: `a${i}`, status })),
+      totalCount: 4, page: 1, pageSize: 50,
+    })),
+  },
+}))
 vi.mock('@/features/admin/services/tenantService', () => ({
   tenantService: {
     getCurrent: vi.fn(() => new Promise(() => {})),
@@ -21,7 +30,7 @@ vi.mock('@/features/admin/services/tenantService', () => ({
 }))
 
 function renderAs(role: string) {
-  useAuthStore.getState().setAuth('t', { userId: 'u', email: 'e@x', fullName: 'U', roles: [role] })
+  useAuthStore.getState().setAuth('t', { userId: 'u', email: 'e@x', fullName: 'Pink Owner', roles: [role] })
   renderWithProviders(<ThemeProvider><AppShell /></ThemeProvider>, { route: '/dashboard' })
 }
 
@@ -96,5 +105,38 @@ describe('AppShell account and settings', () => {
   it('has no Settings link for a receptionist', () => {
     renderAs('Staff')
     expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument()
+  })
+})
+
+// Sidebar mock A: daily work apart from running the clinic, today's count, who is signed in
+describe('AppShell grouped sidebar', () => {
+  afterEach(() => useAuthStore.getState().clearAuth())
+
+  const linksIn = (group: string) =>
+    within(screen.getByRole('group', { name: group })).getAllByRole('link').map((l) => l.getAttribute('href'))
+
+  it('puts the daily pages first and the clinic pages apart, for the owner', () => {
+    renderAs('ClinicOwner')
+    expect(linksIn('Every day')).toEqual(['/dashboard', '/appointments', '/patients'])
+    expect(linksIn('Clinic')).toEqual(['/staff', '/finance', '/settings'])
+  })
+
+  it('gives the staff only Staff under Clinic', () => {
+    renderAs('Staff')
+    expect(linksIn('Clinic')).toEqual(['/staff'])
+  })
+
+  it("counts today's appointments that are still on, beside Appointments", async () => {
+    renderAs('Staff')
+    const link = screen.getByRole('link', { name: /^Appointments/ })
+    await waitFor(() => expect(link).toHaveAccessibleName('Appointments 3 today'))
+  })
+
+  it('shows who is signed in at the bottom, linking to their profile', () => {
+    renderAs('ClinicOwner')
+    const me = screen.getByRole('link', { name: /Pink Owner/ })
+    expect(me).toHaveAttribute('href', '/profile')
+    expect(me).toHaveTextContent('PO')
+    expect(me).toHaveTextContent('Administrator')
   })
 })
