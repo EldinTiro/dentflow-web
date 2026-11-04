@@ -10,7 +10,9 @@ import { useTheme } from '@/shared/context/ThemeContext'
 import { FeatureProvider } from '@/shared/context/FeatureContext'
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary'
 import { useUserPreferences, useUpdateUserPreferences } from '@/features/auth/hooks/useUserPreferences'
-import { UserMenu } from './UserMenu'
+import { UserMenu, initialsOf } from './UserMenu'
+import { appointmentService } from '@/features/appointments/services/appointmentService'
+import { toLocalIsoDate } from '@/shared/lib/dates'
 import {
   LayoutDashboard,
   Users,
@@ -32,14 +34,47 @@ const langOptions = [
   { code: 'de', label: 'Deutsch' },
 ] as const
 
-const navItems = [
-  { labelKey: 'nav.dashboard', to: '/dashboard', icon: LayoutDashboard },
-  { labelKey: 'nav.patients', to: '/patients', icon: Users },
-  { labelKey: 'nav.staff', to: '/staff', icon: UserCog },
-  { labelKey: 'nav.appointments', to: '/appointments', icon: CalendarDays },
-  // Clinic-level money; the desk reaches a patient's bill from the patient instead.
-  { labelKey: 'nav.finance', to: '/finance', icon: Landmark, financeOnly: true },
+interface NavItem {
+  labelKey: string
+  to: string
+  icon: typeof LayoutDashboard
+  show?: 'finance' | 'settings'
+}
+
+// Sidebar mock A: what the desk opens all day, apart from running the clinic.
+const navGroups: { labelKey: string; items: NavItem[] }[] = [
+  {
+    labelKey: 'nav.groupDaily',
+    items: [
+      { labelKey: 'nav.dashboard', to: '/dashboard', icon: LayoutDashboard },
+      { labelKey: 'nav.appointments', to: '/appointments', icon: CalendarDays },
+      { labelKey: 'nav.patients', to: '/patients', icon: Users },
+    ],
+  },
+  {
+    labelKey: 'nav.groupClinic',
+    items: [
+      { labelKey: 'nav.staff', to: '/staff', icon: UserCog },
+      // Clinic-level money; the desk reaches a patient's bill from the patient instead.
+      { labelKey: 'nav.finance', to: '/finance', icon: Landmark, show: 'finance' },
+      // Owner-only: working hours, service types, SMS and plan
+      { labelKey: 'nav.settings', to: '/settings', icon: Settings, show: 'settings' },
+    ],
+  },
 ]
+
+/** Visits today that are still on: not cancelled, not a no-show. */
+function useTodayCount(enabled: boolean) {
+  const today = toLocalIsoDate(new Date())
+  // Same query as the dashboard's "today", so both share one request
+  const { data } = useQuery({
+    queryKey: ['appointments-today', today],
+    queryFn: () => appointmentService.list({ dateFrom: today, dateTo: today, pageSize: 50 }),
+    enabled,
+    staleTime: 60_000,
+  })
+  return data?.items.filter((a) => a.status !== 'Cancelled' && a.status !== 'NoShow').length
+}
 
 export function AppShell() {
   const { t, i18n } = useTranslation()
@@ -65,6 +100,18 @@ export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
 
+  const todayCount = useTodayCount(!!user && !isSuperAdmin)
+  const visible = (item: NavItem) =>
+    item.show === 'finance' ? canFinance : item.show === 'settings' ? canManageSettings : true
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    cn(
+      'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+      isActive
+        ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
+        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
+    )
+  const role = user?.roles?.[0]
+
   const { data: currentTenant } = useQuery({
     queryKey: ['tenant-current'],
     queryFn: tenantService.getCurrent,
@@ -89,51 +136,36 @@ export function AppShell() {
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <ul className="space-y-1">
-          {navItems.filter((item) => !item.financeOnly || canFinance).map((item) => (
-            <li key={item.to}>
-              <NavLink
-                to={item.to}
-                end={item.to === '/'}
-                onClick={() => setSidebarOpen(false)}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
-                  )
-                }
-              >
-                <item.icon size={16} className="shrink-0" />
-                {t(item.labelKey)}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
+      <nav className="flex-1 overflow-y-auto px-3 py-3">
+        {navGroups.map((group) => {
+          const items = group.items.filter(visible)
+          if (items.length === 0) return null
+          const headingId = `nav-${group.labelKey}`
+          return (
+            <div key={group.labelKey} role="group" aria-labelledby={headingId} className="mb-3">
+              <p id={headingId} className="px-3 pb-1 pt-2 text-xs font-medium text-gray-500 dark:text-gray-400">{t(group.labelKey)}</p>
+              <ul className="space-y-0.5">
+                {items.map((item) => (
+                  <li key={item.to}>
+                    <NavLink to={item.to} onClick={() => setSidebarOpen(false)} className={linkClass}>
+                      <item.icon size={16} className="shrink-0" />
+                      {t(item.labelKey)}{' '}
+                      {item.to === '/appointments' && !!todayCount && (
+                        <span
+                          aria-label={t('nav.todayCount', { count: todayCount })}
+                          className="ml-auto rounded-full bg-gray-100 px-2 text-xs font-semibold tabular-nums text-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                        >
+                          {todayCount}
+                        </span>
+                      )}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        })}
       </nav>
-
-      {canManageSettings && (
-        <div className="px-3 pb-2 space-y-1">
-          {/* Clinic settings hold working hours, service types, SMS and plan */}
-          <NavLink
-            to="/settings"
-            onClick={() => setSidebarOpen(false)}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
-              )
-            }
-          >
-            <Settings size={16} className="shrink-0" />
-            {t('nav.settings')}
-          </NavLink>
-        </div>
-      )}
 
       {isSuperAdmin && (
         <div className="px-3 pb-2">
@@ -145,6 +177,23 @@ export function AppShell() {
             <Settings2 size={16} className="shrink-0" /> {t('nav.adminPanel')}
           </Link>
         </div>
+      )}
+
+      {/* Who is signed in; sign-out stays in the account menu top right */}
+      {user && (
+        <Link
+          to="/profile"
+          onClick={() => setSidebarOpen(false)}
+          className="flex items-center gap-2.5 border-t border-gray-200 px-4 py-3 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800/60"
+        >
+          <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-600 text-xs font-semibold text-white">
+            {initialsOf(user.fullName)}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-medium text-gray-900 dark:text-gray-100">{user.fullName}</span>
+            {role && <span className="block truncate text-xs text-gray-500 dark:text-gray-400">{t(`role.${role}`)}</span>}
+          </span>
+        </Link>
       )}
 
     </>

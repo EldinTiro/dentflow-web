@@ -12,7 +12,10 @@
     "appName": "DentFlow",
     "settings": "Postavke",
     "myProfile": "Moj profil",
-    "clinicSettings": "Postavke klinike"
+    "clinicSettings": "Postavke klinike",
+    "groupDaily": "Svaki dan",
+    "groupClinic": "Klinika",
+    "todayCount": "{{count}} danas"
   },
   "button": {
     "save": "Sačuvaj",
