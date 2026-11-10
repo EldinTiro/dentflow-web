@@ -565,7 +565,7 @@ export function AppointmentsPage() {
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header: the only row above the calendar (variant B) */}
       <div className="flex flex-col gap-3 px-4 pt-6 pb-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <div className="min-w-0">
+        <div className="min-w-0 sm:shrink-0">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t('title')}</h1>
           {tab === 'list' ? (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">

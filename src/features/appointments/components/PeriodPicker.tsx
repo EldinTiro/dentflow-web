@@ -30,7 +30,7 @@ export function PeriodPicker({ label, selected, onPick }: { label: string; selec
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={open ? id : undefined}
-        className="-ml-1.5 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-sm font-medium text-gray-600 tabular-nums hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+        className="-ml-1.5 inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-0.5 text-sm font-medium text-gray-600 tabular-nums hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
       >
         {label}
         <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
