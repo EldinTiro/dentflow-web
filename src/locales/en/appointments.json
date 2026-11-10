@@ -140,10 +140,8 @@
     "firstNamePlaceholder": "e.g. Amra",
     "lastNamePlaceholder": "e.g. Begić",
     "phone": "Phone",
-    "chartOpenedOnBooking": "A patient chart is opened when the appointment is booked.",
     "patientSearchPlaceholder": "Name, phone or chart number…",
     "searching": "Searching…",
-    "createChartFor": "Create a new chart for “{{query}}”",
     "provider": "Provider",
     "loading": "Loading…",
     "selectProvider": "Select a provider…",
@@ -169,7 +167,9 @@
     "startRequired": "Start time is required",
     "patientCreated": "Patient {{name}} created",
     "patientCreateFailed": "Could not create the patient",
-    "bookFailed": "Failed to book the appointment. Please try again."
+    "bookFailed": "Failed to book the appointment. Please try again.",
+    "noCardUntilVisit": "No card number yet: it is opened when the patient comes in, at check-in.",
+    "addAsNewPatient": "Add “{{query}}” as a new patient"
   },
   "detail": {
     "title": "Appointment detail",

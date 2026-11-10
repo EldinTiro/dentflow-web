@@ -6,6 +6,7 @@ import { renderWithProviders } from '@/test/render'
 import { BookAppointmentDrawer } from './BookAppointmentDrawer'
 import { staffService } from '@/features/staff/services/staffService'
 import { appointmentService } from '../services/appointmentService'
+import { patientService } from '@/features/patients/services/patientService'
 
 const { empty } = vi.hoisted(() => ({ empty: async () => ({ items: [], totalCount: 0, page: 1, pageSize: 100 }) }))
 vi.mock('@/features/staff/services/staffService', () => ({ staffService: { list: vi.fn(empty) } }))
@@ -13,7 +14,7 @@ vi.mock('@/features/admin/services/tenantService', () => ({ tenantService: { get
 vi.mock('@/features/auth/services/userService', () => ({ userService: { getPreferences: vi.fn(async () => ({ timeFormat: '24h' })) } }))
 vi.mock('@/features/patients/services/patientService', async (orig) => ({
   ...(await orig<typeof import('@/features/patients/services/patientService')>()),
-  patientService: { search: vi.fn(async () => []), listAllergies: vi.fn(async () => []) },
+  patientService: { search: vi.fn(async () => []), listAllergies: vi.fn(async () => []), create: vi.fn() },
 }))
 vi.mock('../services/appointmentService', async (orig) => ({
   ...(await orig<typeof import('../services/appointmentService')>()),
@@ -124,5 +125,35 @@ describe('BookAppointmentDrawer providers', () => {
 
     await screen.findByRole('option', { name: /Ana Rozić/ })
     expect(screen.getByLabelText(/^Provider/)).toHaveValue('p2')
+  })
+})
+
+// User request 2026-11-11: someone booked by phone or email gets no card number until they
+// actually come in; the card is opened at check-in (OpenCardDialog)
+describe('BookAppointmentDrawer new patient', () => {
+  it('saves a patient added while booking without a card', async () => {
+    vi.mocked(staffService.list).mockResolvedValue({
+      items: [{ id: 'prov-1', fullName: 'Ana Rozić', staffType: 'Dentist', isBookable: true }], totalCount: 1, page: 1, pageSize: 100,
+    } as unknown as Awaited<ReturnType<typeof staffService.list>>)
+    vi.mocked(appointmentService.listTypes).mockResolvedValue([
+      { id: 'type-1', name: 'Filling', defaultDurationMinutes: 45 },
+    ] as unknown as Awaited<ReturnType<typeof appointmentService.listTypes>>)
+    vi.mocked(appointmentService.book).mockResolvedValue({} as Awaited<ReturnType<typeof appointmentService.book>>)
+    vi.mocked(patientService.create).mockResolvedValue({ id: 'new-1', fullName: 'Mia Novak' } as Awaited<ReturnType<typeof patientService.create>>)
+    renderWithProviders(<BookAppointmentDrawer onClose={() => {}} initialStartAt="2026-12-02T11:00" initialProviderId="prov-1" />)
+
+    await userEvent.type(screen.getByLabelText(/^Patient/), 'Mia Novak')
+    await userEvent.click(await screen.findByText('Add “Mia Novak” as a new patient'))
+    expect(screen.getByText('No card number yet: it is opened when the patient comes in, at check-in.')).toBeInTheDocument()
+
+    await screen.findByRole('option', { name: /Filling/ })
+    await userEvent.selectOptions(screen.getByLabelText(/^Provider/), 'prov-1')
+    await userEvent.selectOptions(screen.getByLabelText(/^Appointment type/), 'type-1')
+    await userEvent.click(screen.getByRole('button', { name: 'Book appointment' }))
+
+    await vi.waitFor(() => expect(patientService.create).toHaveBeenCalledWith(
+      expect.objectContaining({ firstName: 'Mia', lastName: 'Novak', withoutCard: true, patientNumber: null }),
+    ))
+    await vi.waitFor(() => expect(appointmentService.book).toHaveBeenCalledWith(expect.objectContaining({ patientId: 'new-1' })))
   })
 })

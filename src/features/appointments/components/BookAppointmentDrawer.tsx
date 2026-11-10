@@ -142,7 +142,11 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
 
   const createPatientMutation = useMutation({
     mutationFn: (data: { firstName: string; lastName: string; phoneMobile?: string }) =>
-      patientService.create({ firstName: data.firstName, lastName: data.lastName, phoneMobile: data.phoneMobile || null, smsOptIn: false, emailOptIn: false }),
+      // Not here yet, so no card number: it is opened at check-in (user request 2026-11-11)
+      patientService.create({
+        firstName: data.firstName, lastName: data.lastName, phoneMobile: data.phoneMobile || null,
+        smsOptIn: false, emailOptIn: false, patientNumber: null, withoutCard: true,
+      }),
   });
 
   const bookMutation = useMutation({
@@ -271,7 +275,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
                 />
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {t('booking.chartOpenedOnBooking')}
+                {t('booking.noCardUntilVisit')}
               </p>
             </div>
           ) : (
@@ -364,7 +368,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
                           className="px-3 py-2.5 cursor-pointer flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 font-medium"
                         >
                           <UserPlus size={14} className="shrink-0" />
-                          {t('booking.createChartFor', { query: patientSearch })}
+                          {t('booking.addAsNewPatient', { query: patientSearch })}
                         </li>
                       )}
                     </ul>

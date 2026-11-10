@@ -141,10 +141,8 @@
     "firstNamePlaceholder": "npr. Amra",
     "lastNamePlaceholder": "npr. Begić",
     "phone": "Telefon",
-    "chartOpenedOnBooking": "Karton će biti otvoren pri rezervaciji termina.",
     "patientSearchPlaceholder": "Ime, telefon ili broj kartona…",
     "searching": "Pretraživanje…",
-    "createChartFor": "Kreiraj novi karton za „{{query}}“",
     "provider": "Doktor",
     "loading": "Učitavanje…",
     "selectProvider": "Odaberi doktora…",
@@ -170,7 +168,9 @@
     "startRequired": "Vrijeme početka je obavezno",
     "patientCreated": "Pacijent {{name}} kreiran",
     "patientCreateFailed": "Greška pri kreiranju pacijenta",
-    "bookFailed": "Termin nije rezervisan. Pokušajte ponovo."
+    "bookFailed": "Termin nije rezervisan. Pokušajte ponovo.",
+    "noCardUntilVisit": "Broj kartona još se ne dodjeljuje: karton se otvara kad pacijent dođe, pri prijavi.",
+    "addAsNewPatient": "Dodaj „{{query}}“ kao novog pacijenta"
   },
   "detail": {
     "title": "Detalji termina",
