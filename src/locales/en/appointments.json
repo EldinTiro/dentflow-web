@@ -55,7 +55,6 @@
   },
   "emptyState": "No appointments found.",
   "calendar": {
-    "today": "Today",
     "day": "Day",
     "week": "Week",
     "prevDay": "Previous day",

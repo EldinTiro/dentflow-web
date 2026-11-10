@@ -55,7 +55,6 @@
   },
   "emptyState": "Keine Termine gefunden.",
   "calendar": {
-    "today": "Heute",
     "day": "Tag",
     "week": "Woche",
     "prevDay": "Vorheriger Tag",
