@@ -192,6 +192,25 @@ describe('DayCalendar drag and drop', () => {
     expect(onAppointmentClick).not.toHaveBeenCalled()
   })
 
+  // User report 2026-11-10: a drop in a column also opened the booking drawer, because the
+  // browser sends a click to the column after the pointer is let go there
+  it('does not book a slot when a visit is dropped in a column', async () => {
+    const onSlotClick = vi.fn()
+    const { container } = render(<DayCalendar {...baseProps} onMove={vi.fn()} onSlotClick={onSlotClick} />)
+    const chip = screen.getByRole('button', { name: /Miroslav Vuletić/ })
+    chip.getBoundingClientRect = () => ({ top: 3 * H, left: 0, right: 200, bottom: 4 * H, width: 200, height: H, x: 0, y: 3 * H, toJSON: () => ({}) })
+    const p1 = pin(column(container, 'p1'), 0)
+
+    drag(chip, p1, 20, 5 * H)
+    fireEvent.click(p1, { clientY: 5 * H })
+    expect(onSlotClick).not.toHaveBeenCalled()
+
+    // The next real click still books
+    await new Promise((r) => setTimeout(r, 0))
+    fireEvent.click(p1, { clientY: 5 * H })
+    expect(onSlotClick).toHaveBeenCalledTimes(1)
+  })
+
   // The API refuses to move a started or finished visit (QA-034)
   it('does not let a finished visit be dragged', () => {
     const done = { ...visit, status: 'Completed' as const }

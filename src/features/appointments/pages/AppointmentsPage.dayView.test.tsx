@@ -173,7 +173,9 @@ describe('AppointmentsPage day view', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'drop on Ana 11:15' }))
     const dialog = screen.getByRole('dialog')
-    expect(dialog).toHaveTextContent('Miroslav Vuletić → Thursday, 29/10/2026 11:15 · Ana Rozić')
+    expect(dialog).toHaveTextContent('Miroslav Vuletić')
+    expect(dialog).toHaveTextContent('Thursday, 29/10/2026 · 11:15')
+    expect(dialog).toHaveTextContent('Ana Rozić')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Move' }))
 
     expect(appointmentService.reschedule).toHaveBeenCalledWith('a1', {

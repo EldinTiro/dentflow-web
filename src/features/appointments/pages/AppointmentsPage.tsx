@@ -24,7 +24,7 @@ import { formatDate as formatDay, formatDayMonth } from '@/shared/lib/format';
 import { toast } from 'sonner';
 import { AppointmentDetailPanel } from '../components/AppointmentDetailPanel';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
-import { Search, X, Download } from 'lucide-react';
+import { Search, X, Download, CalendarClock, UserRound } from 'lucide-react';
 import { localDayEndUtc, localDayStartUtc, toLocalIsoDate } from '@/shared/lib/dates';
 import { isClinicMember } from '@/shared/lib/permissions'
 import { tenantService } from '@/features/admin/services/tenantService';
@@ -330,13 +330,22 @@ export function AppointmentsPage() {
     const [date, time] = startAt.split('T');
     confirmMove.ask({
       title: t('calendar.moveTitle'),
-      description: t('calendar.moveDescription', {
-        patient: appt.patientName ?? patientNames[appt.patientId] ?? '',
-        when: `${dayLabel(date)} ${time}`,
-        doctor: providerNames[providerId ?? appt.providerId] ?? '',
-      }),
+      description: (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900/40">
+          <div className="font-semibold text-gray-900 dark:text-gray-100">{appt.patientName ?? patientNames[appt.patientId] ?? ''}</div>
+          <div className="mt-1.5 flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <CalendarClock size={15} className="shrink-0 text-primary-600 dark:text-primary-400" aria-hidden />
+            <span>{dayLabel(date)} · <span className="font-semibold">{time}</span></span>
+          </div>
+          <div className="mt-1 flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <UserRound size={15} className="shrink-0 text-primary-600 dark:text-primary-400" aria-hidden />
+            <span>{providerNames[providerId ?? appt.providerId] ?? ''}</span>
+          </div>
+        </div>
+      ),
       confirmLabel: t('calendar.moveConfirm'),
       cancelLabel: t('calendar.moveCancel'),
+      tone: 'primary',
       onConfirm: () => moveMutation.mutate({ appt, startAt, providerId }),
     });
   };

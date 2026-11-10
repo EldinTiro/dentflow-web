@@ -128,6 +128,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                 data-drop-day={date}
                 data-provider-id={p.id}
                 onClick={onSlotClick ? (e) => {
+                  if (drag.consumeClick()) return;
                   onSlotClick(`${date}T${hhmm(slotUnderPointer(e.clientY, e.currentTarget, hourPx, HOUR_START, HOUR_END))}`, p.id);
                 } : undefined}
                 onMouseMove={onSlotClick ? (e) => {
