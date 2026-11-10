@@ -16,6 +16,7 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { BookAppointmentDrawer } from '../components/BookAppointmentDrawer';
 import { RescheduleModal } from '../components/RescheduleModal';
 import { WeekCalendar } from '../components/WeekCalendar';
+import { onCalendar } from '../components/calendarGrid';
 import { DayCalendar, type DayProvider } from '../components/DayCalendar';
 import { useConfirm } from '@/shared/components/ConfirmDialog';
 import { getApiErrorMessage } from '@/shared/utils/apiError';
@@ -275,13 +276,17 @@ export function AppointmentsPage() {
     return map;
   }, [apptTypes]);
 
+  // What the calendars draw: cancelled and no-show visits free their slot
+  const weekVisits = useMemo(() => onCalendar(calData?.items ?? []), [calData]);
+  const dayVisits = useMemo(() => onCalendar(dayData?.items ?? []), [dayData]);
+
   // Day view columns: every doctor who takes appointments, plus anyone else who has a visit that day
   const dayProviders = useMemo<DayProvider[]>(() => {
-    const busy = new Set((dayData?.items ?? []).map((a) => a.providerId));
+    const busy = new Set(dayVisits.map((a) => a.providerId));
     return (staffData?.items ?? [])
       .filter((s) => (s.isActive && s.isBookable) || busy.has(s.id))
       .map((s) => ({ id: s.id, fullName: s.fullName, colorHex: s.colorHex }));
-  }, [staffData, dayData]);
+  }, [staffData, dayVisits]);
 
   const queryClient = useQueryClient();
   const confirmMove = useConfirm();
@@ -352,11 +357,11 @@ export function AppointmentsPage() {
   }
 
   const legendProviders = useMemo(() => {
-    const ids = [...new Set((calData?.items ?? []).map((a) => a.providerId))];
+    const ids = [...new Set(weekVisits.map((a) => a.providerId))];
     return ids
       .map((id) => ({ id, name: providerNames[id] ?? id, color: providerColors[id] }))
       .filter((p) => p.name);
-  }, [calData, providerNames, providerColors]);
+  }, [weekVisits, providerNames, providerColors]);
 
   const rawAppointments = listData?.items ?? [];
   const appointments = useMemo(() => {
@@ -708,7 +713,7 @@ export function AppointmentsPage() {
               <DayCalendar
                 date={day}
                 providers={dayProviders}
-                appointments={dayData?.items ?? []}
+                appointments={dayVisits}
                 absences={dayAbsences ?? []}
                 patientNames={patientNames}
                 appointmentTypeNames={appointmentTypeNames}
@@ -720,7 +725,7 @@ export function AppointmentsPage() {
             ) : (
             <WeekCalendar
               weekStart={weekStart}
-              appointments={calData?.items ?? []}
+              appointments={weekVisits}
               providerColors={providerColors}
               providerNames={providerNames}
               patientNames={patientNames}
