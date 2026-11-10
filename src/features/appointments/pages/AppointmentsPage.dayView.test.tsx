@@ -57,8 +57,6 @@ vi.mock('../components/DayCalendar', () => ({
       <button onClick={() => props.onMove?.(visit, '2026-10-29T11:15', 'p2')}>drop on Ana 11:15</button>
       <button onClick={() => props.onResize?.(visit, '2026-10-29T09:00', '2026-10-29T10:30')}>end at 10:30</button>
       <button onClick={() => props.onResize?.(visit, '2026-10-29T09:30', '2026-10-29T10:00')}>start at 09:30</button>
-      <button onClick={props.onPrev}>Previous day</button>
-      <button onClick={props.onNext}>Next day</button>
     </div>
   ),
 }))

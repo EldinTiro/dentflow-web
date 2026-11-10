@@ -97,7 +97,9 @@
     "month": "Mjesec",
     "visitCount_one": "{{count}} termin",
     "visitCount_few": "{{count}} termina",
-    "visitCount_other": "{{count}} termina"
+    "visitCount_other": "{{count}} termina",
+    "allDoctors": "Svi doktori",
+    "doctorsFilter": "Doktori"
   },
   "types": {
     "title": "Vrste usluga",

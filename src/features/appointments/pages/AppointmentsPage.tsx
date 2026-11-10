@@ -23,7 +23,7 @@ import { onCalendar } from '../components/calendarGrid';
 import { DayCalendar, type DayProvider } from '../components/DayCalendar';
 import { useConfirm } from '@/shared/components/ConfirmDialog';
 import { getApiErrorMessage } from '@/shared/utils/apiError';
-import { formatDate as formatDay, formatDayMonth, formatMonthYear } from '@/shared/lib/format';
+import { formatDate as formatDay, formatDayMonth, formatMonthYear, formatWeekRange } from '@/shared/lib/format';
 import { toast } from 'sonner';
 import { AppointmentDetailPanel } from '../components/AppointmentDetailPanel';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
@@ -112,6 +112,16 @@ export function AppointmentsPage() {
   const dayParam = searchParams.get('day');
   const day = dayParam && /^\d{4}-\d{2}-\d{2}$/.test(dayParam) ? dayParam : toLocalIsoDate(new Date());
   const setDay = (v: string) => updateParam('day', v, false);
+  // Doctor filter (user request 2026-11-10): ?doctors=id,id; none = everyone
+  const doctorsParam = searchParams.get('doctors') ?? '';
+  const selectedDoctors = useMemo(() => new Set(doctorsParam ? doctorsParam.split(',') : []), [doctorsParam]);
+  const toggleDoctor = (id: string) => {
+    const next = new Set(selectedDoctors);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    updateParam('doctors', [...next].join(',') || null, false);
+  };
+  const forChosenDoctors = <T extends { providerId: string }>(items: T[]) =>
+    selectedDoctors.size ? items.filter((a) => selectedDoctors.has(a.providerId)) : items;
   // The month view (?view=month&month=YYYY-MM)
   const monthParam = searchParams.get('month');
   const ym = monthParam && /^\d{4}-\d{2}$/.test(monthParam) ? monthParam : toLocalIsoDate(new Date()).slice(0, 7);
@@ -286,7 +296,7 @@ export function AppointmentsPage() {
     },
     enabled: showMonth,
   });
-  const monthVisits = useMemo(() => onCalendar(monthItems ?? []), [monthItems]);
+  const monthVisits = useMemo(() => forChosenDoctors(onCalendar(monthItems ?? [])), [monthItems, selectedDoctors]);
 
   const showDay = tab === 'calendar' && calendarView === 'day';
   const { data: dayData } = useQuery({
@@ -355,7 +365,7 @@ export function AppointmentsPage() {
   }, [apptTypes]);
 
   // What the calendars draw: cancelled and no-show visits free their slot
-  const weekVisits = useMemo(() => onCalendar(calData?.items ?? []), [calData]);
+  const weekVisits = useMemo(() => forChosenDoctors(onCalendar(calData?.items ?? [])), [calData, selectedDoctors]);
   // Weekdays left out of the month: closed on every one of them in the grid, none booked
   const hiddenMonthWeekdays = useMemo(() => {
     if (!clinicSettings) return [];
@@ -370,15 +380,22 @@ export function AppointmentsPage() {
     const dates = Array.from({ length: 7 }, (_, i) => toLocalIsoDate(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i)));
     return closedDaysToHide(clinicSettings.weeklyScheduleJson, dates, weekVisits.map((a) => toLocalIsoDate(new Date(a.startAt))));
   }, [clinicSettings, weekStart, weekVisits]);
-  const dayVisits = useMemo(() => onCalendar(dayData?.items ?? []), [dayData]);
+  const dayVisits = useMemo(() => forChosenDoctors(onCalendar(dayData?.items ?? [])), [dayData, selectedDoctors]);
 
   // Day view columns: every doctor who takes appointments, plus anyone else who has a visit that day
   const dayProviders = useMemo<DayProvider[]>(() => {
     const busy = new Set(dayVisits.map((a) => a.providerId));
     return (staffData?.items ?? [])
       .filter((s) => (s.isActive && s.isBookable) || busy.has(s.id))
+      .filter((s) => !selectedDoctors.size || selectedDoctors.has(s.id))
       .map((s) => ({ id: s.id, fullName: s.fullName, colorHex: s.colorHex }));
-  }, [staffData, dayVisits]);
+  }, [staffData, dayVisits, selectedDoctors]);
+
+  // One button per doctor who takes appointments
+  const doctorChips = useMemo(
+    () => (staffData?.items ?? []).filter((s) => s.isActive && s.isBookable),
+    [staffData],
+  );
 
   const queryClient = useQueryClient();
   const confirmMove = useConfirm();
@@ -493,13 +510,6 @@ export function AppointmentsPage() {
     URL.revokeObjectURL(url);
   }
 
-  const legendProviders = useMemo(() => {
-    const ids = [...new Set(weekVisits.map((a) => a.providerId))];
-    return ids
-      .map((id) => ({ id, name: providerNames[id] ?? id, color: providerColors[id] }))
-      .filter((p) => p.name);
-  }, [weekVisits, providerNames, providerColors]);
-
   const rawAppointments = listData?.items ?? [];
   const appointments = useMemo(() => {
     let result = [...rawAppointments];
@@ -564,8 +574,8 @@ export function AppointmentsPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header: the only row above the calendar (variant B) */}
-      <div className="flex flex-col gap-3 px-4 pt-6 pb-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <div className="min-w-0 sm:shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3 px-4 pt-6 pb-3 sm:px-6">
+        <div className="min-w-0">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t('title')}</h1>
           {tab === 'list' ? (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
@@ -573,28 +583,9 @@ export function AppointmentsPage() {
                 ? t('filteredOf', { filtered: appointments.length }) + ' '
                 : ''}{t('totalCount', { count: total })}
             </p>
-          ) : (
-            <PeriodPicker
-              label={calendarView === 'day' ? dayLabel(day)
-                : calendarView === 'month' ? formatMonthYear(monthStart)
-                : `${formatDay(weekStart)} — ${formatDay(weekEnd)}`}
-              selected={calendarView === 'day' ? day : calendarView === 'month' ? `${ym}-01` : toLocalIsoDate(weekStart)}
-              onPick={(date) => {
-                if (calendarView === 'day') setDay(date);
-                else if (calendarView === 'month') setMonth(date.slice(0, 7));
-                else setWeekStart(getMondayOfWeek(new Date(`${date}T12:00:00`)));
-              }}
-            />
-          )}
+          ) : null}
         </div>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          {/* Doctors on the week (the day view names its columns instead) */}
-          {tab === 'calendar' && calendarView === 'week' && legendProviders.map((p) => (
-            <span key={p.id} className="hidden lg:inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
-              <span className="inline-block h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color ?? '#6366F1' }} />
-              {p.name}
-            </span>
-          ))}
+        <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:gap-3 sm:self-start">
           <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-0.5">
             {(['day', 'week', 'month', 'list'] as View[]).map((v) => (
               <button
@@ -628,6 +619,63 @@ export function AppointmentsPage() {
             </button>
           )}
         </div>
+        {tab !== 'list' && (
+            <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-2">
+              <PeriodPicker
+                label={calendarView === 'day' ? dayLabel(day)
+                  : calendarView === 'month' ? formatMonthYear(monthStart)
+                  : formatWeekRange(weekStart, weekEnd)}
+                selected={calendarView === 'day' ? day : calendarView === 'month' ? `${ym}-01` : toLocalIsoDate(weekStart)}
+                onPick={(date) => {
+                  if (calendarView === 'day') setDay(date);
+                  else if (calendarView === 'month') setMonth(date.slice(0, 7));
+                  else setWeekStart(getMondayOfWeek(new Date(`${date}T12:00:00`)));
+                }}
+                onPrev={() => stepPeriod(-1)}
+                onNext={() => stepPeriod(1)}
+                prevLabel={t(calendarView === 'day' ? 'calendar.prevDay' : calendarView === 'month' ? 'calendar.prevMonth' : 'calendar.prevWeek')}
+                nextLabel={t(calendarView === 'day' ? 'calendar.nextDay' : calendarView === 'month' ? 'calendar.nextMonth' : 'calendar.nextWeek')}
+              />
+              {/* Doctor filter: a click shows only that doctor; several can be on */}
+              {doctorChips.length > 1 && (
+                <div role="group" aria-label={t('calendar.doctorsFilter')} className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    aria-pressed={selectedDoctors.size === 0}
+                    onClick={() => updateParam('doctors', null, false)}
+                    className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                      selectedDoctors.size === 0
+                        ? 'border-primary-300 bg-primary-50 text-primary-700 dark:border-primary-500/60 dark:bg-primary-500/20 dark:text-primary-200'
+                        : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {t('calendar.allDoctors')}
+                  </button>
+                  {doctorChips.map((s) => {
+                    const on = selectedDoctors.has(s.id);
+                    const color = s.colorHex ?? '#6366F1';
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => toggleDoctor(s.id)}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                          on
+                            ? 'text-gray-900 dark:text-white'
+                            : `border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 ${selectedDoctors.size ? 'opacity-60 hover:opacity-100' : ''}`
+                        }`}
+                        style={on ? { borderColor: color, backgroundColor: `${color}26` } : undefined}
+                      >
+                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} aria-hidden />
+                        {s.fullName}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+        )}
       </div>
 
       {tab === 'list' ? (
@@ -855,8 +903,6 @@ export function AppointmentsPage() {
                   n.set('day', date);
                   return n;
                 }, { replace: true })}
-                onPrev={() => shiftMonth(-1)}
-                onNext={() => shiftMonth(1)}
               />
             ) : calendarView === 'day' ? (
               <DayCalendar
@@ -871,8 +917,6 @@ export function AppointmentsPage() {
                 onMove={canManage ? askMove : undefined}
                 onResize={canManage ? askResize : undefined}
                 openHours={openHours}
-                onPrev={() => shiftDay(-1)}
-                onNext={() => shiftDay(1)}
               />
             ) : (
             <WeekCalendar
@@ -888,8 +932,6 @@ export function AppointmentsPage() {
               onMove={canManage ? askMove : undefined}
                 onResize={canManage ? askResize : undefined}
               openHours={openHours}
-              onPrev={prevWeek}
-              onNext={nextWeek}
               onDayClick={(date) => setSearchParams((prev) => {
                 const n = new URLSearchParams(prev);
                 n.set('view', 'day');

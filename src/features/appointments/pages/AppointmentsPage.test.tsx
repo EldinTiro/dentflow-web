@@ -58,7 +58,7 @@ describe('AppointmentsPage view toggle', () => {
 
     expect(screen.queryByRole('button', { name: 'Calendar' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '← Prev' })).not.toBeInTheDocument()
-    expect(screen.getByText('14/12/2026 — 20/12/2026')).toBeInTheDocument()
+    expect(screen.getByText('14 – 20 Dec 2026')).toBeInTheDocument()
   })
 
   // User request 2026-11-10: a click on a day in the week opens the day view on it
@@ -75,6 +75,21 @@ describe('AppointmentsPage view toggle', () => {
     expect(screen.getByRole('button', { name: 'Day' })).toHaveAttribute('aria-pressed', 'true')
   })
 
+  // User request 2026-11-10: the arrows sit next to the period, not on the calendar
+  it('steps weeks with the arrows next to the period', async () => {
+    renderWithProviders(
+      <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,
+      { route: '/appointments?from=2026-12-16' },
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next week' }))
+    expect(screen.getByText('21 – 27 Dec 2026')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Previous week' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Previous week' }))
+    expect(screen.getByText('7 – 13 Dec 2026')).toBeInTheDocument()
+  })
+
   it('steps weeks with the arrow keys', async () => {
     renderWithProviders(
       <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,
@@ -82,10 +97,10 @@ describe('AppointmentsPage view toggle', () => {
     )
 
     await userEvent.keyboard('{ArrowRight}')
-    expect(screen.getByText('21/12/2026 — 27/12/2026')).toBeInTheDocument()
+    expect(screen.getByText('21 – 27 Dec 2026')).toBeInTheDocument()
 
     await userEvent.keyboard('{ArrowLeft}{ArrowLeft}')
-    expect(screen.getByText('07/12/2026 — 13/12/2026')).toBeInTheDocument()
+    expect(screen.getByText('7 – 13 Dec 2026')).toBeInTheDocument()
   })
 
   // User request 2026-11-10: jump to a date from the period under the title
@@ -95,12 +110,12 @@ describe('AppointmentsPage view toggle', () => {
       { route: '/appointments?from=2026-12-16' },
     )
 
-    await userEvent.click(screen.getByRole('button', { name: /14\/12\/2026 — 20\/12\/2026/ }))
+    await userEvent.click(screen.getByRole('button', { name: /14 – 20 Dec 2026/ }))
     const picker = screen.getByRole('dialog', { name: 'Pick a date' })
     await userEvent.click(within(picker).getByRole('button', { name: 'Next month' }))
     await userEvent.click(within(picker).getByRole('button', { name: '14 January 2027' }))
 
-    expect(screen.getByText('11/01/2027 — 17/01/2027')).toBeInTheDocument()
+    expect(screen.getByText('11 – 17 Jan 2027')).toBeInTheDocument()
     expect(screen.queryByRole('dialog', { name: 'Pick a date' })).not.toBeInTheDocument()
   })
 
@@ -122,7 +137,7 @@ describe('AppointmentsPage view toggle', () => {
       { route: '/appointments?from=2026-12-16' },
     )
 
-    await userEvent.click(screen.getByRole('button', { name: /14\/12\/2026 — 20\/12\/2026/ }))
+    await userEvent.click(screen.getByRole('button', { name: /14 – 20 Dec 2026/ }))
     await userEvent.keyboard('{Escape}')
 
     expect(screen.queryByRole('dialog', { name: 'Pick a date' })).not.toBeInTheDocument()
@@ -213,6 +228,6 @@ describe('AppointmentsPage list and calendar (DT-24, DT-25)', () => {
     )
 
     // The week label follows the app language (it was English in Bosnian too)
-    expect(await screen.findByText('09/11/2026 — 15/11/2026')).toBeInTheDocument()
+    expect(await screen.findByText('9 – 15 Nov 2026')).toBeInTheDocument()
   })
 })
