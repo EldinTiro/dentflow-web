@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Routes, Route, useLocation } from 'react-router'
 import { renderWithProviders } from '@/test/render'
@@ -86,6 +86,46 @@ describe('AppointmentsPage view toggle', () => {
 
     await userEvent.keyboard('{ArrowLeft}{ArrowLeft}')
     expect(screen.getByText('07/12/2026 — 13/12/2026')).toBeInTheDocument()
+  })
+
+  // User request 2026-11-10: jump to a date from the period under the title
+  it('jumps to the week of a date picked from the period', async () => {
+    renderWithProviders(
+      <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,
+      { route: '/appointments?from=2026-12-16' },
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: /14\/12\/2026 — 20\/12\/2026/ }))
+    const picker = screen.getByRole('dialog', { name: 'Pick a date' })
+    await userEvent.click(within(picker).getByRole('button', { name: 'Next month' }))
+    await userEvent.click(within(picker).getByRole('button', { name: '14 January 2027' }))
+
+    expect(screen.getByText('11/01/2027 — 17/01/2027')).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Pick a date' })).not.toBeInTheDocument()
+  })
+
+  it('opens the picked day in the day view', async () => {
+    renderWithProviders(
+      <Routes><Route path="/appointments" element={<><AppointmentsPage /><Location /></>} /></Routes>,
+      { route: '/appointments?view=day&day=2026-12-16' },
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: /16\/12\/2026/ }))
+    await userEvent.click(within(screen.getByRole('dialog', { name: 'Pick a date' })).getByRole('button', { name: '3 December 2026' }))
+
+    expect(screen.getByTestId('location')).toHaveTextContent('day=2026-12-03')
+  })
+
+  it('closes the picker on Escape', async () => {
+    renderWithProviders(
+      <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,
+      { route: '/appointments?from=2026-12-16' },
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: /14\/12\/2026 — 20\/12\/2026/ }))
+    await userEvent.keyboard('{Escape}')
+
+    expect(screen.queryByRole('dialog', { name: 'Pick a date' })).not.toBeInTheDocument()
   })
 })
 

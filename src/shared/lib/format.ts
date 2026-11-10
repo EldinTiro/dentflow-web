@@ -59,6 +59,15 @@ export function formatDayMonth(value: string | Date, opts: DayMonthOptions, lang
   return opts.time ? `${text}, ${time}` : text
 }
 
+const BS_MONTHS_NOMINATIVE = ['Januar', 'Februar', 'Mart', 'April', 'Maj', 'Juni', 'Juli', 'August', 'Septembar', 'Oktobar', 'Novembar', 'Decembar']
+
+/** A month and its year, as a title: "Novembar 2026", "November 2026". */
+export function formatMonthYear(value: string | Date, lang: string = i18n.language): string {
+  const d = toDate(value)
+  if (lang.startsWith('bs')) return `${BS_MONTHS_NOMINATIVE[d.getMonth()]} ${d.getFullYear()}`
+  return d.toLocaleDateString(lang.startsWith('de') ? 'de-DE' : 'en-GB', { month: 'long', year: 'numeric' })
+}
+
 /** "08:00:00" → "08:00". */
 export function formatTime(value: string): string {
   return value.slice(0, 5)

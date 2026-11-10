@@ -90,7 +90,10 @@
     "resizeTitle": "Promijeniti trajanje?",
     "resizeConfirm": "Spremi",
     "resized": "Trajanje termina promijenjeno",
-    "resizeFailed": "Trajanje nije moguće promijeniti"
+    "resizeFailed": "Trajanje nije moguće promijeniti",
+    "pickDate": "Odaberi datum",
+    "prevMonth": "Prethodni mjesec",
+    "nextMonth": "Sljedeći mjesec"
   },
   "types": {
     "title": "Vrste usluga",

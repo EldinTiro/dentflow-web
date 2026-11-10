@@ -15,6 +15,7 @@ import { staffService } from '@/features/staff/services/staffService';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { BookAppointmentDrawer } from '../components/BookAppointmentDrawer';
 import { RescheduleModal } from '../components/RescheduleModal';
+import { PeriodPicker } from '../components/PeriodPicker';
 import { WeekCalendar } from '../components/WeekCalendar';
 import { onCalendar } from '../components/calendarGrid';
 import { DayCalendar, type DayProvider } from '../components/DayCalendar';
@@ -502,9 +503,11 @@ export function AppointmentsPage() {
                 : ''}{t('totalCount', { count: total })}
             </p>
           ) : (
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mt-0.5 tabular-nums">
-              {calendarView === 'day' ? dayLabel(day) : `${formatDay(weekStart)} — ${formatDay(weekEnd)}`}
-            </p>
+            <PeriodPicker
+              label={calendarView === 'day' ? dayLabel(day) : `${formatDay(weekStart)} — ${formatDay(weekEnd)}`}
+              selected={calendarView === 'day' ? day : toLocalIsoDate(weekStart)}
+              onPick={(date) => (calendarView === 'day' ? setDay(date) : setWeekStart(getMondayOfWeek(new Date(`${date}T12:00:00`))))}
+            />
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
