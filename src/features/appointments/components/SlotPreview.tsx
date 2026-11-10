@@ -41,16 +41,17 @@ export function SlotPreview({ minutes, hourStart, totalMinutes }: { minutes: num
 }
 
 /**
- * The strip at the bottom of a visit that changes its length (user request 2026-11-10).
- * A short bar shows on hover so it can be found.
+ * The strip at the top or bottom of a visit that changes when it starts or ends
+ * (user request 2026-11-10). A short bar shows on hover so it can be found.
  */
-export function ResizeHandle({ onPointerDown }: { onPointerDown: (e: React.PointerEvent<HTMLElement>) => void }) {
+export function ResizeHandle({ edge, onPointerDown }: { edge: 'top' | 'bottom'; onPointerDown: (e: React.PointerEvent<HTMLElement>) => void }) {
   return (
     <span
       data-testid="resize-handle"
+      data-edge={edge}
       aria-hidden
       onPointerDown={onPointerDown}
-      className="absolute inset-x-0 bottom-0 flex h-2 cursor-ns-resize items-end justify-center pb-px"
+      className={`absolute inset-x-0 z-10 flex h-2 cursor-ns-resize justify-center ${edge === 'top' ? 'top-0 items-start pt-px' : 'bottom-0 items-end pb-px'}`}
     >
       <span className="h-0.5 w-6 rounded-full bg-gray-500/60 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-gray-300/60" />
     </span>

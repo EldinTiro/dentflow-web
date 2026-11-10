@@ -28,7 +28,7 @@ import { Search, X, Download, CalendarClock, UserRound } from 'lucide-react';
 import { localDayEndUtc, localDayStartUtc, toLocalIsoDate } from '@/shared/lib/dates';
 import { isClinicMember } from '@/shared/lib/permissions'
 import { tenantService } from '@/features/admin/services/tenantService';
-import { openingHourRange } from '@/shared/lib/clinicSchedule';
+import { closedDaysToHide, openingHourRange } from '@/shared/lib/clinicSchedule';
 
 type Tab = 'list' | 'calendar';
 type CalendarView = 'week' | 'day';
@@ -297,6 +297,12 @@ export function AppointmentsPage() {
 
   // What the calendars draw: cancelled and no-show visits free their slot
   const weekVisits = useMemo(() => onCalendar(calData?.items ?? []), [calData]);
+  // User request 2026-11-10: days the clinic is closed are left out of the week, unless booked
+  const hiddenWeekDates = useMemo(() => {
+    if (!clinicSettings) return [];
+    const dates = Array.from({ length: 7 }, (_, i) => toLocalIsoDate(new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i)));
+    return closedDaysToHide(clinicSettings.weeklyScheduleJson, dates, weekVisits.map((a) => toLocalIsoDate(new Date(a.startAt))));
+  }, [clinicSettings, weekStart, weekVisits]);
   const dayVisits = useMemo(() => onCalendar(dayData?.items ?? []), [dayData]);
 
   // Day view columns: every doctor who takes appointments, plus anyone else who has a visit that day
@@ -349,22 +355,21 @@ export function AppointmentsPage() {
       onConfirm: () => moveMutation.mutate({ appt, startAt, providerId }),
     });
   };
-  /** A visit's bottom edge was pulled: the start stays, the end changes. */
+  /** A visit's top or bottom edge was pulled: a new start or a new end, same doctor. */
   const resizeMutation = useMutation({
-    mutationFn: ({ appt, endAt }: { appt: AppointmentResponse; endAt: string }) =>
+    mutationFn: ({ appt, startAt, endAt }: { appt: AppointmentResponse; startAt: string; endAt: string }) =>
       appointmentService.reschedule(appt.id, {
-        newStartAt: new Date(appt.startAt).toISOString(),
+        newStartAt: new Date(startAt).toISOString(),
         newEndAt: new Date(endAt).toISOString(),
       }),
     onSuccess: () => { invalidateAppointmentQueries(queryClient); toast.success(t('calendar.resized')); },
     onError: (err: unknown) => toast.error(getApiErrorMessage(err, t('calendar.resizeFailed'))),
   });
   /** Resized on the calendar: show the new times, save on yes. */
-  const askResize = (appt: AppointmentResponse, endAt: string) => {
-    const start = new Date(appt.startAt);
-    const [date, endTime] = endAt.split('T');
-    const startTime = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
-    const minutes = Math.round((new Date(endAt).getTime() - start.getTime()) / 60_000);
+  const askResize = (appt: AppointmentResponse, startAt: string, endAt: string) => {
+    const [date, startTime] = startAt.split('T');
+    const endTime = endAt.split('T')[1];
+    const minutes = Math.round((new Date(endAt).getTime() - new Date(startAt).getTime()) / 60_000);
     confirmMove.ask({
       title: t('calendar.resizeTitle'),
       description: (
@@ -383,7 +388,7 @@ export function AppointmentsPage() {
       confirmLabel: t('calendar.resizeConfirm'),
       cancelLabel: t('calendar.moveCancel'),
       tone: 'primary',
-      onConfirm: () => resizeMutation.mutate({ appt, endAt }),
+      onConfirm: () => resizeMutation.mutate({ appt, startAt, endAt }),
     });
   };
   const quickStatusMutation = useMutation({
@@ -776,6 +781,7 @@ export function AppointmentsPage() {
             <WeekCalendar
               weekStart={weekStart}
               appointments={weekVisits}
+              hiddenDates={hiddenWeekDates}
               providerColors={providerColors}
               providerNames={providerNames}
               patientNames={patientNames}
