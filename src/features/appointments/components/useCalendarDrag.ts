@@ -66,6 +66,9 @@ export function useCalendarDrag({ hourStart, hourEnd, hourPx, onMove }: {
       grab.current = null;
       if (!g?.dragging) return;
       justDragged.current = true;
+      // The click the browser sends right after this pointerup lands on the chip or on the
+      // column it was dropped in; any later click is a real one again
+      setTimeout(() => { justDragged.current = false; }, 0);
       setDragged(null);
       setPreview(null);
       const target = targetAt(e.clientX, e.clientY, g);
@@ -106,7 +109,7 @@ export function useCalendarDrag({ hourStart, hourEnd, hourPx, onMove }: {
         style: movable ? { touchAction: 'none' as const, cursor: dragged?.id === appt.id ? 'grabbing' : 'grab' } : undefined,
       };
     },
-    /** True once right after a drop: the click that follows must not open the visit. */
+    /** True once right after a drop: the click that follows must not open the visit or book the slot. */
     consumeClick() {
       const was = justDragged.current;
       justDragged.current = false;

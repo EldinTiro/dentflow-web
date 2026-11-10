@@ -178,6 +178,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                   data-day={dateStr}
                   data-drop-day={dateStr}
                   onClick={onSlotClick ? (e) => {
+                    if (drag.consumeClick()) return;
                     onSlotClick(`${dateStr}T${hhmm(slotUnderPointer(e.clientY, e.currentTarget, hourPx, HOUR_START, HOUR_END))}`);
                   } : undefined}
                   onMouseMove={onSlotClick ? (e) => {

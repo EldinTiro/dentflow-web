@@ -47,6 +47,27 @@ describe('WeekCalendar drag and drop', () => {
     expect(onMove).toHaveBeenCalledWith(visit, '2026-10-23T10:00', undefined)
   })
 
+  // User report 2026-11-10: a drop also opened the booking drawer on the slot below it
+  it('does not book a slot when a visit is dropped in a day', async () => {
+    const onSlotClick = vi.fn()
+    const { container } = render(<WeekCalendar {...props} onMove={vi.fn()} onSlotClick={onSlotClick} />)
+    const chip = screen.getByRole('button', { name: /Miroslav Vuletić/ })
+    chip.getBoundingClientRect = () => ({ top: 3 * H, left: 0, right: 100, bottom: 4 * H, width: 100, height: H, x: 0, y: 3 * H, toJSON: () => ({}) })
+    const thursday = pin(container.querySelector<HTMLElement>('[data-day="2026-10-22"]')!)
+    document.elementFromPoint = vi.fn(() => thursday)
+
+    fireEvent.pointerDown(chip, { clientX: 10, clientY: 3 * H, button: 0 })
+    fireEvent.pointerMove(window, { clientX: 10, clientY: 5 * H })
+    fireEvent.pointerUp(window, { clientX: 10, clientY: 5 * H })
+    fireEvent.click(thursday, { clientY: 5 * H })
+    expect(onSlotClick).not.toHaveBeenCalled()
+
+    // The next real click still books
+    await new Promise((r) => setTimeout(r, 0))
+    fireEvent.click(thursday, { clientY: 5 * H })
+    expect(onSlotClick).toHaveBeenCalledTimes(1)
+  })
+
   // The week header was English whatever the language
   it('names the days in the selected language', async () => {
     await i18n.changeLanguage('bs')
