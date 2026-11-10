@@ -1,11 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { AppointmentResponse } from '../services/appointmentService';
 import type { StaffBlockedTimeResponse } from '@/features/staff/services/staffService';
 import { ABSENCE_EMOJI } from '@/features/staff/lib/absence';
 import { useTheme } from '@/shared/context/ThemeContext';
-import { SLOT_MINUTES, useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
+import { useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
+import { SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
 import { useCalendarDrag } from './useCalendarDrag';
 import { AppointmentChipBody, CHIP_LAYOUT } from './AppointmentChipBody';
 
@@ -48,6 +49,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
   const chipBgOpacity = theme === 'dark' ? '55' : '28';
 
   const now = useNow();
+  const [hover, setHover] = useState<{ providerId: string; minutes: number } | null>(null);
   const isToday = isoDate(now) === date;
   const nowHour = isToday ? now.getHours() : null;
   const { start: HOUR_START, end: HOUR_END } = useMemo(
@@ -124,16 +126,23 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                 data-drop-day={date}
                 data-provider-id={p.id}
                 onClick={onSlotClick ? (e) => {
-                  const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
-                  const slot = Math.floor((y / hourPx) * (60 / SLOT_MINUTES));
-                  const minutes = Math.min(Math.max(HOUR_START * 60 + slot * SLOT_MINUTES, HOUR_START * 60), HOUR_END * 60 - SLOT_MINUTES);
-                  onSlotClick(`${date}T${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`, p.id);
+                  onSlotClick(`${date}T${hhmm(slotUnderPointer(e.clientY, e.currentTarget, hourPx, HOUR_START, HOUR_END))}`, p.id);
                 } : undefined}
-                className={`relative border-l border-gray-100 dark:border-gray-700/50 ${onSlotClick ? 'cursor-copy hover:bg-gray-50/60 dark:hover:bg-gray-800/40' : ''}`}
+                onMouseMove={onSlotClick ? (e) => {
+                  if (drag.dragged || isOverSomething(e.target)) { setHover(null); return; }
+                  setHover({ providerId: p.id, minutes: slotUnderPointer(e.clientY, e.currentTarget, hourPx, HOUR_START, HOUR_END) });
+                } : undefined}
+                onMouseLeave={() => setHover(null)}
+                className={`relative border-l border-gray-100 dark:border-gray-700/50 ${onSlotClick ? 'cursor-copy' : ''}`}
               >
                 {Array.from({ length: HOURS }, (_, i) => (
                   <div key={i} className="absolute w-full border-b border-gray-100 dark:border-gray-700/50" style={{ top: `${i * hourPx}px`, height: `${hourPx}px` }} />
                 ))}
+
+                {/* The slot a click would book */}
+                {hover?.providerId === p.id && (
+                  <SlotPreview minutes={hover.minutes} hourStart={HOUR_START} totalMinutes={totalMinutes} />
+                )}
 
                 {/* Absence: striped, and not bookable */}
                 {away.map((b) => {

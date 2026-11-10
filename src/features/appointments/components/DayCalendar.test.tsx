@@ -100,6 +100,20 @@ describe('DayCalendar', () => {
     expect(onSlotClick).toHaveBeenCalledWith('2026-10-29T10:30', 'p2')
   })
 
+  // User request 2026-11-10: show which slot a click would book, in that doctor's column
+  it("highlights the slot under the mouse in that doctor's column only", () => {
+    const { container } = render(<DayCalendar {...baseProps} onSlotClick={vi.fn()} />)
+    const col = pin(column(container, 'p2'))
+
+    fireEvent.mouseMove(col, { clientY: 4 * H + 40 })
+
+    const preview = screen.getByTestId('slot-preview')
+    expect(preview).toHaveTextContent('10:30')
+    expect(col).toContainElement(preview)
+    fireEvent.mouseLeave(col)
+    expect(screen.queryByTestId('slot-preview')).not.toBeInTheDocument()
+  })
+
   it('draws the current-time line across the day when it is today', () => {
     vi.setSystemTime(new Date(2026, 9, 29, 10, 30))
     const { container } = render(<DayCalendar {...baseProps} />)

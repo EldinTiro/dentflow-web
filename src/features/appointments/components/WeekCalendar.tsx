@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import type { AppointmentResponse, AppointmentStatus } from '../services/appointmentService';
 import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
 import { useTheme } from '@/shared/context/ThemeContext';
-import { SLOT_MINUTES, useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
+import { useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
+import { SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
 import { useCalendarDrag } from './useCalendarDrag';
 import { AppointmentChipBody, CHIP_LAYOUT } from './AppointmentChipBody';
 
@@ -44,6 +45,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
   // Full names where there is room; phones keep the short ones
   const dayLabelsLong = t('calendar.weekdaysLong', { returnObjects: true }) as string[];
   const [tooltip, setTooltip] = useState<TooltipState>(null);
+  const [hover, setHover] = useState<{ day: string; minutes: number } | null>(null);
   const { theme } = useTheme();
   const statusLabels = useAppointmentStatusLabels();
   const isDark = theme === 'dark';
@@ -155,16 +157,16 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                   data-day={dateStr}
                   data-drop-day={dateStr}
                   onClick={onSlotClick ? (e) => {
-                    const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
-                    const slot = Math.floor((y / hourPx) * (60 / SLOT_MINUTES));
-                    const minutes = Math.min(Math.max(HOUR_START * 60 + slot * SLOT_MINUTES, HOUR_START * 60), HOUR_END * 60 - SLOT_MINUTES);
-                    const hh = String(Math.floor(minutes / 60)).padStart(2, '0');
-                    const mm = String(minutes % 60).padStart(2, '0');
-                    onSlotClick(`${dateStr}T${hh}:${mm}`);
+                    onSlotClick(`${dateStr}T${hhmm(slotUnderPointer(e.clientY, e.currentTarget, hourPx, HOUR_START, HOUR_END))}`);
                   } : undefined}
+                  onMouseMove={onSlotClick ? (e) => {
+                    if (drag.dragged || isOverSomething(e.target)) { setHover(null); return; }
+                    setHover({ day: dateStr, minutes: slotUnderPointer(e.clientY, e.currentTarget, hourPx, HOUR_START, HOUR_END) });
+                  } : undefined}
+                  onMouseLeave={() => setHover(null)}
                   className={`relative flex-1 border-l border-gray-100 dark:border-gray-700/50 ${
                     isToday ? 'bg-primary-50/20 dark:bg-primary-900/10' : ''
-                  } ${onSlotClick ? 'cursor-copy hover:bg-gray-50/60 dark:hover:bg-gray-800/40' : ''}`}
+                  } ${onSlotClick ? 'cursor-copy' : ''}`}
                 >
                   {/* Hour lines */}
                   {Array.from({ length: HOURS }, (_, i) => (
@@ -185,6 +187,11 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                     >
                       <span className="absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-red-500 dark:bg-red-400" />
                     </div>
+                  )}
+
+                  {/* The slot a click would book */}
+                  {hover?.day === dateStr && (
+                    <SlotPreview minutes={hover.minutes} hourStart={HOUR_START} totalMinutes={totalMinutes} />
                   )}
 
                   {/* Where a dragged visit would land */}

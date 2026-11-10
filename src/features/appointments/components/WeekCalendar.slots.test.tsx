@@ -50,6 +50,30 @@ describe('WeekCalendar click-to-book', () => {
     expect(onSlotClick).toHaveBeenCalledWith('2026-10-22T11:30')
   })
 
+  // User request 2026-11-10: show which slot a click would book, before clicking
+  it('highlights the slot under the mouse with its start time, and clears it on leaving', () => {
+    const { container } = render(<WeekCalendar {...props} appointments={[]} onSlotClick={vi.fn()} />)
+    const col = dayColumn(container, '2026-10-22')
+
+    fireEvent.mouseMove(col, { clientY: 4 * H + (34 / 60) * H })
+
+    expect(screen.getByTestId('slot-preview')).toHaveTextContent('10:30')
+    fireEvent.mouseLeave(col)
+    expect(screen.queryByTestId('slot-preview')).not.toBeInTheDocument()
+  })
+
+  it('does not highlight a slot over an existing visit, or for someone who cannot book', () => {
+    const visit = appointmentFixture({ startAt: '2026-10-22T08:00:00Z', endAt: '2026-10-22T08:30:00Z' })
+    const { container, rerender } = render(<WeekCalendar {...props} appointments={[visit]} onSlotClick={vi.fn()} />)
+
+    fireEvent.mouseMove(screen.getByRole('button', { name: /Lejla Hasanović/ }), { clientY: 4 * H + (34 / 60) * H })
+    expect(screen.queryByTestId('slot-preview')).not.toBeInTheDocument()
+
+    rerender(<WeekCalendar {...props} appointments={[]} />)
+    fireEvent.mouseMove(dayColumn(container, '2026-10-22'), { clientY: 4 * H + (34 / 60) * H })
+    expect(screen.queryByTestId('slot-preview')).not.toBeInTheDocument()
+  })
+
   it('opens an existing appointment instead of booking over it', () => {
     const onSlotClick = vi.fn()
     const onAppointmentClick = vi.fn()
