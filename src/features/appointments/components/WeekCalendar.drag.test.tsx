@@ -68,6 +68,20 @@ describe('WeekCalendar drag and drop', () => {
     expect(onSlotClick).toHaveBeenCalledTimes(1)
   })
 
+  // User request 2026-11-10: change a visit's length by dragging its bottom edge
+  it('sets a new end when the bottom edge is pulled', () => {
+    const onResize = vi.fn()
+    const { container } = render(<WeekCalendar {...props} onMove={vi.fn()} onResize={onResize} />)
+    pin(container.querySelector<HTMLElement>('[data-day="2026-10-22"]')!)
+    const handle = container.querySelector<HTMLElement>('[data-testid="resize-handle"]')!
+
+    fireEvent.pointerDown(handle, { clientX: 10, clientY: 4 * H, button: 0 })
+    fireEvent.pointerMove(window, { clientX: 10, clientY: 5.25 * H })
+    fireEvent.pointerUp(window, { clientX: 10, clientY: 5.25 * H })
+
+    expect(onResize).toHaveBeenCalledWith(visit, '2026-10-22T11:15')
+  })
+
   // The week header was English whatever the language
   it('names the days in the selected language', async () => {
     await i18n.changeLanguage('bs')

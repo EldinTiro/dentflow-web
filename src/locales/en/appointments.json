@@ -86,7 +86,11 @@
     ],
     "prevWeek": "Previous week",
     "nextWeek": "Next week",
-    "openDay": "Open {{day}}"
+    "openDay": "Open {{day}}",
+    "resizeTitle": "Change the length?",
+    "resizeConfirm": "Save",
+    "resized": "Appointment length changed",
+    "resizeFailed": "Could not change the length"
   },
   "types": {
     "title": "Types of Services",

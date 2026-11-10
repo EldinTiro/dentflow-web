@@ -39,3 +39,20 @@ export function SlotPreview({ minutes, hourStart, totalMinutes }: { minutes: num
     </div>
   );
 }
+
+/**
+ * The strip at the bottom of a visit that changes its length (user request 2026-11-10).
+ * A short bar shows on hover so it can be found.
+ */
+export function ResizeHandle({ onPointerDown }: { onPointerDown: (e: React.PointerEvent<HTMLElement>) => void }) {
+  return (
+    <span
+      data-testid="resize-handle"
+      aria-hidden
+      onPointerDown={onPointerDown}
+      className="absolute inset-x-0 bottom-0 flex h-2 cursor-ns-resize items-end justify-center pb-px"
+    >
+      <span className="h-0.5 w-6 rounded-full bg-gray-500/60 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-gray-300/60" />
+    </span>
+  );
+}

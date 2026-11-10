@@ -349,6 +349,43 @@ export function AppointmentsPage() {
       onConfirm: () => moveMutation.mutate({ appt, startAt, providerId }),
     });
   };
+  /** A visit's bottom edge was pulled: the start stays, the end changes. */
+  const resizeMutation = useMutation({
+    mutationFn: ({ appt, endAt }: { appt: AppointmentResponse; endAt: string }) =>
+      appointmentService.reschedule(appt.id, {
+        newStartAt: new Date(appt.startAt).toISOString(),
+        newEndAt: new Date(endAt).toISOString(),
+      }),
+    onSuccess: () => { invalidateAppointmentQueries(queryClient); toast.success(t('calendar.resized')); },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, t('calendar.resizeFailed'))),
+  });
+  /** Resized on the calendar: show the new times, save on yes. */
+  const askResize = (appt: AppointmentResponse, endAt: string) => {
+    const start = new Date(appt.startAt);
+    const [date, endTime] = endAt.split('T');
+    const startTime = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
+    const minutes = Math.round((new Date(endAt).getTime() - start.getTime()) / 60_000);
+    confirmMove.ask({
+      title: t('calendar.resizeTitle'),
+      description: (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900/40">
+          <div className="font-semibold text-gray-900 dark:text-gray-100">{appt.patientName ?? patientNames[appt.patientId] ?? ''}</div>
+          <div className="mt-1.5 flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <CalendarClock size={15} className="shrink-0 text-primary-600 dark:text-primary-400" aria-hidden />
+            <span>{dayLabel(date)} · <span className="font-semibold">{startTime} – {endTime}</span> ({minutes} min)</span>
+          </div>
+          <div className="mt-1 flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <UserRound size={15} className="shrink-0 text-primary-600 dark:text-primary-400" aria-hidden />
+            <span>{providerNames[appt.providerId] ?? ''}</span>
+          </div>
+        </div>
+      ),
+      confirmLabel: t('calendar.resizeConfirm'),
+      cancelLabel: t('calendar.moveCancel'),
+      tone: 'primary',
+      onConfirm: () => resizeMutation.mutate({ appt, endAt }),
+    });
+  };
   const quickStatusMutation = useMutation({
     mutationFn: ({ id, next }: { id: string; next: AppointmentStatus }) =>
       appointmentService.updateStatus(id, next),
@@ -730,6 +767,7 @@ export function AppointmentsPage() {
                 onAppointmentClick={setSelected}
                 onSlotClick={canManage ? (startAt, providerId) => { setBookingInitial({ startAt, providerId }); setShowBook(true); } : undefined}
                 onMove={canManage ? askMove : undefined}
+                onResize={canManage ? askResize : undefined}
                 openHours={openHours}
                 onPrev={() => shiftDay(-1)}
                 onNext={() => shiftDay(1)}
@@ -745,6 +783,7 @@ export function AppointmentsPage() {
               onAppointmentClick={setSelected}
               onSlotClick={canManage ? (startAt) => { setBookingInitial({ startAt }); setShowBook(true); } : undefined}
               onMove={canManage ? askMove : undefined}
+                onResize={canManage ? askResize : undefined}
               openHours={openHours}
               onPrev={prevWeek}
               onNext={nextWeek}
