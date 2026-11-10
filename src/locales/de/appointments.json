@@ -140,10 +140,8 @@
     "firstNamePlaceholder": "z. B. Amra",
     "lastNamePlaceholder": "z. B. Begić",
     "phone": "Telefon",
-    "chartOpenedOnBooking": "Die Patientenakte wird bei der Buchung angelegt.",
     "patientSearchPlaceholder": "Name, Telefon oder Aktennummer…",
     "searching": "Suche…",
-    "createChartFor": "Neue Akte für „{{query}}“ anlegen",
     "provider": "Behandler",
     "loading": "Wird geladen…",
     "selectProvider": "Behandler wählen…",
@@ -169,7 +167,9 @@
     "startRequired": "Startzeit ist erforderlich",
     "patientCreated": "Patient {{name}} angelegt",
     "patientCreateFailed": "Patient konnte nicht angelegt werden",
-    "bookFailed": "Termin konnte nicht gebucht werden. Bitte erneut versuchen."
+    "bookFailed": "Termin konnte nicht gebucht werden. Bitte erneut versuchen.",
+    "noCardUntilVisit": "Noch keine Kartennummer: Die Karte wird beim Eintreffen des Patienten angelegt.",
+    "addAsNewPatient": "„{{query}}“ als neuen Patienten hinzufügen"
   },
   "detail": {
     "title": "Termindetails",
