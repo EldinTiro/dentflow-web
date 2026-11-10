@@ -86,7 +86,8 @@
       "Sonntag"
     ],
     "prevWeek": "Vorherige Woche",
-    "nextWeek": "Nächste Woche"
+    "nextWeek": "Nächste Woche",
+    "openDay": "{{day}} öffnen"
   },
   "types": {
     "title": "Leistungsarten",

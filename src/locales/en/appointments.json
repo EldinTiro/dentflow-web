@@ -86,7 +86,8 @@
       "Sunday"
     ],
     "prevWeek": "Previous week",
-    "nextWeek": "Next week"
+    "nextWeek": "Next week",
+    "openDay": "Open {{day}}"
   },
   "types": {
     "title": "Types of Services",

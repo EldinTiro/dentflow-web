@@ -73,32 +73,35 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
 
   const nowOffset = now.getHours() * 60 + now.getMinutes() - HOUR_START * 60;
   const nowTopPct = isToday && nowOffset >= 0 && nowOffset < totalMinutes ? pct(nowOffset) : null;
-  const columnsTemplate = `56px repeat(${providers.length}, minmax(11rem, 1fr))`;
+  // Time labels, one column per doctor, and the next-day arrow: the same in header and grid
+  const columnsTemplate = `56px repeat(${providers.length}, minmax(11rem, 1fr)) 48px`;
 
   return (
     // One scroll box for both ways, so the names stay over their columns (U-02)
     <div ref={scrollRef} className="h-full overflow-auto bg-white dark:bg-gray-900">
-      <div style={{ minWidth: `calc(56px + ${providers.length} * 11rem)` }}>
+      <div style={{ minWidth: `calc(104px + ${providers.length} * 11rem)` }}>
       {/* Doctor header */}
-      <div className="sticky top-0 z-30 relative grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: columnsTemplate }}>
-        <div className="flex items-center justify-center border-r border-gray-200 dark:border-gray-700/60">
+      <div className="sticky top-0 z-30 grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: columnsTemplate }}>
+        <div className="flex items-center justify-center">
           {onPrev && (
-            <button type="button" onClick={onPrev} aria-label={t('calendar.prevDay')} className="flex h-7 w-7 items-center justify-center rounded-md border border-control text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
-              <ChevronLeft size={16} aria-hidden />
+            <button type="button" onClick={onPrev} aria-label={t('calendar.prevDay')} className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700">
+              <ChevronLeft size={18} strokeWidth={2.5} aria-hidden />
             </button>
           )}
         </div>
-        {onNext && (
-          <button type="button" onClick={onNext} aria-label={t('calendar.nextDay')} className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-md border border-control text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 bg-white dark:bg-gray-900">
-            <ChevronRight size={16} aria-hidden />
-          </button>
-        )}
         {providers.map((p) => (
-          <div key={p.id} className="flex items-center justify-center gap-2 px-2 py-2.5 border-r border-gray-200 dark:border-gray-700/60 last:border-r-0 min-w-0">
+          <div key={p.id} className="flex items-center justify-center gap-2 px-2 py-2.5 border-l border-gray-200 dark:border-gray-700/60 min-w-0">
             <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: p.colorHex ?? '#6366F1' }} />
             <span className="truncate text-sm font-medium text-gray-800 dark:text-gray-100">{p.fullName}</span>
           </div>
         ))}
+        <div className="flex items-center justify-center border-l border-gray-200 dark:border-gray-700/60">
+          {onNext && (
+            <button type="button" onClick={onNext} aria-label={t('calendar.nextDay')} className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700">
+              <ChevronRight size={18} strokeWidth={2.5} aria-hidden />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Time grid */}
@@ -227,6 +230,8 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
               </div>
             );
           })}
+          {/* Under the next-day arrow: no lines, keeps the columns under their doctors */}
+          <div className="border-l border-gray-200 dark:border-gray-700/60" />
         </div>
       </div>
       </div>

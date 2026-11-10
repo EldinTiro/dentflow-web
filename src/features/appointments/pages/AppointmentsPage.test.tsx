@@ -61,6 +61,20 @@ describe('AppointmentsPage view toggle', () => {
     expect(screen.getByText('14/12/2026 — 20/12/2026')).toBeInTheDocument()
   })
 
+  // User request 2026-11-10: a click on a day in the week opens the day view on it
+  it('opens the day view on a day clicked in the week', async () => {
+    renderWithProviders(
+      <Routes><Route path="/appointments" element={<><AppointmentsPage /><Location /></>} /></Routes>,
+      { route: '/appointments?from=2026-12-16' },
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Open Thursday 17' }))
+
+    expect(screen.getByTestId('location')).toHaveTextContent('view=day')
+    expect(screen.getByTestId('location')).toHaveTextContent('day=2026-12-17')
+    expect(screen.getByRole('button', { name: 'Day' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
   it('steps weeks with the arrow keys', async () => {
     renderWithProviders(
       <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,

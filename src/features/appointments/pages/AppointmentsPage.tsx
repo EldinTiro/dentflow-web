@@ -739,6 +739,12 @@ export function AppointmentsPage() {
               openHours={openHours}
               onPrev={prevWeek}
               onNext={nextWeek}
+              onDayClick={(date) => setSearchParams((prev) => {
+                const n = new URLSearchParams(prev);
+                n.set('view', 'day');
+                n.set('day', date);
+                return n;
+              }, { replace: true })}
             />
             )}
           </div>

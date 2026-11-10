@@ -16,4 +16,15 @@ describe('WeekCalendar navigation', () => {
     expect(onPrev).toHaveBeenCalledTimes(1)
     expect(onNext).toHaveBeenCalledTimes(1)
   })
+
+  // User request 2026-11-10: a click on a day in the week opens that day
+  it('opens a day from its header', () => {
+    const onDayClick = vi.fn()
+    render(<WeekCalendar weekStart={new Date(2026, 10, 9)} appointments={[]} providerColors={{}} providerNames={{}}
+      patientNames={{}} appointmentTypeNames={{}} onDayClick={onDayClick} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open Wednesday 11' }))
+
+    expect(onDayClick).toHaveBeenCalledWith('2026-11-11')
+  })
 })

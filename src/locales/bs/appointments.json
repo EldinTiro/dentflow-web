@@ -86,7 +86,8 @@
       "Nedjelja"
     ],
     "prevWeek": "Prethodna sedmica",
-    "nextWeek": "Sljedeća sedmica"
+    "nextWeek": "Sljedeća sedmica",
+    "openDay": "Otvori {{day}}"
   },
   "types": {
     "title": "Vrste usluga",
