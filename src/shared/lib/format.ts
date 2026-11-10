@@ -68,6 +68,30 @@ export function formatMonthYear(value: string | Date, lang: string = i18n.langua
   return d.toLocaleDateString(lang.startsWith('de') ? 'de-DE' : 'en-GB', { month: 'long', year: 'numeric' })
 }
 
+/**
+ * A week as one range, the month and year written once where they are shared:
+ * "9 – 15 Nov 2026", "30 Nov – 6 Dec 2026", "28 Dec 2026 – 3 Jan 2027" (user request 2026-11-10).
+ */
+export function formatWeekRange(start: string | Date, end: string | Date, lang: string = i18n.language): string {
+  const a = toDate(start)
+  const b = toDate(end)
+  const sameYear = a.getFullYear() === b.getFullYear()
+  const sameMonth = sameYear && a.getMonth() === b.getMonth()
+  if (lang.startsWith('bs')) {
+    const day = (d: Date) => `${d.getDate()}.`
+    const dm = (d: Date) => `${d.getDate()}. ${BS_MONTHS_SHORT[d.getMonth()]}`
+    const dmy = (d: Date) => `${dm(d)} ${d.getFullYear()}.`
+    if (sameMonth) return `${day(a)} – ${dmy(b)}`
+    return sameYear ? `${dm(a)} – ${dmy(b)}` : `${dmy(a)} – ${dmy(b)}`
+  }
+  const locale = lang.startsWith('de') ? 'de-DE' : 'en-GB'
+  const dot = lang.startsWith('de') ? '.' : ''
+  const dm = (d: Date) => d.toLocaleDateString(locale, { day: 'numeric', month: 'short' })
+  const dmy = (d: Date) => d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })
+  if (sameMonth) return `${a.getDate()}${dot} – ${dmy(b)}`
+  return sameYear ? `${dm(a)} – ${dmy(b)}` : `${dmy(a)} – ${dmy(b)}`
+}
+
 /** "08:00:00" → "08:00". */
 export function formatTime(value: string): string {
   return value.slice(0, 5)

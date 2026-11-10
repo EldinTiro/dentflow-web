@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { AppointmentResponse, AppointmentStatus } from '../services/appointmentService';
 import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
@@ -29,8 +28,6 @@ interface Props {
   /** Local dates ("YYYY-MM-DD") left out of the week: days the clinic is closed. */
   hiddenDates?: string[];
   /** Step to the previous / next week (arrows at both ends of the day header). */
-  onPrev?: () => void;
-  onNext?: () => void;
   /** A click on a day's header (local "YYYY-MM-DD"): open that day. */
   onDayClick?: (date: string) => void;
   /** Clinic opening hours (whole hours) the grid shows; defaults to 06:00–21:00. */
@@ -46,10 +43,10 @@ function addDays(date: Date, n: number) {
 }
 
 /** Time labels, the days shown, and the next-week arrow: the same in header and grid. */
-const weekColumns = (days: number) => `56px repeat(${days}, minmax(0, 1fr)) 48px`;
+const weekColumns = (days: number) => `56px repeat(${days}, minmax(0, 1fr))`;
 const WEEK_HEADER_PX = 58;
 
-export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, onResize, openHours, onPrev, onNext, onDayClick, hiddenDates }: Props) {
+export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, onResize, openHours, onDayClick, hiddenDates }: Props) {
   const { t } = useTranslation('appointments');
   const dayLabels = t('calendar.weekdays', { returnObjects: true }) as string[];
   // Full names where there is room; phones keep the short ones
@@ -104,16 +101,10 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
     // One scroll box with a sticky header, and one column template for header and grid:
     // the grid's own scrollbar used to make its columns narrower than the header's.
     <div ref={scrollRef} className="h-full overflow-auto bg-white dark:bg-gray-900">
-      <div style={{ minWidth: `calc(104px + ${shown.length} * 7.25rem)` }}>
+      <div style={{ minWidth: `calc(56px + ${shown.length} * 7.25rem)` }}>
       {/* Day header */}
       <div className="sticky top-0 z-30 grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: columns, height: WEEK_HEADER_PX }}>
-        <div className="flex items-center justify-center">
-          {onPrev && (
-            <button type="button" onClick={onPrev} aria-label={t('calendar.prevWeek')} className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700">
-              <ChevronLeft size={18} strokeWidth={2.5} aria-hidden />
-            </button>
-          )}
-        </div>
+        <div />
         {shown.map(({ d, i }) => {
           const dateStr = isoDate(d);
           const isToday = dateStr === todayStr;
@@ -147,13 +138,6 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
             <div key={i} className={cellClass}>{label}</div>
           );
         })}
-        <div className="flex items-center justify-center border-l border-gray-200 dark:border-gray-700/60">
-          {onNext && (
-            <button type="button" onClick={onNext} aria-label={t('calendar.nextWeek')} className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700">
-              <ChevronRight size={18} strokeWidth={2.5} aria-hidden />
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Time grid */}
@@ -312,8 +296,6 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
               );
             })}
           </div>
-          {/* Under the next-week arrow: no lines, keeps the columns under their days */}
-          <div className="border-l border-gray-200 dark:border-gray-700/60" />
         </div>
       </div>
       </div>

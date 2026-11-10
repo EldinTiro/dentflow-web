@@ -124,6 +124,6 @@ describe('AppointmentsPage month view', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Week' }))
 
-    expect(screen.getByText('30/11/2026 — 06/12/2026')).toBeInTheDocument()
+    expect(screen.getByText('30 Nov – 6 Dec 2026')).toBeInTheDocument()
   })
 })

@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { AppointmentResponse } from '../services/appointmentService';
 import type { StaffBlockedTimeResponse } from '@/features/staff/services/staffService';
@@ -32,8 +31,6 @@ interface Props {
   /** An edge let go: the new local start and end ("YYYY-MM-DDTHH:mm"). */
   onResize?: (appt: AppointmentResponse, newStartAt: string, newEndAt: string) => void;
   /** Step to the previous / next day (arrows at both ends of the doctor header). */
-  onPrev?: () => void;
-  onNext?: () => void;
   /** Clinic opening hours (whole hours) the grid shows; defaults to 06:00–21:00. */
   openHours?: { start: number; end: number } | null;
 }
@@ -44,7 +41,7 @@ const DOCTOR_HEADER_PX = 45;
 const fmtTime = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
 /** One day, one column per doctor: how the front desk plans the day. */
-export function DayCalendar({ date, providers, appointments, absences, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, onResize, openHours, onPrev, onNext }: Props) {
+export function DayCalendar({ date, providers, appointments, absences, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, onResize, openHours }: Props) {
   const { t } = useTranslation('appointments');
   const { t: ts } = useTranslation('staff');
   const { theme } = useTheme();
@@ -75,35 +72,22 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
 
   const nowOffset = now.getHours() * 60 + now.getMinutes() - HOUR_START * 60;
   const nowTopPct = isToday && nowOffset >= 0 && nowOffset < totalMinutes ? pct(nowOffset) : null;
-  // Time labels, one column per doctor, and the next-day arrow: the same in header and grid
-  const columnsTemplate = `56px repeat(${providers.length}, minmax(11rem, 1fr)) 48px`;
+  // Time labels and one column per doctor: the same in header and grid
+  const columnsTemplate = `56px repeat(${providers.length}, minmax(11rem, 1fr))`;
 
   return (
     // One scroll box for both ways, so the names stay over their columns (U-02)
     <div ref={scrollRef} className="h-full overflow-auto bg-white dark:bg-gray-900">
-      <div style={{ minWidth: `calc(104px + ${providers.length} * 11rem)` }}>
+      <div style={{ minWidth: `calc(56px + ${providers.length} * 11rem)` }}>
       {/* Doctor header */}
       <div className="sticky top-0 z-30 grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: columnsTemplate }}>
-        <div className="flex items-center justify-center">
-          {onPrev && (
-            <button type="button" onClick={onPrev} aria-label={t('calendar.prevDay')} className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700">
-              <ChevronLeft size={18} strokeWidth={2.5} aria-hidden />
-            </button>
-          )}
-        </div>
+        <div />
         {providers.map((p) => (
           <div key={p.id} className="flex items-center justify-center gap-2 px-2 py-2.5 border-l border-gray-200 dark:border-gray-700/60 min-w-0">
             <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: p.colorHex ?? '#6366F1' }} />
             <span className="truncate text-sm font-medium text-gray-800 dark:text-gray-100">{p.fullName}</span>
           </div>
         ))}
-        <div className="flex items-center justify-center border-l border-gray-200 dark:border-gray-700/60">
-          {onNext && (
-            <button type="button" onClick={onNext} aria-label={t('calendar.nextDay')} className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700">
-              <ChevronRight size={18} strokeWidth={2.5} aria-hidden />
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Time grid */}
@@ -253,8 +237,6 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
               </div>
             );
           })}
-          {/* Under the next-day arrow: no lines, keeps the columns under their doctors */}
-          <div className="border-l border-gray-200 dark:border-gray-700/60" />
         </div>
       </div>
       </div>

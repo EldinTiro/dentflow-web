@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { AppointmentResponse } from '../services/appointmentService';
 import { formatDayMonth } from '@/shared/lib/format';
 import { isoDate } from './calendarGrid';
@@ -17,26 +16,22 @@ interface Props {
   /** Weekdays (0 = Monday) left out: the clinic is closed then and nothing is booked. */
   hiddenWeekdays?: number[];
   onDayClick?: (date: string) => void;
-  onPrev?: () => void;
-  onNext?: () => void;
 }
 
 /** Doctors shown by name in a day; the rest are summed up as "+N". */
 const MAX_DOCTORS = 3;
-
-const ARROW = 'flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700';
 
 /**
  * A month at a glance (user request 2026-11-10): per day, how many visits and with which
  * doctors. A busy clinic has 20–30 a day, so a day shows counts, not the visits themselves;
  * a click opens the day.
  */
-export function MonthCalendar({ year, month, appointments, providerColors, providerNames, hiddenWeekdays = [], onDayClick, onPrev, onNext }: Props) {
+export function MonthCalendar({ year, month, appointments, providerColors, providerNames, hiddenWeekdays = [], onDayClick }: Props) {
   const { t, i18n } = useTranslation('appointments');
   const weekdaysLong = t('calendar.weekdaysLong', { returnObjects: true }) as string[];
   const weekdays = t('calendar.weekdays', { returnObjects: true }) as string[];
   const shownWeekdays = [0, 1, 2, 3, 4, 5, 6].filter((i) => !hiddenWeekdays.includes(i));
-  const columns = `48px repeat(${shownWeekdays.length}, minmax(0, 1fr)) 48px`;
+  const columns = `repeat(${shownWeekdays.length}, minmax(0, 1fr))`;
   const weeks = monthWeeks(year, month);
   const today = isoDate(new Date());
 
@@ -55,31 +50,16 @@ export function MonthCalendar({ year, month, appointments, providerColors, provi
   return (
     <div className="flex h-full flex-col overflow-auto bg-white dark:bg-gray-900">
       <div className="sticky top-0 z-10 grid border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900" style={{ gridTemplateColumns: columns, height: 48 }}>
-        <div className="flex items-center justify-center">
-          {onPrev && (
-            <button type="button" onClick={onPrev} aria-label={t('calendar.prevMonth')} className={ARROW}>
-              <ChevronLeft size={18} strokeWidth={2.5} aria-hidden />
-            </button>
-          )}
-        </div>
         {shownWeekdays.map((i) => (
-          <div key={i} className="flex items-center justify-center border-l border-gray-200 text-xs font-medium text-gray-500 dark:border-gray-700/60 dark:text-gray-400">
+          <div key={i} className="flex items-center justify-center border-l first:border-l-0 border-gray-200 text-xs font-medium text-gray-500 dark:border-gray-700/60 dark:text-gray-400">
             <span className="sm:hidden">{weekdays[i]}</span><span className="hidden sm:inline">{weekdaysLong[i]}</span>
           </div>
         ))}
-        <div className="flex items-center justify-center border-l border-gray-200 dark:border-gray-700/60">
-          {onNext && (
-            <button type="button" onClick={onNext} aria-label={t('calendar.nextMonth')} className={ARROW}>
-              <ChevronRight size={18} strokeWidth={2.5} aria-hidden />
-            </button>
-          )}
-        </div>
       </div>
 
       <div className="grid flex-1" style={{ gridTemplateRows: `repeat(${weeks.length}, minmax(6.5rem, 1fr))` }}>
         {weeks.map((week) => (
           <div key={isoDate(week[0])} className="grid border-b border-gray-200 dark:border-gray-700/60" style={{ gridTemplateColumns: columns }}>
-            <div />
             {shownWeekdays.map((i) => {
               const d = week[i];
               const iso = isoDate(d);
@@ -93,7 +73,7 @@ export function MonthCalendar({ year, month, appointments, providerColors, provi
                   type="button"
                   onClick={() => onDayClick?.(iso)}
                   aria-label={`${formatDayMonth(d, { month: 'long', year: true }, i18n.language)}, ${t('calendar.visitCount', { count: total })}`}
-                  className={`flex min-w-0 flex-col items-stretch gap-1 border-l border-gray-200 p-1.5 text-left transition-colors hover:bg-gray-50 dark:border-gray-700/60 dark:hover:bg-gray-800 ${
+                  className={`flex min-w-0 flex-col items-stretch gap-1 border-l first:border-l-0 border-gray-200 p-1.5 text-left transition-colors hover:bg-gray-50 dark:border-gray-700/60 dark:hover:bg-gray-800 ${
                     inMonth ? '' : 'bg-gray-50/70 dark:bg-gray-800/40'
                   }`}
                 >
@@ -124,7 +104,6 @@ export function MonthCalendar({ year, month, appointments, providerColors, provi
                 </button>
               );
             })}
-            <div className="border-l border-gray-200 dark:border-gray-700/60" />
           </div>
         ))}
       </div>

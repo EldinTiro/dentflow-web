@@ -4,17 +4,13 @@ import { WeekCalendar } from './WeekCalendar'
 
 // User request 2026-11-10 (variant B): step weeks from the calendar itself, not a toolbar row
 describe('WeekCalendar navigation', () => {
-  it('has previous and next week arrows in its day header', () => {
-    const onPrev = vi.fn()
-    const onNext = vi.fn()
+  // User request 2026-11-10: the arrows moved next to the period above, for more calendar room
+  it('has no arrows of its own', () => {
     render(<WeekCalendar weekStart={new Date(2026, 10, 9)} appointments={[]} providerColors={{}} providerNames={{}}
-      patientNames={{}} appointmentTypeNames={{}} onPrev={onPrev} onNext={onNext} />)
+      patientNames={{}} appointmentTypeNames={{}} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Previous week' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Next week' }))
-
-    expect(onPrev).toHaveBeenCalledTimes(1)
-    expect(onNext).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole('button', { name: 'Previous week' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Next week' })).toBeNull()
   })
 
   // User request 2026-11-10: no Saturday and Sunday columns when the clinic is closed then

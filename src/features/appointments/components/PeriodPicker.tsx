@@ -1,13 +1,26 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown } from 'lucide-react';
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MiniMonth } from './MiniMonth';
 
+const ARROW = 'flex h-8 w-8 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700';
+
+interface Props {
+  label: string;
+  selected: string;
+  onPick: (date: string) => void;
+  onPrev: () => void;
+  onNext: () => void;
+  prevLabel: string;
+  nextLabel: string;
+}
+
 /**
- * The period under the page title, as a button that opens a small month to jump to a date
- * (user request 2026-11-10). Closes on a pick, on Escape and on a click elsewhere.
+ * Previous / next and the period shown, as a button that opens a small month to jump to a
+ * date (user requests 2026-11-10: the arrows moved here from the calendar, for more room).
+ * The month closes on a pick, on Escape and on a click elsewhere.
  */
-export function PeriodPicker({ label, selected, onPick }: { label: string; selected: string; onPick: (date: string) => void }) {
+export function PeriodPicker({ label, selected, onPick, onPrev, onNext, prevLabel, nextLabel }: Props) {
   const { t } = useTranslation('appointments');
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -23,17 +36,25 @@ export function PeriodPicker({ label, selected, onPick }: { label: string; selec
   }, [open]);
 
   return (
-    <div ref={box} className="relative mt-0.5 inline-block">
+    <div className="flex items-center gap-1.5">
+      <button type="button" onClick={onPrev} aria-label={prevLabel} className={ARROW}>
+        <ChevronLeft size={16} strokeWidth={2.5} aria-hidden />
+      </button>
+      <button type="button" onClick={onNext} aria-label={nextLabel} className={ARROW}>
+        <ChevronRight size={16} strokeWidth={2.5} aria-hidden />
+      </button>
+    <div ref={box} className="relative inline-block">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={open ? id : undefined}
-        className="-ml-1.5 inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-0.5 text-sm font-medium text-gray-600 tabular-nums hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+        className="inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-lg border border-gray-300 bg-white px-2.5 text-sm font-medium text-gray-800 tabular-nums hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
       >
+        <CalendarDays size={15} className="text-gray-500 dark:text-gray-400" aria-hidden />
         {label}
-        <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
+        <ChevronDown size={14} className={`text-gray-500 transition-transform dark:text-gray-400 ${open ? 'rotate-180' : ''}`} aria-hidden />
       </button>
       {open && (
         <div
@@ -45,6 +66,7 @@ export function PeriodPicker({ label, selected, onPick }: { label: string; selec
           <MiniMonth selected={selected} onPick={(d) => { setOpen(false); onPick(d); }} />
         </div>
       )}
+    </div>
     </div>
   );
 }

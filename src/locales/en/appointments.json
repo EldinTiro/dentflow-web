@@ -96,7 +96,9 @@
     "nextMonth": "Next month",
     "month": "Month",
     "visitCount_one": "{{count}} visit",
-    "visitCount_other": "{{count}} visits"
+    "visitCount_other": "{{count}} visits",
+    "allDoctors": "All doctors",
+    "doctorsFilter": "Doctors"
   },
   "types": {
     "title": "Types of Services",
