@@ -127,7 +127,10 @@
     "close": "Zatvori",
     "hidePassword": "Sakrij lozinku",
     "showPassword": "Prikaži lozinku",
-    "userMenu": "Korisnički meni"
+    "userMenu": "Korisnički meni",
+    "collapseSidebar": "Uvuci meni",
+    "expandSidebar": "Proširi meni",
+    "mainMenu": "Glavni meni"
   },
   "errorBoundary": {
     "title": "Nešto je pošlo po zlu",

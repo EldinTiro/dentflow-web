@@ -127,7 +127,10 @@
     "close": "Schließen",
     "hidePassword": "Passwort ausblenden",
     "showPassword": "Passwort anzeigen",
-    "userMenu": "Kontomenü"
+    "userMenu": "Kontomenü",
+    "collapseSidebar": "Seitenleiste einklappen",
+    "expandSidebar": "Seitenleiste ausklappen",
+    "mainMenu": "Hauptmenü"
   },
   "errorBoundary": {
     "title": "Etwas ist schiefgelaufen",
