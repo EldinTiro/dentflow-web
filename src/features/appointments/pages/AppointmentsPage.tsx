@@ -16,6 +16,7 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { BookAppointmentDrawer } from '../components/BookAppointmentDrawer';
 import { RescheduleModal } from '../components/RescheduleModal';
 import { WeekCalendar } from '../components/WeekCalendar';
+import { onCalendar } from '../components/calendarGrid';
 import { DayCalendar, type DayProvider } from '../components/DayCalendar';
 import { useConfirm } from '@/shared/components/ConfirmDialog';
 import { getApiErrorMessage } from '@/shared/utils/apiError';
@@ -179,6 +180,25 @@ export function AppointmentsPage() {
     }, { replace: true });
   };
 
+  // User request 2026-11-10 (variant B): one switch for Day / Week / List
+  type View = CalendarView | 'list';
+  const view: View = tab === 'list' ? 'list' : calendarView;
+  const selectView = (v: View) => {
+    if (v === view) return;
+    if (v === 'list') { setTab('list'); return; }
+    if (tab === 'list') {
+      setSearchParams((prev) => {
+        const n = new URLSearchParams(prev);
+        n.delete('tab');
+        if (v === 'day') { n.set('view', 'day'); n.set('day', day); } else n.delete('view');
+        return n;
+      }, { replace: true });
+      refetchCal();
+      return;
+    }
+    setCalendarView(v);
+  };
+
   const effectiveDateFrom = showPast
     ? (dateFrom || undefined)
     : (dateFrom || toLocalIsoDate(new Date()));
@@ -275,13 +295,17 @@ export function AppointmentsPage() {
     return map;
   }, [apptTypes]);
 
+  // What the calendars draw: cancelled and no-show visits free their slot
+  const weekVisits = useMemo(() => onCalendar(calData?.items ?? []), [calData]);
+  const dayVisits = useMemo(() => onCalendar(dayData?.items ?? []), [dayData]);
+
   // Day view columns: every doctor who takes appointments, plus anyone else who has a visit that day
   const dayProviders = useMemo<DayProvider[]>(() => {
-    const busy = new Set((dayData?.items ?? []).map((a) => a.providerId));
+    const busy = new Set(dayVisits.map((a) => a.providerId));
     return (staffData?.items ?? [])
       .filter((s) => (s.isActive && s.isBookable) || busy.has(s.id))
       .map((s) => ({ id: s.id, fullName: s.fullName, colorHex: s.colorHex }));
-  }, [staffData, dayData]);
+  }, [staffData, dayVisits]);
 
   const queryClient = useQueryClient();
   const confirmMove = useConfirm();
@@ -352,11 +376,11 @@ export function AppointmentsPage() {
   }
 
   const legendProviders = useMemo(() => {
-    const ids = [...new Set((calData?.items ?? []).map((a) => a.providerId))];
+    const ids = [...new Set(weekVisits.map((a) => a.providerId))];
     return ids
       .map((id) => ({ id, name: providerNames[id] ?? id, color: providerColors[id] }))
       .filter((p) => p.name);
-  }, [calData, providerNames, providerColors]);
+  }, [weekVisits, providerNames, providerColors]);
 
   const rawAppointments = listData?.items ?? [];
   const appointments = useMemo(() => {
@@ -391,42 +415,79 @@ export function AppointmentsPage() {
   const nextWeek = () => {
     setWeekStart((w) => { const d = new Date(w); d.setDate(d.getDate() + 7); return d; });
   };
+  const stepPeriod = (n: 1 | -1) => {
+    if (calendarView === 'day') shiftDay(n);
+    else if (n === 1) nextWeek();
+    else prevWeek();
+  };
+  const goToday = () => (calendarView === 'day' ? setDay(toLocalIsoDate(new Date())) : setWeekStart(getMondayOfWeek(new Date())));
+
+  // ← / → step the calendar, unless someone is typing or a dialog is open
+  useEffect(() => {
+    if (tab !== 'calendar') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (document.querySelector('[role="dialog"]')) return;
+      e.preventDefault();
+      stepPeriod(e.key === 'ArrowRight' ? 1 : -1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Header */}
-      <div className="flex flex-col gap-3 px-4 pt-6 pb-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      {/* Header: the only row above the calendar (variant B) */}
+      <div className="flex flex-col gap-3 px-4 pt-6 pb-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t('title')}</h1>
-          {tab === 'list' && (
+          {tab === 'list' ? (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {searchTerm && appointments.length !== total
                 ? t('filteredOf', { filtered: appointments.length }) + ' '
                 : ''}{t('totalCount', { count: total })}
             </p>
+          ) : (
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mt-0.5 tabular-nums">
+              {calendarView === 'day' ? dayLabel(day) : `${formatDay(weekStart)} — ${formatDay(weekEnd)}`}
+            </p>
           )}
         </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Tab switcher */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          {/* Doctors on the week (the day view names its columns instead) */}
+          {tab === 'calendar' && calendarView === 'week' && legendProviders.map((p) => (
+            <span key={p.id} className="hidden lg:inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+              <span className="inline-block h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color ?? '#6366F1' }} />
+              {p.name}
+            </span>
+          ))}
           <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-0.5">
-            {(['list', 'calendar'] as Tab[]).map((tabKey) => (
+            {(['day', 'week', 'list'] as View[]).map((v) => (
               <button
-                key={tabKey}
-                aria-pressed={tab === tabKey}
-                onClick={() => {
-                  setTab(tabKey);
-                  if (tabKey === 'calendar') refetchCal();
-                }}
-                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  tab === tabKey
+                key={v}
+                aria-pressed={view === v}
+                onClick={() => selectView(v)}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  view === v
                     ? 'bg-white dark:bg-gray-700 shadow-sm ring-1 ring-primary-500 text-primary-700 dark:text-white'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }`}
               >
-                {tabKey === 'list' ? t('tab.list') : t('tab.calendar')}
+                {v === 'list' ? t('tab.list') : t(`calendar.${v}`)}
               </button>
             ))}
           </div>
+          {tab === 'calendar' && (
+            <button
+              onClick={goToday}
+              className="px-3 py-1.5 text-sm text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-700 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/30"
+            >
+              {t('calendar.today')}
+            </button>
+          )}
           {canManage && (
             <button
               onClick={() => setShowBook(true)}
@@ -648,67 +709,12 @@ export function AppointmentsPage() {
       ) : (
         /* Calendar view */
         <div className="flex-1 overflow-hidden flex flex-col px-4 sm:px-6 pb-6">
-          {/* Day / week, and stepping through them */}
-          <div className="flex flex-wrap items-center gap-3 py-2">
-            <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-0.5">
-              {(['day', 'week'] as CalendarView[]).map((v) => (
-                <button
-                  key={v}
-                  aria-pressed={calendarView === v}
-                  onClick={() => setCalendarView(v)}
-                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                    calendarView === v
-                      ? 'bg-white dark:bg-gray-700 shadow-sm ring-1 ring-primary-500 text-primary-700 dark:text-white'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                  }`}
-                >
-                  {t(`calendar.${v}`)}
-                </button>
-              ))}
-            </div>
-            {calendarView === 'day' ? (
-              <>
-                <button onClick={() => shiftDay(-1)} aria-label={t('calendar.prevDay')} className="px-3 py-1 text-sm border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">←</button>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 tabular-nums">{dayLabel(day)}</span>
-                <button onClick={() => shiftDay(1)} aria-label={t('calendar.nextDay')} className="px-3 py-1 text-sm border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">→</button>
-              </>
-            ) : (
-              <>
-                <button onClick={prevWeek} className="px-3 py-1 text-sm border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.prev')}</button>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 tabular-nums">
-                  {formatDay(weekStart)} — {formatDay(weekEnd)}
-                </span>
-                <button onClick={nextWeek} className="px-3 py-1 text-sm border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">{t('calendar.next')}</button>
-              </>
-            )}
-            <button
-              onClick={() => (calendarView === 'day' ? setDay(toLocalIsoDate(new Date())) : setWeekStart(getMondayOfWeek(new Date())))}
-              className="px-3 py-1 text-sm text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-700 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/30"
-            >
-              {t('calendar.today')}
-            </button>
-          </div>
-
-          {/* Provider legend (the day view names its columns instead) */}
-          {calendarView === 'week' && legendProviders.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pb-2">
-              {legendProviders.map((p) => (
-                <div key={p.id} className="flex items-center gap-1.5">
-                  <span
-                    className="inline-block h-2.5 w-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: p.color ?? '#6366F1' }}
-                  />
-                  <span className="text-xs text-gray-600 dark:text-gray-400">{p.name}</span>
-                </div>
-              ))}
-            </div>
-          )}
           <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             {calendarView === 'day' ? (
               <DayCalendar
                 date={day}
                 providers={dayProviders}
-                appointments={dayData?.items ?? []}
+                appointments={dayVisits}
                 absences={dayAbsences ?? []}
                 patientNames={patientNames}
                 appointmentTypeNames={appointmentTypeNames}
@@ -716,11 +722,13 @@ export function AppointmentsPage() {
                 onSlotClick={canManage ? (startAt, providerId) => { setBookingInitial({ startAt, providerId }); setShowBook(true); } : undefined}
                 onMove={canManage ? askMove : undefined}
                 openHours={openHours}
+                onPrev={() => shiftDay(-1)}
+                onNext={() => shiftDay(1)}
               />
             ) : (
             <WeekCalendar
               weekStart={weekStart}
-              appointments={calData?.items ?? []}
+              appointments={weekVisits}
               providerColors={providerColors}
               providerNames={providerNames}
               patientNames={patientNames}
@@ -729,6 +737,14 @@ export function AppointmentsPage() {
               onSlotClick={canManage ? (startAt) => { setBookingInitial({ startAt }); setShowBook(true); } : undefined}
               onMove={canManage ? askMove : undefined}
               openHours={openHours}
+              onPrev={prevWeek}
+              onNext={nextWeek}
+              onDayClick={(date) => setSearchParams((prev) => {
+                const n = new URLSearchParams(prev);
+                n.set('view', 'day');
+                n.set('day', date);
+                return n;
+              }, { replace: true })}
             />
             )}
           </div>

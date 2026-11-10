@@ -51,6 +51,19 @@ describe('DayCalendar', () => {
     expect(screen.queryByText('06:00')).not.toBeInTheDocument()
   })
 
+  // User request 2026-11-10 (variant B): step days from the calendar itself
+  it('has previous and next day arrows in its doctor header', () => {
+    const onPrev = vi.fn()
+    const onNext = vi.fn()
+    render(<DayCalendar {...baseProps} onPrev={onPrev} onNext={onNext} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Previous day' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Next day' }))
+
+    expect(onPrev).toHaveBeenCalledTimes(1)
+    expect(onNext).toHaveBeenCalledTimes(1)
+  })
+
   it('shows one column per doctor, with their visits in it', () => {
     const { container } = render(<DayCalendar {...baseProps} />)
 
@@ -85,6 +98,20 @@ describe('DayCalendar', () => {
     fireEvent.click(pin(column(container, 'p2')), { clientY: 4 * H + 40 }) // 10:42 → 10:30
 
     expect(onSlotClick).toHaveBeenCalledWith('2026-10-29T10:30', 'p2')
+  })
+
+  // User request 2026-11-10: show which slot a click would book, in that doctor's column
+  it("highlights the slot under the mouse in that doctor's column only", () => {
+    const { container } = render(<DayCalendar {...baseProps} onSlotClick={vi.fn()} />)
+    const col = pin(column(container, 'p2'))
+
+    fireEvent.mouseMove(col, { clientY: 4 * H + 40 })
+
+    const preview = screen.getByTestId('slot-preview')
+    expect(preview).toHaveTextContent('10:30')
+    expect(col).toContainElement(preview)
+    fireEvent.mouseLeave(col)
+    expect(screen.queryByTestId('slot-preview')).not.toBeInTheDocument()
   })
 
   it('draws the current-time line across the day when it is today', () => {

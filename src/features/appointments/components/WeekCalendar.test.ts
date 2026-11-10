@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { calendarHourRange } from './WeekCalendar'
+import { onCalendar } from './calendarGrid'
 
 const appt = (start: string, end: string) => ({ startAt: start, endAt: end })
 
@@ -31,5 +32,14 @@ describe('calendarHourRange', () => {
     it('does not stretch to the current time late at night', () => {
       expect(calendarHourRange([], new Date(2026, 9, 22, 23, 8), open)).toEqual(open)
     })
+  })
+})
+
+// Client report 2026-11-10: a cancelled visit still filled its slot on the calendar, and a
+// click there opened it instead of booking. The API already lets the slot be booked again.
+describe('onCalendar', () => {
+  it('leaves out cancelled and no-show visits', () => {
+    const visits = ['Scheduled', 'Cancelled', 'CheckedIn', 'NoShow', 'Completed'].map((status, i) => ({ id: `a${i}`, status }))
+    expect(onCalendar(visits).map((v) => v.status)).toEqual(['Scheduled', 'CheckedIn', 'Completed'])
   })
 })

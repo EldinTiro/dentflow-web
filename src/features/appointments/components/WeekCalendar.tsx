@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { AppointmentResponse, AppointmentStatus } from '../services/appointmentService';
 import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
 import { useTheme } from '@/shared/context/ThemeContext';
-import { SLOT_MINUTES, useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
+import { useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
+import { SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
 import { useCalendarDrag } from './useCalendarDrag';
-import { AppointmentChipBody, CHIP_LAYOUT } from './AppointmentChipBody';
+import { AppointmentChipBody, CHIP_LAYOUT, chipColors } from './AppointmentChipBody';
 
 // The week test imports it from here
 export { calendarHourRange };
@@ -22,6 +24,11 @@ interface Props {
   onSlotClick?: (startAt: string) => void;
   /** Drop after a drag: the new local start ("YYYY-MM-DDTHH:mm"); the doctor stays. */
   onMove?: (appt: AppointmentResponse, newStartAt: string, newProviderId?: string) => void;
+  /** Step to the previous / next week (arrows at both ends of the day header). */
+  onPrev?: () => void;
+  onNext?: () => void;
+  /** A click on a day's header (local "YYYY-MM-DD"): open that day. */
+  onDayClick?: (date: string) => void;
   /** Clinic opening hours (whole hours) the grid shows; defaults to 06:00–21:00. */
   openHours?: { start: number; end: number } | null;
 }
@@ -34,12 +41,17 @@ function addDays(date: Date, n: number) {
   return d;
 }
 
-export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, openHours }: Props) {
+/** Time labels, seven days, and the next-week arrow: the same in header and grid. */
+const WEEK_COLUMNS = '56px repeat(7, minmax(0, 1fr)) 48px';
+const WEEK_HEADER_PX = 58;
+
+export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, openHours, onPrev, onNext, onDayClick }: Props) {
   const { t } = useTranslation('appointments');
   const dayLabels = t('calendar.weekdays', { returnObjects: true }) as string[];
   // Full names where there is room; phones keep the short ones
   const dayLabelsLong = t('calendar.weekdaysLong', { returnObjects: true }) as string[];
   const [tooltip, setTooltip] = useState<TooltipState>(null);
+  const [hover, setHover] = useState<{ day: string; minutes: number } | null>(null);
   const { theme } = useTheme();
   const statusLabels = useAppointmentStatusLabels();
   const isDark = theme === 'dark';
@@ -71,32 +83,34 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
   const HOURS = HOUR_END - HOUR_START;
   const totalMinutes = HOURS * 60;
   // Hours fill the space the calendar has, at least MIN_hourPx each (15 min = one line)
-  const [scrollRef, hourPx] = useHourHeight(HOURS);
+  const [scrollRef, hourPx] = useHourHeight(HOURS, WEEK_HEADER_PX);
   const drag = useCalendarDrag({ hourStart: HOUR_START, hourEnd: HOUR_END, hourPx, onMove });
   // Where "now" falls in the grid, or null when the grid does not show this hour
   const nowOffsetMin = now.getHours() * 60 + now.getMinutes() - HOUR_START * 60;
   const nowTopPct = nowOffsetMin >= 0 && nowOffsetMin < totalMinutes ? (nowOffsetMin / totalMinutes) * 100 : null;
 
-  // Opacity suffix for chip background: more opaque in dark mode for visibility
-  const chipBgOpacity = isDark ? '55' : '28';
 
   return (
     // Day columns keep a usable minimum width and the week scrolls sideways instead;
     // at 1024px overlapping visits had shrunk to 6px slivers (QA-023).
-    <div className="flex flex-col h-full overflow-x-auto overflow-y-hidden">
+    // One scroll box with a sticky header, and one column template for header and grid:
+    // the grid's own scrollbar used to make its columns narrower than the header's.
+    <div ref={scrollRef} className="h-full overflow-auto bg-white dark:bg-gray-900">
+      <div className="min-w-[57rem]">
       {/* Day header */}
-      <div className="grid min-w-[57rem] border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: '56px repeat(7, 1fr)' }}>
-        <div className="border-r border-gray-100 dark:border-gray-700/60" />
+      <div className="sticky top-0 z-30 grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: WEEK_COLUMNS, height: WEEK_HEADER_PX }}>
+        <div className="flex items-center justify-center">
+          {onPrev && (
+            <button type="button" onClick={onPrev} aria-label={t('calendar.prevWeek')} className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700">
+              <ChevronLeft size={18} strokeWidth={2.5} aria-hidden />
+            </button>
+          )}
+        </div>
         {days.map((d, i) => {
           const dateStr = isoDate(d);
           const isToday = dateStr === todayStr;
-          return (
-            <div
-              key={i}
-              className={`px-2 py-2 text-center text-xs font-medium border-r border-gray-100 dark:border-gray-700/60 last:border-r-0 ${
-                isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'
-              }`}
-            >
+          const label = (
+            <>
               <div><span className="sm:hidden">{dayLabels[i]}</span><span className="hidden sm:inline">{dayLabelsLong[i]}</span></div>
               <div
                 className={`mx-auto mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-sm font-semibold ${
@@ -105,20 +119,44 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
               >
                 {d.getDate()}
               </div>
-            </div>
+            </>
+          );
+          const cellClass = `px-2 py-2 text-center text-xs font-medium border-l border-gray-200 dark:border-gray-700/60 ${
+            isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'
+          }`;
+          // User request 2026-11-10: a click on a day opens it
+          return onDayClick ? (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onDayClick(dateStr)}
+              aria-label={t('calendar.openDay', { day: `${dayLabelsLong[i]} ${d.getDate()}` })}
+              className={`${cellClass} hover:bg-gray-50 dark:hover:bg-gray-800`}
+            >
+              {label}
+            </button>
+          ) : (
+            <div key={i} className={cellClass}>{label}</div>
           );
         })}
+        <div className="flex items-center justify-center border-l border-gray-200 dark:border-gray-700/60">
+          {onNext && (
+            <button type="button" onClick={onNext} aria-label={t('calendar.nextWeek')} className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700">
+              <ChevronRight size={18} strokeWidth={2.5} aria-hidden />
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Scrollable time grid */}
-      <div ref={scrollRef} className="overflow-y-auto flex-1 min-w-[57rem] bg-white dark:bg-gray-900">
-        <div className="relative flex" style={{ minHeight: `${HOURS * hourPx}px` }}>
+      {/* Time grid */}
+      <div>
+        <div className="relative grid" style={{ gridTemplateColumns: WEEK_COLUMNS, minHeight: `${HOURS * hourPx}px` }}>
           {/* Time labels */}
-          <div className="w-14 shrink-0">
+          <div>
             {Array.from({ length: HOURS }, (_, i) => (
               <div
                 key={i}
-                className="border-b border-gray-100 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5"
+                className="border-b border-gray-300 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5"
                 style={{ height: hourPx, lineHeight: '14px' }}
               >
                 {`${String(HOUR_START + i).padStart(2, '0')}:00`}
@@ -127,7 +165,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
           </div>
 
           {/* Day columns */}
-          <div className="flex flex-1">
+          <div className="contents">
             {days.map((d, colIdx) => {
               const dateStr = isoDate(d);
               const dayAppts = byDay[dateStr] ?? [];
@@ -140,24 +178,26 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                   data-day={dateStr}
                   data-drop-day={dateStr}
                   onClick={onSlotClick ? (e) => {
-                    const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
-                    const slot = Math.floor((y / hourPx) * (60 / SLOT_MINUTES));
-                    const minutes = Math.min(Math.max(HOUR_START * 60 + slot * SLOT_MINUTES, HOUR_START * 60), HOUR_END * 60 - SLOT_MINUTES);
-                    const hh = String(Math.floor(minutes / 60)).padStart(2, '0');
-                    const mm = String(minutes % 60).padStart(2, '0');
-                    onSlotClick(`${dateStr}T${hh}:${mm}`);
+                    onSlotClick(`${dateStr}T${hhmm(slotUnderPointer(e.clientY, e.currentTarget, hourPx, HOUR_START, HOUR_END))}`);
                   } : undefined}
-                  className={`relative flex-1 border-l border-gray-100 dark:border-gray-700/50 ${
+                  onMouseMove={onSlotClick ? (e) => {
+                    if (drag.dragged || isOverSomething(e.target)) { setHover(null); return; }
+                    setHover({ day: dateStr, minutes: slotUnderPointer(e.clientY, e.currentTarget, hourPx, HOUR_START, HOUR_END) });
+                  } : undefined}
+                  onMouseLeave={() => setHover(null)}
+                  className={`relative flex-1 border-l border-gray-200 dark:border-gray-700/50 ${
                     isToday ? 'bg-primary-50/20 dark:bg-primary-900/10' : ''
-                  } ${onSlotClick ? 'cursor-copy hover:bg-gray-50/60 dark:hover:bg-gray-800/40' : ''}`}
+                  } ${onSlotClick ? 'cursor-copy' : ''}`}
                 >
                   {/* Hour lines */}
                   {Array.from({ length: HOURS }, (_, i) => (
                     <div
                       key={i}
-                      className="absolute w-full border-b border-gray-100 dark:border-gray-700/50"
+                      className="absolute w-full border-b border-gray-300 dark:border-gray-700/50"
                       style={{ top: `${i * hourPx}px`, height: `${hourPx}px` }}
-                    />
+                    >
+                      <div className="absolute inset-x-0 top-1/2 border-t border-dashed border-gray-200 dark:border-gray-700/30" />
+                    </div>
                   ))}
 
                   {/* Current time, like Google Calendar: a red line with a dot on today's column */}
@@ -170,6 +210,11 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                     >
                       <span className="absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full bg-red-500 dark:bg-red-400" />
                     </div>
+                  )}
+
+                  {/* The slot a click would book */}
+                  {hover?.day === dateStr && (
+                    <SlotPreview minutes={hover.minutes} hourStart={HOUR_START} totalMinutes={totalMinutes} />
                   )}
 
                   {/* Where a dragged visit would land */}
@@ -225,8 +270,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                           height: `${Math.max(heightPct, 1.5)}%`,
                           left: `calc(${col * widthPct}% + ${col === 0 ? 2 : GAP / 2}px)`,
                           width: `calc(${widthPct}% - ${col === 0 ? 2 + GAP / 2 : GAP}px)`,
-                          backgroundColor: color + chipBgOpacity,
-                          borderLeft: `3px solid ${color}`,
+                          ...chipColors(color, isDark),
                           ...chip.style,
                         }}
                       >
@@ -244,7 +288,10 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
               );
             })}
           </div>
+          {/* Under the next-week arrow: no lines, keeps the columns under their days */}
+          <div className="border-l border-gray-200 dark:border-gray-700/60" />
         </div>
+      </div>
       </div>
 
       {/* Hover tooltip */}

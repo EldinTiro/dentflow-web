@@ -32,6 +32,15 @@ export function calendarHourRange(
   return { start, end: Math.min(end, 24) };
 }
 
+/**
+ * The visits the calendar draws: not cancelled or no-show. Those free their slot (the API
+ * books over them), so drawn they made it look taken and a click opened them instead of
+ * booking (client report 2026-11-10). The list and the patient's history still show them.
+ */
+export function onCalendar<T extends { status: string }>(appointments: T[]): T[] {
+  return appointments.filter((a) => a.status !== 'Cancelled' && a.status !== 'NoShow');
+}
+
 export function isoDate(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }

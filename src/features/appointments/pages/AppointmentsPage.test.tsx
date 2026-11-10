@@ -24,7 +24,7 @@ describe('AppointmentsPage view toggle', () => {
       { route: '/appointments' },
     )
 
-    expect(screen.getByRole('button', { name: 'Calendar' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Week' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: 'List' })).toHaveAttribute('aria-pressed', 'false')
   })
 
@@ -35,13 +35,57 @@ describe('AppointmentsPage view toggle', () => {
       { route: '/appointments' },
     )
     const list = screen.getByRole('button', { name: 'List' })
-    const calendar = screen.getByRole('button', { name: 'Calendar' })
+    const week = screen.getByRole('button', { name: 'Week' })
 
     await userEvent.click(list)
 
     expect(list).toHaveAttribute('aria-pressed', 'true')
-    expect(calendar).toHaveAttribute('aria-pressed', 'false')
+    expect(week).toHaveAttribute('aria-pressed', 'false')
     expect(screen.getByTestId('location')).toHaveTextContent('tab=list')
+
+    await userEvent.click(week)
+    expect(week).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByTestId('location')).not.toHaveTextContent('tab=list')
+  })
+
+  // User request 2026-11-10 (variant B): the toolbar row above the calendar is gone; the
+  // view switch is one group, and the period shown sits under the title
+  it('has one view switch and no separate toolbar row', () => {
+    renderWithProviders(
+      <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,
+      { route: '/appointments?from=2026-12-16' },
+    )
+
+    expect(screen.queryByRole('button', { name: 'Calendar' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '← Prev' })).not.toBeInTheDocument()
+    expect(screen.getByText('14/12/2026 — 20/12/2026')).toBeInTheDocument()
+  })
+
+  // User request 2026-11-10: a click on a day in the week opens the day view on it
+  it('opens the day view on a day clicked in the week', async () => {
+    renderWithProviders(
+      <Routes><Route path="/appointments" element={<><AppointmentsPage /><Location /></>} /></Routes>,
+      { route: '/appointments?from=2026-12-16' },
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Open Thursday 17' }))
+
+    expect(screen.getByTestId('location')).toHaveTextContent('view=day')
+    expect(screen.getByTestId('location')).toHaveTextContent('day=2026-12-17')
+    expect(screen.getByRole('button', { name: 'Day' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('steps weeks with the arrow keys', async () => {
+    renderWithProviders(
+      <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,
+      { route: '/appointments?from=2026-12-16' },
+    )
+
+    await userEvent.keyboard('{ArrowRight}')
+    expect(screen.getByText('21/12/2026 — 27/12/2026')).toBeInTheDocument()
+
+    await userEvent.keyboard('{ArrowLeft}{ArrowLeft}')
+    expect(screen.getByText('07/12/2026 — 13/12/2026')).toBeInTheDocument()
   })
 })
 

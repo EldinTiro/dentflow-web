@@ -55,8 +55,6 @@
   },
   "emptyState": "Keine Termine gefunden.",
   "calendar": {
-    "prev": "← Zurück",
-    "next": "Weiter →",
     "today": "Heute",
     "day": "Tag",
     "week": "Woche",
@@ -86,7 +84,10 @@
       "Freitag",
       "Samstag",
       "Sonntag"
-    ]
+    ],
+    "prevWeek": "Vorherige Woche",
+    "nextWeek": "Nächste Woche",
+    "openDay": "{{day}} öffnen"
   },
   "types": {
     "title": "Leistungsarten",
