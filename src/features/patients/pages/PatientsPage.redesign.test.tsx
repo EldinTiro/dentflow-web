@@ -50,6 +50,15 @@ describe('PatientsPage redesign', () => {
   })
   afterEach(() => { vi.useRealTimers(); useAuthStore.getState().clearAuth() })
 
+  // Client request 2026-11-10: booked by email, card not opened yet
+  it('marks a patient whose card is not opened yet', async () => {
+    vi.mocked(patientService.list).mockResolvedValue(page([patient('9', 'Anita Zaimović', { patientNumber: null })]) as never)
+    renderPage()
+
+    const anita = (await screen.findByText('Anita Zaimović')).closest('tr')!
+    expect(within(anita).getByText('No card')).toBeInTheDocument()
+  })
+
   // A: what the desk needs per row, instead of empty columns
   // User request: date of birth instead of the next appointment, and the last visit with its year
   it('shows age, phone, date of birth, last visit and an allergy warning per patient', async () => {

@@ -342,5 +342,20 @@
     "invoice": "Rechnung {{number}}",
     "payment": "Zahlung",
     "document": "Dokument"
+  },
+  "card": {
+    "none": "Keine Karte",
+    "title": "Karte anlegen",
+    "openButton": "Karte anlegen…",
+    "body": "{{name}} hat noch keine Karte. Geben Sie die Nummer der Papierkarte ein oder lassen Sie das Feld leer für die nächste freie Nummer.",
+    "number": "Kartennummer (optional)",
+    "numberPlaceholder": "nächste freie Nummer",
+    "open": "Karte anlegen",
+    "later": "Später",
+    "opened": "Karte {{number}} für {{name}} angelegt.",
+    "numberTaken": "Ein anderer Patient hat bereits die Kartennummer {{number}}.",
+    "failed": "Die Karte konnte nicht angelegt werden.",
+    "withoutCard": "Noch keine Karte — die Karte wird beim ersten Besuch angelegt",
+    "withoutCardHint": "Für Patienten, die gebucht haben, aber noch nicht da waren: Es wird keine Kartennummer verbraucht, bis sie kommen."
   }
 }

@@ -26,6 +26,7 @@ import { PatientKeyFacts } from '../components/PatientKeyFacts'
 import { PatientTimeline } from '../components/PatientTimeline'
 import { ageOn, avatarTint, genderKey, initialsOf } from '../lib/patientDisplay'
 import { DeactivatePatientDialog } from '../components/DeactivatePatientDialog'
+import { NoCardBadge, OpenCardDialog } from '../components/OpenCardDialog'
 import { toast } from 'sonner'
 import { getApiErrorCodes, getApiErrorMessage } from '@/shared/utils/apiError'
 import { formatDate } from '@/shared/lib/format'
@@ -82,6 +83,7 @@ export function PatientDetailPage() {
     }, { replace: true })
   const [selectedAppt, setSelectedAppt] = useState<AppointmentResponse | null>(null)
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null)
+  const [openingCard, setOpeningCard] = useState(false)
 
   const roles = useAuthStore(selectRoles)
   const canManage = can(roles, 'patients.manage')
@@ -158,7 +160,19 @@ export function PatientDetailPage() {
               </span>
             </div>
             <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-gray-600 dark:text-gray-400">
-              <span className="font-bold tabular-nums text-gray-800 dark:text-gray-100">{patient.patientNumber}</span>
+              {patient.patientNumber
+                ? <span className="font-bold tabular-nums text-gray-800 dark:text-gray-100">{patient.patientNumber}</span>
+                : (
+                  <span className="inline-flex items-center gap-2">
+                    <NoCardBadge />
+                    {canManage && (
+                      <button type="button" onClick={() => setOpeningCard(true)}
+                        className="text-xs font-medium text-primary-600 hover:underline dark:text-primary-400">
+                        {t('card.openButton')}
+                      </button>
+                    )}
+                  </span>
+                )}
               {(() => {
                 const gender = genderKey(patient.gender)
                 const age = ageOn(patient.dateOfBirth)
@@ -361,6 +375,10 @@ export function PatientDetailPage() {
 
       {rescheduling && (
         <RescheduleModal appointment={rescheduling} onClose={() => setRescheduling(null)} />
+      )}
+
+      {openingCard && (
+        <OpenCardDialog patientId={patient.id} patientName={patient.fullName} onClose={() => setOpeningCard(false)} />
       )}
 
       {confirmDeactivate && (

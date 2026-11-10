@@ -342,5 +342,20 @@
     "invoice": "Invoice {{number}}",
     "payment": "Payment",
     "document": "Document"
+  },
+  "card": {
+    "none": "No card",
+    "title": "Open card",
+    "openButton": "Open card…",
+    "body": "{{name}} has no card yet. Type the number of the paper card, or leave it empty for the next free number.",
+    "number": "Card number (optional)",
+    "numberPlaceholder": "next free number",
+    "open": "Open card",
+    "later": "Later",
+    "opened": "Card {{number}} opened for {{name}}.",
+    "numberTaken": "Another patient already has card number {{number}}.",
+    "failed": "Could not open the card.",
+    "withoutCard": "No card yet — the card is opened at the first visit",
+    "withoutCardHint": "For a patient who booked but has not come yet: no card number is used until they come."
   }
 }

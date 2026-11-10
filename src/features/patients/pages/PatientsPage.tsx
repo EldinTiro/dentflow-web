@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { NoCardBadge } from '../components/OpenCardDialog'
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
@@ -172,7 +173,9 @@ export function PatientsPage() {
                           )}
                         </p>
                         <p className="text-xs text-gray-600 dark:text-gray-400 tabular-nums">
-                          <span className="font-semibold text-gray-800 dark:text-gray-200">{p.patientNumber}</span>
+                          {p.patientNumber
+                            ? <span className="font-semibold text-gray-800 dark:text-gray-200">{p.patientNumber}</span>
+                            : <NoCardBadge />}
                           {[age !== null ? t('age', { count: age }) : null, p.phoneMobile].filter(Boolean).map((part) => ` · ${part}`).join('')}
                         </p>
                       </div>
