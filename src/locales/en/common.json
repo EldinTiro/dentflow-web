@@ -127,7 +127,10 @@
     "close": "Close",
     "hidePassword": "Hide password",
     "showPassword": "Show password",
-    "userMenu": "Account menu"
+    "userMenu": "Account menu",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "mainMenu": "Main menu"
   },
   "errorBoundary": {
     "title": "Something went wrong",
