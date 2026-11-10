@@ -5,7 +5,7 @@ import type { AppointmentResponse } from '../services/appointmentService';
 import type { StaffBlockedTimeResponse } from '@/features/staff/services/staffService';
 import { ABSENCE_EMOJI } from '@/features/staff/lib/absence';
 import { useTheme } from '@/shared/context/ThemeContext';
-import { useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
+import { useHourHeight, calendarHourRange, isoDate, layoutDay, useNow } from './calendarGrid';
 import { ResizeHandle, SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
 import { useCalendarDrag } from './useCalendarDrag';
 import { AppointmentChipBody, CHIP_LAYOUT, chipColors } from './AppointmentChipBody';
@@ -29,8 +29,8 @@ interface Props {
   onSlotClick?: (startAt: string, providerId: string) => void;
   /** Drop after a drag: new local start, and the new doctor when the column changed. */
   onMove?: (appt: AppointmentResponse, newStartAt: string, newProviderId?: string) => void;
-  /** Bottom edge let go: the new local end ("YYYY-MM-DDTHH:mm"); the start stays. */
-  onResize?: (appt: AppointmentResponse, newEndAt: string) => void;
+  /** An edge let go: the new local start and end ("YYYY-MM-DDTHH:mm"). */
+  onResize?: (appt: AppointmentResponse, newStartAt: string, newEndAt: string) => void;
   /** Step to the previous / next day (arrows at both ends of the doctor header). */
   onPrev?: () => void;
   onNext?: () => void;
@@ -194,15 +194,19 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                 )}
 
                 {visits.map((appt) => {
-                  const offset = minutesSinceDayStart(appt.startAt) - HOUR_START * 60;
+                  const span = drag.span(appt);
+                  const offset = span.startMinutes - HOUR_START * 60;
                   if (offset < 0 || offset >= totalMinutes) return null;
                   const { col, cols } = layout.get(appt.id) ?? { col: 0, cols: 1 };
                   const widthPct = 100 / cols;
                   const label = [patientNames[appt.patientId], appointmentTypeNames[appt.appointmentTypeId]].filter(Boolean).join(' · ');
                   const chip = drag.chipProps(appt);
-                  const resize = drag.resizeProps(appt);
-                  const duration = drag.durationOf(appt);
-                  const end = new Date(new Date(appt.startAt).getTime() + duration * 60_000);
+                  const resizeTop = drag.resizeProps(appt, 'top');
+                  const resizeBottom = drag.resizeProps(appt, 'bottom');
+                  const duration = span.durationMinutes;
+                  const startDate = new Date(date + 'T00:00:00');
+                  startDate.setMinutes(span.startMinutes);
+                  const end = new Date(startDate.getTime() + duration * 60_000);
                   return (
                     <button
                       key={appt.id}
@@ -212,7 +216,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                         if (drag.consumeClick()) return;
                         onAppointmentClick?.(appt);
                       }}
-                      title={`${fmtTime(new Date(appt.startAt))} – ${fmtTime(end)} · ${label}`}
+                      title={`${fmtTime(startDate)} – ${fmtTime(end)} · ${label}`}
                       className={`group absolute z-10 ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
                       style={{
                         top: `${pct(offset)}%`,
@@ -224,13 +228,14 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                       }}
                     >
                       <AppointmentChipBody
-                        time={`${fmtTime(new Date(appt.startAt))} – ${fmtTime(end)}`}
+                        time={`${fmtTime(startDate)} – ${fmtTime(end)}`}
                         label={label}
                         color={color}
                         durationMinutes={duration}
                         dark={theme === 'dark'}
                       />
-                      {resize && <ResizeHandle {...resize} />}
+                      {resizeTop && <ResizeHandle {...resizeTop} />}
+                      {resizeBottom && <ResizeHandle {...resizeBottom} />}
                     </button>
                   );
                 })}

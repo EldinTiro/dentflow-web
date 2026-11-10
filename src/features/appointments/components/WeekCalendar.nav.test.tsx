@@ -17,6 +17,17 @@ describe('WeekCalendar navigation', () => {
     expect(onNext).toHaveBeenCalledTimes(1)
   })
 
+  // User request 2026-11-10: no Saturday and Sunday columns when the clinic is closed then
+  it('leaves out the days it is told to hide', () => {
+    const { container } = render(<WeekCalendar weekStart={new Date(2026, 10, 9)} appointments={[]} providerColors={{}} providerNames={{}}
+      patientNames={{}} appointmentTypeNames={{}} hiddenDates={['2026-11-14', '2026-11-15']} />)
+
+    expect(screen.getByText('Friday')).toBeInTheDocument()
+    expect(screen.queryByText('Saturday')).toBeNull()
+    expect(screen.queryByText('Sunday')).toBeNull()
+    expect(container.querySelectorAll('[data-drop-day]')).toHaveLength(5)
+  })
+
   // User request 2026-11-10: a click on a day in the week opens that day
   it('opens a day from its header', () => {
     const onDayClick = vi.fn()

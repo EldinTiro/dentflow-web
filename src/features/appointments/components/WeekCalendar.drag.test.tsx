@@ -73,13 +73,13 @@ describe('WeekCalendar drag and drop', () => {
     const onResize = vi.fn()
     const { container } = render(<WeekCalendar {...props} onMove={vi.fn()} onResize={onResize} />)
     pin(container.querySelector<HTMLElement>('[data-day="2026-10-22"]')!)
-    const handle = container.querySelector<HTMLElement>('[data-testid="resize-handle"]')!
+    const handle = container.querySelector<HTMLElement>('[data-testid="resize-handle"][data-edge="bottom"]')!
 
     fireEvent.pointerDown(handle, { clientX: 10, clientY: 4 * H, button: 0 })
     fireEvent.pointerMove(window, { clientX: 10, clientY: 5.25 * H })
     fireEvent.pointerUp(window, { clientX: 10, clientY: 5.25 * H })
 
-    expect(onResize).toHaveBeenCalledWith(visit, '2026-10-22T11:15')
+    expect(onResize).toHaveBeenCalledWith(visit, '2026-10-22T09:00', '2026-10-22T11:15')
   })
 
   // The week header was English whatever the language

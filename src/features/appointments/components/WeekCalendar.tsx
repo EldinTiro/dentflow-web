@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { AppointmentResponse, AppointmentStatus } from '../services/appointmentService';
 import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
 import { useTheme } from '@/shared/context/ThemeContext';
-import { useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
+import { useHourHeight, calendarHourRange, isoDate, layoutDay, useNow } from './calendarGrid';
 import { ResizeHandle, SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
 import { useCalendarDrag } from './useCalendarDrag';
 import { AppointmentChipBody, CHIP_LAYOUT, chipColors } from './AppointmentChipBody';
@@ -24,8 +24,10 @@ interface Props {
   onSlotClick?: (startAt: string) => void;
   /** Drop after a drag: the new local start ("YYYY-MM-DDTHH:mm"); the doctor stays. */
   onMove?: (appt: AppointmentResponse, newStartAt: string, newProviderId?: string) => void;
-  /** Bottom edge let go: the new local end ("YYYY-MM-DDTHH:mm"); the start stays. */
-  onResize?: (appt: AppointmentResponse, newEndAt: string) => void;
+  /** An edge let go: the new local start and end ("YYYY-MM-DDTHH:mm"). */
+  onResize?: (appt: AppointmentResponse, newStartAt: string, newEndAt: string) => void;
+  /** Local dates ("YYYY-MM-DD") left out of the week: days the clinic is closed. */
+  hiddenDates?: string[];
   /** Step to the previous / next week (arrows at both ends of the day header). */
   onPrev?: () => void;
   onNext?: () => void;
@@ -43,11 +45,11 @@ function addDays(date: Date, n: number) {
   return d;
 }
 
-/** Time labels, seven days, and the next-week arrow: the same in header and grid. */
-const WEEK_COLUMNS = '56px repeat(7, minmax(0, 1fr)) 48px';
+/** Time labels, the days shown, and the next-week arrow: the same in header and grid. */
+const weekColumns = (days: number) => `56px repeat(${days}, minmax(0, 1fr)) 48px`;
 const WEEK_HEADER_PX = 58;
 
-export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, onResize, openHours, onPrev, onNext, onDayClick }: Props) {
+export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, onResize, openHours, onPrev, onNext, onDayClick, hiddenDates }: Props) {
   const { t } = useTranslation('appointments');
   const dayLabels = t('calendar.weekdays', { returnObjects: true }) as string[];
   // Full names where there is room; phones keep the short ones
@@ -58,10 +60,14 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
   const statusLabels = useAppointmentStatusLabels();
   const isDark = theme === 'dark';
 
-  const days = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
-    [weekStart],
-  );
+  // Each day keeps its weekday index (0 = Monday) for its label when others are hidden
+  const hiddenKey = (hiddenDates ?? []).join(',');
+  const shown = useMemo(() => {
+    const hidden = new Set(hiddenKey ? hiddenKey.split(',') : []);
+    return Array.from({ length: 7 }, (_, i) => ({ d: addDays(weekStart, i), i }))
+      .filter(({ d }) => !hidden.has(isoDate(d)));
+  }, [weekStart, hiddenKey]);
+  const columns = weekColumns(shown.length);
 
   const byDay = useMemo(() => {
     const map: Record<string, AppointmentResponse[]> = {};
@@ -75,7 +81,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
 
   const now = useNow();
   const todayStr = isoDate(now);
-  const showsToday = days.some((d) => isoDate(d) === todayStr);
+  const showsToday = shown.some(({ d }) => isoDate(d) === todayStr);
   const nowHour = showsToday ? now.getHours() : null;
 
   const { start: HOUR_START, end: HOUR_END } = useMemo(
@@ -98,9 +104,9 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
     // One scroll box with a sticky header, and one column template for header and grid:
     // the grid's own scrollbar used to make its columns narrower than the header's.
     <div ref={scrollRef} className="h-full overflow-auto bg-white dark:bg-gray-900">
-      <div className="min-w-[57rem]">
+      <div style={{ minWidth: `calc(104px + ${shown.length} * 7.25rem)` }}>
       {/* Day header */}
-      <div className="sticky top-0 z-30 grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: WEEK_COLUMNS, height: WEEK_HEADER_PX }}>
+      <div className="sticky top-0 z-30 grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: columns, height: WEEK_HEADER_PX }}>
         <div className="flex items-center justify-center">
           {onPrev && (
             <button type="button" onClick={onPrev} aria-label={t('calendar.prevWeek')} className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700">
@@ -108,7 +114,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
             </button>
           )}
         </div>
-        {days.map((d, i) => {
+        {shown.map(({ d, i }) => {
           const dateStr = isoDate(d);
           const isToday = dateStr === todayStr;
           const label = (
@@ -152,7 +158,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
 
       {/* Time grid */}
       <div>
-        <div className="relative grid" style={{ gridTemplateColumns: WEEK_COLUMNS, minHeight: `${HOURS * hourPx}px` }}>
+        <div className="relative grid" style={{ gridTemplateColumns: columns, minHeight: `${HOURS * hourPx}px` }}>
           {/* Time labels */}
           <div>
             {Array.from({ length: HOURS }, (_, i) => (
@@ -168,7 +174,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
 
           {/* Day columns */}
           <div className="contents">
-            {days.map((d, colIdx) => {
+            {shown.map(({ d }, colIdx) => {
               const dateStr = isoDate(d);
               const dayAppts = byDay[dateStr] ?? [];
               const isToday = dateStr === todayStr;
@@ -236,12 +242,12 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
 
                   {/* Appointment chips */}
                   {dayAppts.map((appt) => {
-                    const startMin = minutesSinceDayStart(appt.startAt);
-                    const offsetMin = startMin - HOUR_START * 60;
+                    const span = drag.span(appt);
+                    const offsetMin = span.startMinutes - HOUR_START * 60;
                     if (offsetMin < 0 || offsetMin >= totalMinutes) return null;
 
                     const topPct = (offsetMin / totalMinutes) * 100;
-                    const heightPct = (drag.durationOf(appt) / totalMinutes) * 100;
+                    const heightPct = (span.durationMinutes / totalMinutes) * 100;
                     const color = appt.colorHex ?? providerColors[appt.providerId] ?? '#6366F1';
                     const { col, cols } = dayLayout.get(appt.id) ?? { col: 0, cols: 1 };
                     const GAP = 2;
@@ -251,7 +257,8 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                     const typeName = appointmentTypeNames[appt.appointmentTypeId];
                     const chipLabel = [patientName, typeName].filter(Boolean).join(' · ') || statusLabels[appt.status as AppointmentStatus];
                     const chip = drag.chipProps(appt);
-                    const resize = drag.resizeProps(appt);
+                    const resizeTop = drag.resizeProps(appt, 'top');
+                    const resizeBottom = drag.resizeProps(appt, 'bottom');
 
                     return (
                       <button
@@ -279,13 +286,14 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                         }}
                       >
                         <AppointmentChipBody
-                          time={new Date(appt.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                          time={hhmm(span.startMinutes)}
                           label={chipLabel}
                           color={color}
-                          durationMinutes={drag.durationOf(appt)}
+                          durationMinutes={span.durationMinutes}
                           dark={isDark}
                         />
-                        {resize && <ResizeHandle {...resize} />}
+                        {resizeTop && <ResizeHandle {...resizeTop} />}
+                        {resizeBottom && <ResizeHandle {...resizeBottom} />}
                       </button>
                     );
                   })}

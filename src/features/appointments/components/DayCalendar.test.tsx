@@ -220,8 +220,9 @@ describe('DayCalendar drag and drop', () => {
       const utils = render(<DayCalendar {...baseProps} onMove={onMove} onResize={onResize} onAppointmentClick={onAppointmentClick} />)
       const p1 = pin(column(utils.container, 'p1'), 0)
       const chip = screen.getByRole('button', { name: /Miroslav Vuletić/ })
-      const handle = utils.container.querySelector<HTMLElement>('[data-testid="resize-handle"]')!
-      return { ...utils, p1, chip, handle, onResize, onMove, onAppointmentClick }
+      const handle = utils.container.querySelector<HTMLElement>('[data-testid="resize-handle"][data-edge="bottom"]')!
+      const topHandle = utils.container.querySelector<HTMLElement>('[data-testid="resize-handle"][data-edge="top"]')!
+      return { ...utils, p1, chip, handle, topHandle, onResize, onMove, onAppointmentClick }
     }
     /** Grab the bottom edge (10:00 = 4h below 06:00) and let go at `y`. */
     function pull(handle: HTMLElement, y: number) {
@@ -235,7 +236,7 @@ describe('DayCalendar drag and drop', () => {
 
       pull(handle, 4.5 * H + 3) // 10:33 → 10:30
 
-      expect(onResize).toHaveBeenCalledWith(visit, '2026-10-29T10:30')
+      expect(onResize).toHaveBeenCalledWith(visit, '2026-10-29T09:00', '2026-10-29T10:30')
       expect(onMove).not.toHaveBeenCalled()
     })
 
@@ -244,7 +245,7 @@ describe('DayCalendar drag and drop', () => {
 
       pull(handle, 2 * H) // above the start
 
-      expect(onResize).toHaveBeenCalledWith(visit, '2026-10-29T09:15')
+      expect(onResize).toHaveBeenCalledWith(visit, '2026-10-29T09:00', '2026-10-29T09:15')
     })
 
     it('stretches the visit while pulling', () => {
@@ -263,6 +264,50 @@ describe('DayCalendar drag and drop', () => {
       fireEvent.click(chip)
 
       expect(onAppointmentClick).not.toHaveBeenCalled()
+    })
+
+    // User report 2026-11-10: pulling the top edge down did nothing; it changes the start
+    it('sets a new start from the top edge, keeping the end', () => {
+      const { topHandle, onResize, onMove } = setupResize()
+
+      fireEvent.pointerDown(topHandle, { clientX: 10, clientY: 3 * H, button: 0 })
+      fireEvent.pointerMove(window, { clientX: 10, clientY: 3.5 * H })
+      fireEvent.pointerUp(window, { clientX: 10, clientY: 3.5 * H })
+
+      expect(onResize).toHaveBeenCalledWith(visit, '2026-10-29T09:30', '2026-10-29T10:00')
+      expect(onMove).not.toHaveBeenCalled()
+    })
+
+    it('keeps at least 15 minutes when the top is pulled past the end', () => {
+      const { topHandle, onResize } = setupResize()
+
+      fireEvent.pointerDown(topHandle, { clientX: 10, clientY: 3 * H, button: 0 })
+      fireEvent.pointerMove(window, { clientX: 10, clientY: 6 * H })
+      fireEvent.pointerUp(window, { clientX: 10, clientY: 6 * H })
+
+      expect(onResize).toHaveBeenCalledWith(visit, '2026-10-29T09:45', '2026-10-29T10:00')
+    })
+
+    it('moves the top of the visit while pulling it', () => {
+      const { topHandle, chip } = setupResize()
+
+      fireEvent.pointerDown(topHandle, { clientX: 10, clientY: 3 * H, button: 0 })
+      fireEvent.pointerMove(window, { clientX: 10, clientY: 2 * H })
+
+      expect(chip).toHaveTextContent('08:00 – 10:00')
+    })
+
+    // A drag the browser takes over (pointercancel) left the visit stretched with no dialog
+    it('puts the visit back when the browser cancels the pull', () => {
+      const { handle, chip, onResize } = setupResize()
+
+      fireEvent.pointerDown(handle, { clientX: 10, clientY: 4 * H, button: 0 })
+      fireEvent.pointerMove(window, { clientX: 10, clientY: 5 * H })
+      fireEvent.pointerCancel(window, { clientX: 10, clientY: 5 * H })
+      fireEvent.pointerUp(window, { clientX: 10, clientY: 5 * H })
+
+      expect(chip).toHaveTextContent('09:00 – 10:00')
+      expect(onResize).not.toHaveBeenCalled()
     })
 
     it('has no handle on a finished visit', () => {
