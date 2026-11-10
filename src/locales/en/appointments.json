@@ -55,8 +55,6 @@
   },
   "emptyState": "No appointments found.",
   "calendar": {
-    "prev": "← Prev",
-    "next": "Next →",
     "today": "Today",
     "day": "Day",
     "week": "Week",
@@ -86,7 +84,9 @@
       "Friday",
       "Saturday",
       "Sunday"
-    ]
+    ],
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week"
   },
   "types": {
     "title": "Types of Services",

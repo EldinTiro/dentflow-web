@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { AppointmentResponse } from '../services/appointmentService';
 import type { StaffBlockedTimeResponse } from '@/features/staff/services/staffService';
@@ -27,6 +28,9 @@ interface Props {
   onSlotClick?: (startAt: string, providerId: string) => void;
   /** Drop after a drag: new local start, and the new doctor when the column changed. */
   onMove?: (appt: AppointmentResponse, newStartAt: string, newProviderId?: string) => void;
+  /** Step to the previous / next day (arrows at both ends of the doctor header). */
+  onPrev?: () => void;
+  onNext?: () => void;
   /** Clinic opening hours (whole hours) the grid shows; defaults to 06:00–21:00. */
   openHours?: { start: number; end: number } | null;
 }
@@ -37,7 +41,7 @@ const DOCTOR_HEADER_PX = 45;
 const fmtTime = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
 /** One day, one column per doctor: how the front desk plans the day. */
-export function DayCalendar({ date, providers, appointments, absences, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, openHours }: Props) {
+export function DayCalendar({ date, providers, appointments, absences, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, openHours, onPrev, onNext }: Props) {
   const { t } = useTranslation('appointments');
   const { t: ts } = useTranslation('staff');
   const { theme } = useTheme();
@@ -75,8 +79,19 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
     <div ref={scrollRef} className="h-full overflow-auto bg-white dark:bg-gray-900">
       <div style={{ minWidth: `calc(56px + ${providers.length} * 11rem)` }}>
       {/* Doctor header */}
-      <div className="sticky top-0 z-30 grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: columnsTemplate }}>
-        <div className="border-r border-gray-100 dark:border-gray-700/60" />
+      <div className="sticky top-0 z-30 relative grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: columnsTemplate }}>
+        <div className="flex items-center justify-center border-r border-gray-100 dark:border-gray-700/60">
+          {onPrev && (
+            <button type="button" onClick={onPrev} aria-label={t('calendar.prevDay')} className="flex h-7 w-7 items-center justify-center rounded-md border border-control text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+              <ChevronLeft size={16} aria-hidden />
+            </button>
+          )}
+        </div>
+        {onNext && (
+          <button type="button" onClick={onNext} aria-label={t('calendar.nextDay')} className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-md border border-control text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 bg-white dark:bg-gray-900">
+            <ChevronRight size={16} aria-hidden />
+          </button>
+        )}
         {providers.map((p) => (
           <div key={p.id} className="flex items-center justify-center gap-2 px-2 py-2.5 border-r border-gray-100 dark:border-gray-700/60 last:border-r-0 min-w-0">
             <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: p.colorHex ?? '#6366F1' }} />

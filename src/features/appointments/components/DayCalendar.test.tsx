@@ -51,6 +51,19 @@ describe('DayCalendar', () => {
     expect(screen.queryByText('06:00')).not.toBeInTheDocument()
   })
 
+  // User request 2026-11-10 (variant B): step days from the calendar itself
+  it('has previous and next day arrows in its doctor header', () => {
+    const onPrev = vi.fn()
+    const onNext = vi.fn()
+    render(<DayCalendar {...baseProps} onPrev={onPrev} onNext={onNext} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Previous day' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Next day' }))
+
+    expect(onPrev).toHaveBeenCalledTimes(1)
+    expect(onNext).toHaveBeenCalledTimes(1)
+  })
+
   it('shows one column per doctor, with their visits in it', () => {
     const { container } = render(<DayCalendar {...baseProps} />)
 

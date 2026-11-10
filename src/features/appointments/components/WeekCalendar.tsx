@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { AppointmentResponse, AppointmentStatus } from '../services/appointmentService';
 import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
@@ -22,6 +23,9 @@ interface Props {
   onSlotClick?: (startAt: string) => void;
   /** Drop after a drag: the new local start ("YYYY-MM-DDTHH:mm"); the doctor stays. */
   onMove?: (appt: AppointmentResponse, newStartAt: string, newProviderId?: string) => void;
+  /** Step to the previous / next week (arrows at both ends of the day header). */
+  onPrev?: () => void;
+  onNext?: () => void;
   /** Clinic opening hours (whole hours) the grid shows; defaults to 06:00–21:00. */
   openHours?: { start: number; end: number } | null;
 }
@@ -34,7 +38,7 @@ function addDays(date: Date, n: number) {
   return d;
 }
 
-export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, openHours }: Props) {
+export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, openHours, onPrev, onNext }: Props) {
   const { t } = useTranslation('appointments');
   const dayLabels = t('calendar.weekdays', { returnObjects: true }) as string[];
   // Full names where there is room; phones keep the short ones
@@ -85,8 +89,19 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
     // at 1024px overlapping visits had shrunk to 6px slivers (QA-023).
     <div className="flex flex-col h-full overflow-x-auto overflow-y-hidden">
       {/* Day header */}
-      <div className="grid min-w-[57rem] border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: '56px repeat(7, 1fr)' }}>
-        <div className="border-r border-gray-100 dark:border-gray-700/60" />
+      <div className="relative grid min-w-[57rem] border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: '56px repeat(7, 1fr)' }}>
+        <div className="flex items-center justify-center border-r border-gray-100 dark:border-gray-700/60">
+          {onPrev && (
+            <button type="button" onClick={onPrev} aria-label={t('calendar.prevWeek')} className="flex h-7 w-7 items-center justify-center rounded-md border border-control text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+              <ChevronLeft size={16} aria-hidden />
+            </button>
+          )}
+        </div>
+        {onNext && (
+          <button type="button" onClick={onNext} aria-label={t('calendar.nextWeek')} className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-md border border-control text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 bg-white dark:bg-gray-900">
+            <ChevronRight size={16} aria-hidden />
+          </button>
+        )}
         {days.map((d, i) => {
           const dateStr = isoDate(d);
           const isToday = dateStr === todayStr;

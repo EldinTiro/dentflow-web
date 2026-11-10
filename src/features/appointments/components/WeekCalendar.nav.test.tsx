@@ -1,0 +1,19 @@
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { WeekCalendar } from './WeekCalendar'
+
+// User request 2026-11-10 (variant B): step weeks from the calendar itself, not a toolbar row
+describe('WeekCalendar navigation', () => {
+  it('has previous and next week arrows in its day header', () => {
+    const onPrev = vi.fn()
+    const onNext = vi.fn()
+    render(<WeekCalendar weekStart={new Date(2026, 10, 9)} appointments={[]} providerColors={{}} providerNames={{}}
+      patientNames={{}} appointmentTypeNames={{}} onPrev={onPrev} onNext={onNext} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Previous week' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Next week' }))
+
+    expect(onPrev).toHaveBeenCalledTimes(1)
+    expect(onNext).toHaveBeenCalledTimes(1)
+  })
+})

@@ -55,8 +55,6 @@
   },
   "emptyState": "Nema pronađenih termina.",
   "calendar": {
-    "prev": "← Preth.",
-    "next": "Sljed. →",
     "today": "Danas",
     "day": "Dan",
     "week": "Sedmica",
@@ -86,7 +84,9 @@
       "Petak",
       "Subota",
       "Nedjelja"
-    ]
+    ],
+    "prevWeek": "Prethodna sedmica",
+    "nextWeek": "Sljedeća sedmica"
   },
   "types": {
     "title": "Vrste usluga",

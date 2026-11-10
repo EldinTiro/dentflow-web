@@ -51,10 +51,12 @@ vi.mock('@/features/admin/services/tenantService', () => ({
 }))
 // The grid itself is covered by DayCalendar.test; here only what the page does with it
 vi.mock('../components/DayCalendar', () => ({
-  DayCalendar: (props: { date: string; providers: DayProvider[]; appointments: { id: string }[]; openHours?: { start: number; end: number } | null; onMove?: (a: unknown, s: string, p?: string) => void }) => (
+  DayCalendar: (props: { date: string; providers: DayProvider[]; appointments: { id: string }[]; onPrev?: () => void; onNext?: () => void; openHours?: { start: number; end: number } | null; onMove?: (a: unknown, s: string, p?: string) => void }) => (
     <div data-testid="day-calendar" data-date={props.date} data-visits={props.appointments.map((a) => a.id).join(',')} data-open={props.openHours ? `${props.openHours.start}-${props.openHours.end}` : ''}>
       {props.providers.map((p) => <span key={p.id}>{p.fullName}</span>)}
       <button onClick={() => props.onMove?.(visit, '2026-10-29T11:15', 'p2')}>drop on Ana 11:15</button>
+      <button onClick={props.onPrev}>Previous day</button>
+      <button onClick={props.onNext}>Next day</button>
     </div>
   ),
 }))
@@ -155,6 +157,15 @@ describe('AppointmentsPage day view', () => {
 
     expect(screen.getByTestId('day-calendar')).toHaveAttribute('data-date', '2026-10-30')
     expect(screen.getByText('Friday, 30/10/2026')).toBeInTheDocument()
+  })
+
+  it('steps days with the arrow keys', async () => {
+    renderPage()
+    await screen.findByTestId('day-calendar')
+
+    await userEvent.keyboard('{ArrowRight}')
+
+    expect(screen.getByTestId('day-calendar')).toHaveAttribute('data-date', '2026-10-30')
   })
 
   it('asks before moving a visit, then moves it to the new doctor', async () => {
