@@ -119,6 +119,8 @@ describe('DayCalendar', () => {
     const { container } = render(<DayCalendar {...baseProps} />)
 
     expect(container.querySelector('[data-testid="now-line"]')).toHaveStyle({ top: '30%' })
+    // User request 2026-11-10: and the time itself on the time axis
+    expect(container.querySelector('[data-testid="now-label"]')).toHaveTextContent('10:30')
   })
 
   it('says so when there is no doctor to show', () => {

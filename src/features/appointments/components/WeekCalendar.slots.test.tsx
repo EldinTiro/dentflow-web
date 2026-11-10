@@ -43,7 +43,8 @@ describe('WeekCalendar click-to-book', () => {
     const { container } = render(
       <WeekCalendar {...props} appointments={[]} onSlotClick={onSlotClick} openHours={{ start: 10, end: 19 }} />)
 
-    expect(screen.getByText('10:00')).toBeInTheDocument()
+    // The hour on the axis (the now-label also reads 10:00 at this test's clock)
+    expect(screen.getAllByText('10:00').length).toBeGreaterThan(0)
     expect(screen.queryByText('06:00')).not.toBeInTheDocument()
     expect(screen.queryByText('19:00')).not.toBeInTheDocument()
     fireEvent.click(dayColumn(container, '2026-10-22'), { clientY: H + (34 / 60) * H }) // 1h 34min after 10:00

@@ -90,7 +90,13 @@
     "resizeTitle": "Change the length?",
     "resizeConfirm": "Save",
     "resized": "Appointment length changed",
-    "resizeFailed": "Could not change the length"
+    "resizeFailed": "Could not change the length",
+    "pickDate": "Pick a date",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "month": "Month",
+    "visitCount_one": "{{count}} visit",
+    "visitCount_other": "{{count}} visits"
   },
   "types": {
     "title": "Types of Services",

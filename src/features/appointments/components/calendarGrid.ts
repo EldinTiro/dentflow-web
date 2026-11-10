@@ -51,33 +51,43 @@ export function minutesSinceDayStart(iso: string) {
 }
 
 export function layoutDay(appts: AppointmentResponse[]): Map<string, { col: number; cols: number }> {
+  const t = (iso: string) => new Date(iso).getTime();
+  // By start; of two that start together the longer goes left
   const sorted = [...appts].sort(
-    (a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
+    (a, b) => t(a.startAt) - t(b.startAt) || t(b.endAt) - t(a.endAt),
   );
 
   const layout = new Map<string, { col: number; cols: number }>();
-  const clusters: AppointmentResponse[][] = [];
+  // A cluster is a run of visits that overlap one another, directly or through a neighbour.
+  // Inside it each visit takes the first column that is free by its start, so back-to-back
+  // visits share a column instead of each getting their own (user report 2026-11-10).
+  let cluster: AppointmentResponse[] = [];
+  let columnEnds: number[] = [];
+  let clusterEnd = -Infinity;
+  const colOf = new Map<string, number>();
+
+  const close = () => {
+    for (const appt of cluster) layout.set(appt.id, { col: colOf.get(appt.id)!, cols: columnEnds.length });
+    cluster = [];
+    columnEnds = [];
+  };
 
   for (const appt of sorted) {
-    const apptStart = new Date(appt.startAt).getTime();
-    let placed = false;
-    for (const cluster of clusters) {
-      const clusterEnd = Math.max(...cluster.map((a) => new Date(a.endAt).getTime()));
-      if (apptStart < clusterEnd) {
-        cluster.push(appt);
-        placed = true;
-        break;
-      }
+    const start = t(appt.startAt);
+    const finish = t(appt.endAt);
+    if (start >= clusterEnd) close();
+    let col = columnEnds.findIndex((end) => end <= start);
+    if (col === -1) {
+      col = columnEnds.length;
+      columnEnds.push(finish);
+    } else {
+      columnEnds[col] = finish;
     }
-    if (!placed) clusters.push([appt]);
+    colOf.set(appt.id, col);
+    cluster.push(appt);
+    clusterEnd = Math.max(clusterEnd, finish);
   }
-
-  for (const cluster of clusters) {
-    const cols = cluster.length;
-    cluster.forEach((appt, colIdx) => {
-      layout.set(appt.id, { col: colIdx, cols });
-    });
-  }
+  close();
 
   return layout;
 }

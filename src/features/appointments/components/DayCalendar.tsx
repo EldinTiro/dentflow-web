@@ -109,12 +109,23 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
       {/* Time grid */}
       <div>
         <div className="relative grid" style={{ gridTemplateColumns: columnsTemplate, minHeight: `${HOURS * hourPx}px` }}>
-          <div>
+          <div className="relative">
             {Array.from({ length: HOURS }, (_, i) => (
               <div key={i} className="border-b border-gray-300 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5" style={{ height: hourPx, lineHeight: '14px' }}>
                 {`${String(HOUR_START + i).padStart(2, '0')}:00`}
               </div>
             ))}
+            {/* The time now, on the axis next to the red line (user request 2026-11-10) */}
+            {nowTopPct !== null && (
+              <div
+                data-testid="now-label"
+                aria-hidden
+                className="pointer-events-none absolute right-1 z-20 -translate-y-1/2 rounded bg-red-500 px-1 py-px text-[10px] font-semibold leading-tight text-white dark:bg-red-400 dark:text-gray-900"
+                style={{ top: `${nowTopPct}%` }}
+              >
+                {hhmm(now.getHours() * 60 + now.getMinutes())}
+              </div>
+            )}
           </div>
 
           {providers.map((p) => {
