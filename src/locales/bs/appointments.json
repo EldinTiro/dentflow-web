@@ -86,7 +86,11 @@
     ],
     "prevWeek": "Prethodna sedmica",
     "nextWeek": "Sljedeća sedmica",
-    "openDay": "Otvori {{day}}"
+    "openDay": "Otvori {{day}}",
+    "resizeTitle": "Promijeniti trajanje?",
+    "resizeConfirm": "Spremi",
+    "resized": "Trajanje termina promijenjeno",
+    "resizeFailed": "Trajanje nije moguće promijeniti"
   },
   "types": {
     "title": "Vrste usluga",

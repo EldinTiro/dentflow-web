@@ -51,10 +51,11 @@ vi.mock('@/features/admin/services/tenantService', () => ({
 }))
 // The grid itself is covered by DayCalendar.test; here only what the page does with it
 vi.mock('../components/DayCalendar', () => ({
-  DayCalendar: (props: { date: string; providers: DayProvider[]; appointments: { id: string }[]; onPrev?: () => void; onNext?: () => void; openHours?: { start: number; end: number } | null; onMove?: (a: unknown, s: string, p?: string) => void }) => (
+  DayCalendar: (props: { date: string; providers: DayProvider[]; appointments: { id: string }[]; onPrev?: () => void; onNext?: () => void; openHours?: { start: number; end: number } | null; onMove?: (a: unknown, s: string, p?: string) => void; onResize?: (a: unknown, e: string) => void }) => (
     <div data-testid="day-calendar" data-date={props.date} data-visits={props.appointments.map((a) => a.id).join(',')} data-open={props.openHours ? `${props.openHours.start}-${props.openHours.end}` : ''}>
       {props.providers.map((p) => <span key={p.id}>{p.fullName}</span>)}
       <button onClick={() => props.onMove?.(visit, '2026-10-29T11:15', 'p2')}>drop on Ana 11:15</button>
+      <button onClick={() => props.onResize?.(visit, '2026-10-29T10:30')}>end at 10:30</button>
       <button onClick={props.onPrev}>Previous day</button>
       <button onClick={props.onNext}>Next day</button>
     </div>
@@ -182,6 +183,23 @@ describe('AppointmentsPage day view', () => {
       newStartAt: new Date(2026, 9, 29, 11, 15).toISOString(),
       newEndAt: new Date(2026, 9, 29, 12, 15).toISOString(),
       newProviderId: 'p2',
+    })
+  })
+
+  // User request 2026-11-10: resizing a visit asks first, then saves the new end
+  it('asks before changing the length, then keeps the start and saves the new end', async () => {
+    renderPage()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'end at 10:30' }))
+    const dialog = screen.getByRole('dialog', { name: 'Change the length?' })
+    expect(dialog).toHaveTextContent('Miroslav Vuletić')
+    expect(dialog).toHaveTextContent('09:00 – 10:30')
+    expect(dialog).toHaveTextContent('90 min')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+
+    expect(appointmentService.reschedule).toHaveBeenCalledWith('a1', {
+      newStartAt: new Date(2026, 9, 29, 9, 0).toISOString(),
+      newEndAt: new Date(2026, 9, 29, 10, 30).toISOString(),
     })
   })
 

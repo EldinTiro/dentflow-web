@@ -211,6 +211,67 @@ describe('DayCalendar drag and drop', () => {
     expect(onSlotClick).toHaveBeenCalledTimes(1)
   })
 
+  // User request 2026-11-10: change a visit's length by dragging its bottom edge
+  describe('resizing', () => {
+    function setupResize() {
+      const onResize = vi.fn()
+      const onMove = vi.fn()
+      const onAppointmentClick = vi.fn()
+      const utils = render(<DayCalendar {...baseProps} onMove={onMove} onResize={onResize} onAppointmentClick={onAppointmentClick} />)
+      const p1 = pin(column(utils.container, 'p1'), 0)
+      const chip = screen.getByRole('button', { name: /Miroslav Vuletić/ })
+      const handle = utils.container.querySelector<HTMLElement>('[data-testid="resize-handle"]')!
+      return { ...utils, p1, chip, handle, onResize, onMove, onAppointmentClick }
+    }
+    /** Grab the bottom edge (10:00 = 4h below 06:00) and let go at `y`. */
+    function pull(handle: HTMLElement, y: number) {
+      fireEvent.pointerDown(handle, { clientX: 10, clientY: 4 * H, button: 0 })
+      fireEvent.pointerMove(window, { clientX: 10, clientY: y })
+      fireEvent.pointerUp(window, { clientX: 10, clientY: y })
+    }
+
+    it('sets a new end, snapped to 15 minutes, keeping the start', () => {
+      const { handle, onResize, onMove } = setupResize()
+
+      pull(handle, 4.5 * H + 3) // 10:33 → 10:30
+
+      expect(onResize).toHaveBeenCalledWith(visit, '2026-10-29T10:30')
+      expect(onMove).not.toHaveBeenCalled()
+    })
+
+    it('keeps at least 15 minutes', () => {
+      const { handle, onResize } = setupResize()
+
+      pull(handle, 2 * H) // above the start
+
+      expect(onResize).toHaveBeenCalledWith(visit, '2026-10-29T09:15')
+    })
+
+    it('stretches the visit while pulling', () => {
+      const { handle, chip } = setupResize()
+
+      fireEvent.pointerDown(handle, { clientX: 10, clientY: 4 * H, button: 0 })
+      fireEvent.pointerMove(window, { clientX: 10, clientY: 5 * H })
+
+      expect(chip).toHaveTextContent('09:00 – 11:00')
+    })
+
+    it('does not open the visit after resizing it', () => {
+      const { handle, chip, onAppointmentClick } = setupResize()
+
+      pull(handle, 5 * H)
+      fireEvent.click(chip)
+
+      expect(onAppointmentClick).not.toHaveBeenCalled()
+    })
+
+    it('has no handle on a finished visit', () => {
+      const { container } = render(<DayCalendar {...baseProps} appointments={[{ ...visit, status: 'Completed' as const }]} onResize={vi.fn()} />)
+
+      expect(container.querySelector('[data-testid="resize-handle"]')).toBeNull()
+    })
+  })
+
   // The API refuses to move a started or finished visit (QA-034)
   it('does not let a finished visit be dragged', () => {
     const done = { ...visit, status: 'Completed' as const }

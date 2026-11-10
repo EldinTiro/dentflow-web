@@ -86,7 +86,11 @@
     ],
     "prevWeek": "Vorherige Woche",
     "nextWeek": "Nächste Woche",
-    "openDay": "{{day}} öffnen"
+    "openDay": "{{day}} öffnen",
+    "resizeTitle": "Dauer ändern?",
+    "resizeConfirm": "Speichern",
+    "resized": "Termindauer geändert",
+    "resizeFailed": "Dauer konnte nicht geändert werden"
   },
   "types": {
     "title": "Leistungsarten",

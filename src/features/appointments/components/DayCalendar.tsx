@@ -6,7 +6,7 @@ import type { StaffBlockedTimeResponse } from '@/features/staff/services/staffSe
 import { ABSENCE_EMOJI } from '@/features/staff/lib/absence';
 import { useTheme } from '@/shared/context/ThemeContext';
 import { useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
-import { SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
+import { ResizeHandle, SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
 import { useCalendarDrag } from './useCalendarDrag';
 import { AppointmentChipBody, CHIP_LAYOUT, chipColors } from './AppointmentChipBody';
 
@@ -29,6 +29,8 @@ interface Props {
   onSlotClick?: (startAt: string, providerId: string) => void;
   /** Drop after a drag: new local start, and the new doctor when the column changed. */
   onMove?: (appt: AppointmentResponse, newStartAt: string, newProviderId?: string) => void;
+  /** Bottom edge let go: the new local end ("YYYY-MM-DDTHH:mm"); the start stays. */
+  onResize?: (appt: AppointmentResponse, newEndAt: string) => void;
   /** Step to the previous / next day (arrows at both ends of the doctor header). */
   onPrev?: () => void;
   onNext?: () => void;
@@ -42,7 +44,7 @@ const DOCTOR_HEADER_PX = 45;
 const fmtTime = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
 /** One day, one column per doctor: how the front desk plans the day. */
-export function DayCalendar({ date, providers, appointments, absences, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, openHours, onPrev, onNext }: Props) {
+export function DayCalendar({ date, providers, appointments, absences, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, onResize, openHours, onPrev, onNext }: Props) {
   const { t } = useTranslation('appointments');
   const { t: ts } = useTranslation('staff');
   const { theme } = useTheme();
@@ -61,7 +63,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
 
   // Hours fill the space the calendar has, at least MIN_hourPx each (15 min = one line)
   const [scrollRef, hourPx] = useHourHeight(HOURS, DOCTOR_HEADER_PX);
-  const drag = useCalendarDrag({ hourStart: HOUR_START, hourEnd: HOUR_END, hourPx, onMove });
+  const drag = useCalendarDrag({ hourStart: HOUR_START, hourEnd: HOUR_END, hourPx, onMove, onResize });
 
   const dayStart = new Date(`${date}T00:00:00`).getTime();
   const gridStart = dayStart + HOUR_START * 3_600_000;
@@ -198,6 +200,9 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                   const widthPct = 100 / cols;
                   const label = [patientNames[appt.patientId], appointmentTypeNames[appt.appointmentTypeId]].filter(Boolean).join(' · ');
                   const chip = drag.chipProps(appt);
+                  const resize = drag.resizeProps(appt);
+                  const duration = drag.durationOf(appt);
+                  const end = new Date(new Date(appt.startAt).getTime() + duration * 60_000);
                   return (
                     <button
                       key={appt.id}
@@ -207,11 +212,11 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                         if (drag.consumeClick()) return;
                         onAppointmentClick?.(appt);
                       }}
-                      title={`${fmtTime(new Date(appt.startAt))} – ${fmtTime(new Date(appt.endAt))} · ${label}`}
-                      className={`absolute z-10 ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
+                      title={`${fmtTime(new Date(appt.startAt))} – ${fmtTime(end)} · ${label}`}
+                      className={`group absolute z-10 ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
                       style={{
                         top: `${pct(offset)}%`,
-                        height: `${Math.max(pct(appt.durationMinutes), 1.5)}%`,
+                        height: `${Math.max(pct(duration), 1.5)}%`,
                         left: `calc(${col * widthPct}% + 2px)`,
                         width: `calc(${widthPct}% - 4px)`,
                         ...chipColors(color, theme === 'dark'),
@@ -219,12 +224,13 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                       }}
                     >
                       <AppointmentChipBody
-                        time={`${fmtTime(new Date(appt.startAt))} – ${fmtTime(new Date(appt.endAt))}`}
+                        time={`${fmtTime(new Date(appt.startAt))} – ${fmtTime(end)}`}
                         label={label}
                         color={color}
-                        durationMinutes={appt.durationMinutes}
+                        durationMinutes={duration}
                         dark={theme === 'dark'}
                       />
+                      {resize && <ResizeHandle {...resize} />}
                     </button>
                   );
                 })}

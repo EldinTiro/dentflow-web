@@ -5,7 +5,7 @@ import type { AppointmentResponse, AppointmentStatus } from '../services/appoint
 import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
 import { useTheme } from '@/shared/context/ThemeContext';
 import { useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
-import { SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
+import { ResizeHandle, SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
 import { useCalendarDrag } from './useCalendarDrag';
 import { AppointmentChipBody, CHIP_LAYOUT, chipColors } from './AppointmentChipBody';
 
@@ -24,6 +24,8 @@ interface Props {
   onSlotClick?: (startAt: string) => void;
   /** Drop after a drag: the new local start ("YYYY-MM-DDTHH:mm"); the doctor stays. */
   onMove?: (appt: AppointmentResponse, newStartAt: string, newProviderId?: string) => void;
+  /** Bottom edge let go: the new local end ("YYYY-MM-DDTHH:mm"); the start stays. */
+  onResize?: (appt: AppointmentResponse, newEndAt: string) => void;
   /** Step to the previous / next week (arrows at both ends of the day header). */
   onPrev?: () => void;
   onNext?: () => void;
@@ -45,7 +47,7 @@ function addDays(date: Date, n: number) {
 const WEEK_COLUMNS = '56px repeat(7, minmax(0, 1fr)) 48px';
 const WEEK_HEADER_PX = 58;
 
-export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, openHours, onPrev, onNext, onDayClick }: Props) {
+export function WeekCalendar({ weekStart, appointments, providerColors, providerNames, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, onResize, openHours, onPrev, onNext, onDayClick }: Props) {
   const { t } = useTranslation('appointments');
   const dayLabels = t('calendar.weekdays', { returnObjects: true }) as string[];
   // Full names where there is room; phones keep the short ones
@@ -84,7 +86,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
   const totalMinutes = HOURS * 60;
   // Hours fill the space the calendar has, at least MIN_hourPx each (15 min = one line)
   const [scrollRef, hourPx] = useHourHeight(HOURS, WEEK_HEADER_PX);
-  const drag = useCalendarDrag({ hourStart: HOUR_START, hourEnd: HOUR_END, hourPx, onMove });
+  const drag = useCalendarDrag({ hourStart: HOUR_START, hourEnd: HOUR_END, hourPx, onMove, onResize });
   // Where "now" falls in the grid, or null when the grid does not show this hour
   const nowOffsetMin = now.getHours() * 60 + now.getMinutes() - HOUR_START * 60;
   const nowTopPct = nowOffsetMin >= 0 && nowOffsetMin < totalMinutes ? (nowOffsetMin / totalMinutes) * 100 : null;
@@ -239,7 +241,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                     if (offsetMin < 0 || offsetMin >= totalMinutes) return null;
 
                     const topPct = (offsetMin / totalMinutes) * 100;
-                    const heightPct = (appt.durationMinutes / totalMinutes) * 100;
+                    const heightPct = (drag.durationOf(appt) / totalMinutes) * 100;
                     const color = appt.colorHex ?? providerColors[appt.providerId] ?? '#6366F1';
                     const { col, cols } = dayLayout.get(appt.id) ?? { col: 0, cols: 1 };
                     const GAP = 2;
@@ -249,6 +251,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                     const typeName = appointmentTypeNames[appt.appointmentTypeId];
                     const chipLabel = [patientName, typeName].filter(Boolean).join(' · ') || statusLabels[appt.status as AppointmentStatus];
                     const chip = drag.chipProps(appt);
+                    const resize = drag.resizeProps(appt);
 
                     return (
                       <button
@@ -265,7 +268,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                           setTooltip({ appt, x: rect.right + 8, y: rect.top });
                         }}
                         onMouseLeave={() => setTooltip(null)}
-                        className={`absolute ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
+                        className={`group absolute ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
                         style={{
                           top: `${topPct}%`,
                           height: `${Math.max(heightPct, 1.5)}%`,
@@ -279,9 +282,10 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                           time={new Date(appt.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                           label={chipLabel}
                           color={color}
-                          durationMinutes={appt.durationMinutes}
+                          durationMinutes={drag.durationOf(appt)}
                           dark={isDark}
                         />
+                        {resize && <ResizeHandle {...resize} />}
                       </button>
                     );
                   })}
