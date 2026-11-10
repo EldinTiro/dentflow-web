@@ -346,5 +346,20 @@
     "invoice": "Faktura {{number}}",
     "payment": "Uplata",
     "document": "Dokument"
+  },
+  "card": {
+    "none": "Bez kartona",
+    "title": "Otvori karton",
+    "openButton": "Otvori karton…",
+    "body": "{{name}} još nema karton. Upišite broj papirnog kartona, ili ostavite prazno za sljedeći slobodan broj.",
+    "number": "Broj kartona (neobavezno)",
+    "numberPlaceholder": "sljedeći slobodan broj",
+    "open": "Otvori karton",
+    "later": "Kasnije",
+    "opened": "Otvoren karton {{number}} za {{name}}.",
+    "numberTaken": "Drugi pacijent već ima karton broj {{number}}.",
+    "failed": "Karton nije otvoren.",
+    "withoutCard": "Bez kartona — karton se otvara pri prvom dolasku",
+    "withoutCardHint": "Za pacijenta koji se naručio, a još nije došao: broj kartona se ne troši dok ne dođe."
   }
 }

@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { Routes, Route } from 'react-router'
 import i18n from 'i18next'
 import { renderWithProviders } from '@/test/render'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { PatientDetailPage } from './PatientDetailPage'
+import { patientService } from '../services/patientService'
 
 const { pending } = vi.hoisted(() => ({ pending: () => new Promise<never>(() => {}) }))
 vi.mock('../services/patientService', async (orig) => ({
@@ -21,6 +23,7 @@ vi.mock('../services/patientService', async (orig) => ({
       },
     })),
     listAllergies: vi.fn(async () => []),
+    openCard: vi.fn(async () => ({ patientNumber: '4252' })),
     timeline: vi.fn(async () => [
       { at: new Date(2026, 10, 4, 10, 30).toISOString(), kind: 'appointment', refId: 'ap', status: 'Scheduled', label: 'Kontrola', detail: 'Lejla Drino', amount: null },
       { at: new Date(2026, 9, 22, 11, 0).toISOString(), kind: 'payment', refId: 'pay', status: 'Cash', label: 'INV-0005', detail: null, amount: 20 },
@@ -56,6 +59,20 @@ describe('PatientDetailPage redesign', () => {
     useAuthStore.getState().setAuth('t', { userId: 'u', email: 'e@x', fullName: 'U', roles: ['Staff'] })
   })
   afterEach(async () => { vi.useRealTimers(); useAuthStore.getState().clearAuth(); await i18n.changeLanguage('en') })
+
+  // Client request 2026-11-10: the card of a patient booked by email is opened on their first visit
+  it('offers to open the card of a patient who has none yet', async () => {
+    const base = await vi.mocked(patientService.getById).getMockImplementation()!('p1')
+    vi.mocked(patientService.getById).mockResolvedValueOnce({ ...base, patientNumber: null } as never)
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderPage()
+
+    expect(await screen.findByText('No card')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /^open card…?$/i }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^open card$/i }))
+
+    await vi.waitFor(() => expect(patientService.openCard).toHaveBeenCalledWith('p1', null))
+  })
 
   // The header said "Spol: Female" in Bosnian
   it('says who the patient is in the header, in the app language', async () => {

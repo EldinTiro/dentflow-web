@@ -52,6 +52,7 @@ function toDateOnly(d: Date): string {
 export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatient, initialDate, initialStartAt, initialProviderId }: Props) {
   const { t } = useTranslation('appointments');
   const { t: ts } = useTranslation('staff');
+  const { t: tp } = useTranslation('patients');
   const uid = useId();
   const fid = (name: string) => `${uid}-${name}`;
   const queryClient = useQueryClient();
@@ -290,7 +291,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
                     {selectedPatient && !patientOpen ? (
                       <span className="flex-1 truncate text-gray-900 dark:text-gray-100">
                         {selectedPatient.fullName}
-                        <span className="ml-1 text-gray-500 text-xs dark:text-gray-400">{selectedPatient.patientNumber}</span>
+                        <span className="ml-1 text-gray-500 text-xs dark:text-gray-400">{selectedPatient.patientNumber ?? tp('card.none')}</span>
                       </span>
                     ) : (
                       <input
@@ -342,7 +343,7 @@ export function BookAppointmentDrawer({ onClose, initialPatientId, initialPatien
                               }`}
                             >
                               <span className="font-medium">{p.fullName}</span>
-                              <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{p.patientNumber}</span>
+                              <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{p.patientNumber ?? tp('card.none')}</span>
                               {p.phoneMobile && <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{p.phoneMobile}</span>}
                             </li>
                           ))}

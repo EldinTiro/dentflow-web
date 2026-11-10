@@ -30,6 +30,7 @@ import {
 } from '../services/appointmentService'
 import { invalidateAppointmentQueries } from '../services/appointmentQueries'
 import { patientService } from '@/features/patients/services/patientService'
+import { NoCardBadge, OpenCardDialog } from '@/features/patients/components/OpenCardDialog'
 import { staffService } from '@/features/staff/services/staffService'
 import { billingService, INVOICE_STATUS_COLORS, INVOICE_STATUS_LABELS } from '@/features/billing/services/billingService'
 import { CreateInvoiceDrawer } from '@/features/billing/components/CreateInvoiceDrawer'
@@ -97,8 +98,10 @@ export function AppointmentDetailPanel({
   const [showOverride, setShowOverride] = useState(false)
   const [overrideNewStatus, setOverrideNewStatus] = useState<AppointmentStatus>('Scheduled')
   const [overrideReason, setOverrideReason] = useState('')
+  // Client request 2026-11-10: a patient without a card gets one when they arrive
+  const [openingCard, setOpeningCard] = useState(false)
   // Escape closes the drawer unless a dialog on top of it should get the key (QA-027).
-  useEscapeKey(onClose, !confirmCancel && !showOverride && !showCreateInvoice)
+  useEscapeKey(onClose, !confirmCancel && !showOverride && !showCreateInvoice && !openingCard)
 
   const { data: patient, isError: patientMissing } = useQuery({
     queryKey: ['patient', a.patientId],
@@ -145,7 +148,11 @@ export function AppointmentDetailPanel({
 
   const statusMutation = useMutation({
     mutationFn: (next: AppointmentStatus) => appointmentService.updateStatus(a.id, next),
-    onSuccess: (updated) => { setA(updated); invalidate() },
+    onSuccess: (updated) => {
+      setA(updated)
+      invalidate()
+      if (updated.status === 'CheckedIn' && patient && !patient.patientNumber) setOpeningCard(true)
+    },
   })
 
   const cancelMutation = useMutation({
@@ -207,12 +214,15 @@ export function AppointmentDetailPanel({
             label={td('detail.patient')}
             value={
               patient ? (
-                <a
-                  href={`/patients/${a.patientId}`}
-                  className="text-primary-600 hover:underline font-medium dark:text-primary-400"
-                >
-                  {patient.fullName}
-                </a>
+                <span className="inline-flex flex-wrap items-center gap-2">
+                  <a
+                    href={`/patients/${a.patientId}`}
+                    className="text-primary-600 hover:underline font-medium dark:text-primary-400"
+                  >
+                    {patient.fullName}
+                  </a>
+                  {!patient.patientNumber && <NoCardBadge />}
+                </span>
               ) : patientMissing ? (
                 // DT-16: rows from before the isolation fix can point at no patient
                 <span className="text-red-600 dark:text-red-400">{td('detail.patientNotFound')}</span>
@@ -577,6 +587,10 @@ export function AppointmentDetailPanel({
           </div>
         )}
       </div>
+
+      {openingCard && patient && (
+        <OpenCardDialog patientId={patient.id} patientName={patient.fullName} onClose={() => setOpeningCard(false)} />
+      )}
 
       <ConfirmDialog
         open={confirmCancel}

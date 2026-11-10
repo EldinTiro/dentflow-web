@@ -6,11 +6,13 @@ import { appointmentFixture } from '@/test/fixtures/appointment'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { AppointmentDetailPanel } from './AppointmentDetailPanel'
 import { appointmentService } from '../services/appointmentService'
+import { patientService } from '@/features/patients/services/patientService'
 
 const { pending } = vi.hoisted(() => ({ pending: () => new Promise<never>(() => {}) }))
 vi.mock('@/features/patients/services/patientService', () => ({
   patientService: {
     getById: vi.fn(pending),
+    openCard: vi.fn(),
     listAllergies: vi.fn(async () => [
       { id: 'a1', allergen: 'Penicillin', severity: 'LifeThreatening', reaction: null, notes: null, reportedAt: null },
     ]),
@@ -63,6 +65,20 @@ describe('AppointmentDetailPanel', () => {
     expect(screen.queryByText('CheckedIn')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Start Treatment' })).toBeInTheDocument()
     expect(onClose).not.toHaveBeenCalled()
+  })
+
+  // Client request 2026-11-10: a patient booked by email has no card until they come
+  it('offers to open the card when a patient without one checks in', async () => {
+    vi.mocked(patientService.getById).mockResolvedValueOnce({ id: 'pat-1', fullName: 'Anita Zaimović', patientNumber: null, status: 'Active' } as never)
+    vi.mocked(appointmentService.updateStatus).mockResolvedValue(appointmentFixture({ status: 'CheckedIn' }))
+    renderWithProviders(
+      <AppointmentDetailPanel appointment={appointmentFixture()} onClose={() => {}} onReschedule={() => {}} canManage />,
+    )
+    expect(await screen.findByText('No card')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Check In' }))
+
+    expect(await screen.findByRole('dialog', { name: /open card/i })).toBeInTheDocument()
   })
 
   // QA-034: Reschedule and Cancel were offered while treatment was in progress
