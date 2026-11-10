@@ -61,6 +61,16 @@ describe('AppointmentsPage view toggle', () => {
     expect(screen.getByText('14 – 20 Dec 2026')).toBeInTheDocument()
   })
 
+  // User request 2026-11-11: the period picker marks today and jumps to it, so no Today button
+  it('has no Today button', () => {
+    renderWithProviders(
+      <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,
+      { route: '/appointments?from=2026-12-16' },
+    )
+
+    expect(screen.queryByRole('button', { name: 'Today' })).not.toBeInTheDocument()
+  })
+
   // User request 2026-11-10: a click on a day in the week opens the day view on it
   it('opens the day view on a day clicked in the week', async () => {
     renderWithProviders(

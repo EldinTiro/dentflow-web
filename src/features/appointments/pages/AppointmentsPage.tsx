@@ -549,11 +549,6 @@ export function AppointmentsPage() {
     else if (n === 1) nextWeek();
     else prevWeek();
   };
-  const goToday = () => {
-    if (calendarView === 'day') setDay(toLocalIsoDate(new Date()));
-    else if (calendarView === 'month') setMonth(toLocalIsoDate(new Date()).slice(0, 7));
-    else setWeekStart(getMondayOfWeek(new Date()));
-  };
 
   // ← / → step the calendar, unless someone is typing or a dialog is open
   useEffect(() => {
@@ -602,14 +597,6 @@ export function AppointmentsPage() {
               </button>
             ))}
           </div>
-          {tab === 'calendar' && (
-            <button
-              onClick={goToday}
-              className="px-3 py-1.5 text-sm text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-700 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/30"
-            >
-              {t('calendar.today')}
-            </button>
-          )}
           {canManage && (
             <button
               onClick={() => setShowBook(true)}
