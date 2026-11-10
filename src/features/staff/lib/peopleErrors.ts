@@ -15,5 +15,6 @@ export function peopleErrorMessage(err: unknown, t: TFunction<'staff'>, name: st
     return t('status.upcoming', { name, count })
   }
   if (codes.has('Staff.HasHistory')) return t('status.hasHistory', { name })
+  if (['Auth.EmailAlreadyExists', 'Staff.AlreadyExists'].some((c) => codes.has(c))) return t('create.emailTaken')
   return getApiErrorMessage(err, t('access.failed'))
 }

@@ -19,6 +19,7 @@ vi.mock('../services/staffService', async (importOriginal) => {
       grantAccess: vi.fn(),
       resetPassword: vi.fn(),
       changeRole: vi.fn(),
+      changeSignInEmail: vi.fn(),
       setAccessActive: vi.fn(),
       deactivate: vi.fn(),
       reactivate: vi.fn(),
@@ -138,6 +139,51 @@ describe('StaffDetailPage — app access (people-merge plan 4.3)', () => {
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /change role/i }))
 
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(expect.stringMatching(/role changed/i)))
+  })
+
+  // User report: Lejla's sign-in email was wrong and could not be changed anywhere
+  it("changes someone's sign-in email", async () => {
+    signIn(['ClinicOwner'])
+    svc.getById.mockResolvedValue(staff({ access: account() }))
+    svc.changeSignInEmail.mockResolvedValue(undefined)
+    const user = userEvent.setup()
+    renderPage()
+    const section = await accessSection()
+
+    await user.click(section.getByRole('button', { name: /change sign-in email/i }))
+    const input = section.getByLabelText(/new sign-in email/i)
+    expect(input).toHaveValue('amra@x.ba')
+    await user.clear(input)
+    await user.type(input, 'amra.hadzic@x.ba')
+    await user.click(section.getByRole('button', { name: /^save email$/i }))
+
+    await waitFor(() => expect(svc.changeSignInEmail).toHaveBeenCalledWith('u-amra', 'amra.hadzic@x.ba'))
+    expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('amra.hadzic@x.ba'))
+    expect(section.queryByLabelText(/new sign-in email/i)).not.toBeInTheDocument()
+  })
+
+  it('says so when the new sign-in email is already used', async () => {
+    signIn(['ClinicOwner'])
+    svc.getById.mockResolvedValue(staff({ access: account() }))
+    svc.changeSignInEmail.mockRejectedValue(fastEndpointsError('An account with this email already exists.', 'auth.EmailAlreadyExists', 409))
+    const user = userEvent.setup()
+    renderPage()
+    const section = await accessSection()
+
+    await user.click(section.getByRole('button', { name: /change sign-in email/i }))
+    await user.clear(section.getByLabelText(/new sign-in email/i))
+    await user.type(section.getByLabelText(/new sign-in email/i), 'taken@x.ba')
+    await user.click(section.getByRole('button', { name: /^save email$/i }))
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/already used/i)))
+  })
+
+  it('does not offer to change your own sign-in email here', async () => {
+    signIn(['ClinicOwner'], 'u-amra')
+    svc.getById.mockResolvedValue(staff({ access: account({ role: 'ClinicOwner' }) }))
+    renderPage()
+
+    expect((await accessSection()).getByRole('button', { name: /change sign-in email/i })).toBeDisabled()
   })
 
   it('turns sign-in off after confirming, and back on', async () => {

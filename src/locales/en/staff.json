@@ -164,7 +164,12 @@
     "roleTitle": "Change role?",
     "roleBody": "{{name}} becomes {{role}}. What they can see and do changes at their next sign-in.",
     "roleOwnerBody": "{{name}} becomes Clinic owner and gets full control of the clinic: staff and sign-in access, finance and settings.",
-    "roleConfirm": "Change role"
+    "roleConfirm": "Change role",
+    "changeEmail": "Change sign-in email",
+    "newEmail": "New sign-in email",
+    "saveEmail": "Save email",
+    "newEmailHint": "The password and appointments stay the same; from now on they sign in with this email.",
+    "emailChanged": "{{name}} now signs in with {{email}}."
   },
   "status": {
     "deactivate": "Deactivate",

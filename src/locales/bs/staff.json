@@ -165,7 +165,12 @@
     "roleTitle": "Promijeniti ulogu?",
     "roleBody": "{{name}} postaje {{role}}. Šta može vidjeti i raditi mijenja se pri sljedećoj prijavi.",
     "roleOwnerBody": "{{name}} postaje vlasnik klinike i dobija punu kontrolu nad klinikom: osoblje i pristup, finansije i postavke.",
-    "roleConfirm": "Promijeni ulogu"
+    "roleConfirm": "Promijeni ulogu",
+    "changeEmail": "Promijeni email za prijavu",
+    "newEmail": "Novi email za prijavu",
+    "saveEmail": "Sačuvaj email",
+    "newEmailHint": "Lozinka i termini ostaju isti; od sada se prijavljuje ovim emailom.",
+    "emailChanged": "{{name}} se od sada prijavljuje sa {{email}}."
   },
   "status": {
     "deactivate": "Deaktiviraj",
