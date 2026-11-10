@@ -16,12 +16,14 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { BookAppointmentDrawer } from '../components/BookAppointmentDrawer';
 import { RescheduleModal } from '../components/RescheduleModal';
 import { PeriodPicker } from '../components/PeriodPicker';
+import { MonthCalendar } from '../components/MonthCalendar';
+import { monthWeeks } from '../components/MiniMonth';
 import { WeekCalendar } from '../components/WeekCalendar';
 import { onCalendar } from '../components/calendarGrid';
 import { DayCalendar, type DayProvider } from '../components/DayCalendar';
 import { useConfirm } from '@/shared/components/ConfirmDialog';
 import { getApiErrorMessage } from '@/shared/utils/apiError';
-import { formatDate as formatDay, formatDayMonth } from '@/shared/lib/format';
+import { formatDate as formatDay, formatDayMonth, formatMonthYear } from '@/shared/lib/format';
 import { toast } from 'sonner';
 import { AppointmentDetailPanel } from '../components/AppointmentDetailPanel';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
@@ -32,7 +34,7 @@ import { tenantService } from '@/features/admin/services/tenantService';
 import { closedDaysToHide, openingHourRange } from '@/shared/lib/clinicSchedule';
 
 type Tab = 'list' | 'calendar';
-type CalendarView = 'week' | 'day';
+type CalendarView = 'week' | 'day' | 'month';
 
 /** Monday = 0, like the week grid. */
 const weekdayIndex = (d: Date) => (d.getDay() + 6) % 7;
@@ -105,10 +107,17 @@ export function AppointmentsPage() {
 
   const setTab = (v: Tab) => updateParam('tab', v === 'calendar' ? null : v, false);
   // The calendar shows a week, or one day with a column per doctor (?view=day&day=…)
-  const calendarView: CalendarView = searchParams.get('view') === 'day' ? 'day' : 'week';
+  const viewParam = searchParams.get('view');
+  const calendarView: CalendarView = viewParam === 'day' || viewParam === 'month' ? viewParam : 'week';
   const dayParam = searchParams.get('day');
   const day = dayParam && /^\d{4}-\d{2}-\d{2}$/.test(dayParam) ? dayParam : toLocalIsoDate(new Date());
   const setDay = (v: string) => updateParam('day', v, false);
+  // The month view (?view=month&month=YYYY-MM)
+  const monthParam = searchParams.get('month');
+  const ym = monthParam && /^\d{4}-\d{2}$/.test(monthParam) ? monthParam : toLocalIsoDate(new Date()).slice(0, 7);
+  const monthStart = useMemo(() => new Date(Number(ym.slice(0, 4)), Number(ym.slice(5, 7)) - 1, 1), [ym]);
+  const setMonth = (v: string) => updateParam('month', v, false);
+  const shiftMonth = (n: number) => setMonth(toLocalIsoDate(new Date(monthStart.getFullYear(), monthStart.getMonth() + n, 1)).slice(0, 7));
   const shiftDay = (n: number) => { const d = new Date(`${day}T12:00:00`); d.setDate(d.getDate() + n); setDay(toLocalIsoDate(d)); };
   const setStatusFilter = (v: AppointmentStatus | '') => updateParam('status', v || null);
   const setDateFrom = (v: string) => updateParam('from', v || null);
@@ -166,6 +175,37 @@ export function AppointmentsPage() {
   // in it, else its Monday), Week opens on the week of the day shown.
   const setCalendarView = (v: CalendarView) => {
     if (v === calendarView) return;
+    // To the month the dates on screen are in
+    if (v === 'month') {
+      const today = new Date();
+      const anchor = calendarView === 'day'
+        ? day
+        : toLocalIsoDate(today >= weekStart && today <= weekEnd ? today : weekStart);
+      setSearchParams((p) => {
+        const n = new URLSearchParams(p);
+        n.set('view', 'month');
+        n.set('month', anchor.slice(0, 7));
+        return n;
+      }, { replace: true });
+      return;
+    }
+    // From the month: today if it is in it, else the 1st
+    if (calendarView === 'month') {
+      const today = new Date();
+      const anchor = toLocalIsoDate(today).slice(0, 7) === ym ? toLocalIsoDate(today) : `${ym}-01`;
+      if (v === 'week') {
+        setWeekStart(getMondayOfWeek(new Date(`${anchor}T12:00:00`)));
+        updateParam('view', null, false);
+      } else {
+        setSearchParams((p) => {
+          const n = new URLSearchParams(p);
+          n.set('view', 'day');
+          n.set('day', anchor);
+          return n;
+        }, { replace: true });
+      }
+      return;
+    }
     if (v === 'week') {
       setWeekStart(getMondayOfWeek(new Date(`${day}T12:00:00`)));
       updateParam('view', null, false);
@@ -191,7 +231,9 @@ export function AppointmentsPage() {
       setSearchParams((prev) => {
         const n = new URLSearchParams(prev);
         n.delete('tab');
-        if (v === 'day') { n.set('view', 'day'); n.set('day', day); } else n.delete('view');
+        if (v === 'day') { n.set('view', 'day'); n.set('day', day); }
+        else if (v === 'month') { n.set('view', 'month'); n.set('month', ym); }
+        else n.delete('view');
         return n;
       }, { replace: true });
       refetchCal();
@@ -229,6 +271,22 @@ export function AppointmentsPage() {
     queryKey: ['appointments-week', weekStart.toISOString()],
     queryFn: () => appointmentService.list(calendarParams),
   });
+
+  const showMonth = tab === 'calendar' && calendarView === 'month';
+  const monthGrid = useMemo(() => monthWeeks(monthStart.getFullYear(), monthStart.getMonth()).flat(), [monthStart]);
+  const { data: monthItems } = useQuery({
+    queryKey: ['appointments-month', ym],
+    // The API gives at most 200 a page; a busy clinic books more than that in a month
+    queryFn: async () => {
+      const params = { dateFrom: toLocalIsoDate(monthGrid[0]), dateTo: toLocalIsoDate(monthGrid[monthGrid.length - 1]), pageSize: 200 };
+      const first = await appointmentService.list({ ...params, page: 1 });
+      const pages = Math.ceil(first.totalCount / 200);
+      const rest = await Promise.all(Array.from({ length: Math.max(0, pages - 1) }, (_, i) => appointmentService.list({ ...params, page: i + 2 })));
+      return [first, ...rest].flatMap((r) => r.items);
+    },
+    enabled: showMonth,
+  });
+  const monthVisits = useMemo(() => onCalendar(monthItems ?? []), [monthItems]);
 
   const showDay = tab === 'calendar' && calendarView === 'day';
   const { data: dayData } = useQuery({
@@ -298,6 +356,14 @@ export function AppointmentsPage() {
 
   // What the calendars draw: cancelled and no-show visits free their slot
   const weekVisits = useMemo(() => onCalendar(calData?.items ?? []), [calData]);
+  // Weekdays left out of the month: closed on every one of them in the grid, none booked
+  const hiddenMonthWeekdays = useMemo(() => {
+    if (!clinicSettings) return [];
+    const dates = monthGrid.map(toLocalIsoDate);
+    const hidden = new Set(closedDaysToHide(clinicSettings.weeklyScheduleJson, dates, monthVisits.map((a) => toLocalIsoDate(new Date(a.startAt)))));
+    return [0, 1, 2, 3, 4, 5, 6].filter((w) => dates.filter((_, i) => i % 7 === w).every((d) => hidden.has(d)));
+  }, [clinicSettings, monthGrid, monthVisits]);
+
   // User request 2026-11-10: days the clinic is closed are left out of the week, unless booked
   const hiddenWeekDates = useMemo(() => {
     if (!clinicSettings) return [];
@@ -469,10 +535,15 @@ export function AppointmentsPage() {
   };
   const stepPeriod = (n: 1 | -1) => {
     if (calendarView === 'day') shiftDay(n);
+    else if (calendarView === 'month') shiftMonth(n);
     else if (n === 1) nextWeek();
     else prevWeek();
   };
-  const goToday = () => (calendarView === 'day' ? setDay(toLocalIsoDate(new Date())) : setWeekStart(getMondayOfWeek(new Date())));
+  const goToday = () => {
+    if (calendarView === 'day') setDay(toLocalIsoDate(new Date()));
+    else if (calendarView === 'month') setMonth(toLocalIsoDate(new Date()).slice(0, 7));
+    else setWeekStart(getMondayOfWeek(new Date()));
+  };
 
   // ← / → step the calendar, unless someone is typing or a dialog is open
   useEffect(() => {
@@ -504,9 +575,15 @@ export function AppointmentsPage() {
             </p>
           ) : (
             <PeriodPicker
-              label={calendarView === 'day' ? dayLabel(day) : `${formatDay(weekStart)} — ${formatDay(weekEnd)}`}
-              selected={calendarView === 'day' ? day : toLocalIsoDate(weekStart)}
-              onPick={(date) => (calendarView === 'day' ? setDay(date) : setWeekStart(getMondayOfWeek(new Date(`${date}T12:00:00`))))}
+              label={calendarView === 'day' ? dayLabel(day)
+                : calendarView === 'month' ? formatMonthYear(monthStart)
+                : `${formatDay(weekStart)} — ${formatDay(weekEnd)}`}
+              selected={calendarView === 'day' ? day : calendarView === 'month' ? `${ym}-01` : toLocalIsoDate(weekStart)}
+              onPick={(date) => {
+                if (calendarView === 'day') setDay(date);
+                else if (calendarView === 'month') setMonth(date.slice(0, 7));
+                else setWeekStart(getMondayOfWeek(new Date(`${date}T12:00:00`)));
+              }}
             />
           )}
         </div>
@@ -519,7 +596,7 @@ export function AppointmentsPage() {
             </span>
           ))}
           <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-0.5">
-            {(['day', 'week', 'list'] as View[]).map((v) => (
+            {(['day', 'week', 'month', 'list'] as View[]).map((v) => (
               <button
                 key={v}
                 aria-pressed={view === v}
@@ -764,7 +841,24 @@ export function AppointmentsPage() {
         /* Calendar view */
         <div className="flex-1 overflow-hidden flex flex-col px-4 sm:px-6 pb-6">
           <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            {calendarView === 'day' ? (
+            {calendarView === 'month' ? (
+              <MonthCalendar
+                year={monthStart.getFullYear()}
+                month={monthStart.getMonth()}
+                appointments={monthVisits}
+                providerColors={providerColors}
+                providerNames={providerNames}
+                hiddenWeekdays={hiddenMonthWeekdays}
+                onDayClick={(date) => setSearchParams((prev) => {
+                  const n = new URLSearchParams(prev);
+                  n.set('view', 'day');
+                  n.set('day', date);
+                  return n;
+                }, { replace: true })}
+                onPrev={() => shiftMonth(-1)}
+                onNext={() => shiftMonth(1)}
+              />
+            ) : calendarView === 'day' ? (
               <DayCalendar
                 date={day}
                 providers={dayProviders}

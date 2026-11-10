@@ -93,7 +93,10 @@
     "resizeFailed": "Could not change the length",
     "pickDate": "Pick a date",
     "prevMonth": "Previous month",
-    "nextMonth": "Next month"
+    "nextMonth": "Next month",
+    "month": "Month",
+    "visitCount_one": "{{count}} visit",
+    "visitCount_other": "{{count}} visits"
   },
   "types": {
     "title": "Types of Services",

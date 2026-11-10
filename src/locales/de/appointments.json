@@ -93,7 +93,10 @@
     "resizeFailed": "Dauer konnte nicht geändert werden",
     "pickDate": "Datum wählen",
     "prevMonth": "Vorheriger Monat",
-    "nextMonth": "Nächster Monat"
+    "nextMonth": "Nächster Monat",
+    "month": "Monat",
+    "visitCount_one": "{{count}} Termin",
+    "visitCount_other": "{{count}} Termine"
   },
   "types": {
     "title": "Leistungsarten",

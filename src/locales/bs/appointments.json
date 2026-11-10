@@ -93,7 +93,11 @@
     "resizeFailed": "Trajanje nije moguće promijeniti",
     "pickDate": "Odaberi datum",
     "prevMonth": "Prethodni mjesec",
-    "nextMonth": "Sljedeći mjesec"
+    "nextMonth": "Sljedeći mjesec",
+    "month": "Mjesec",
+    "visitCount_one": "{{count}} termin",
+    "visitCount_few": "{{count}} termina",
+    "visitCount_other": "{{count}} termina"
   },
   "types": {
     "title": "Vrste usluga",
