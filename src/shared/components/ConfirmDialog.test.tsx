@@ -15,4 +15,17 @@ describe('ConfirmDialog', () => {
     fireEvent.keyDown(window, { key: 'Escape' })
     expect(onCancel).toHaveBeenCalled()
   })
+
+  // User request 2026-11-10: moving a visit is not destructive, so no red button
+  it('confirms in the primary colour when the action is not destructive', () => {
+    render(<ConfirmDialog open tone="primary" title="Move?" description="x" confirmLabel="Move" onConfirm={() => {}} onCancel={() => {}} />)
+    const confirm = screen.getByRole('button', { name: 'Move' })
+    expect(confirm).toHaveClass('bg-primary-600')
+    expect(confirm).not.toHaveClass('bg-red-600')
+  })
+
+  it('confirms in red by default', () => {
+    render(<ConfirmDialog open title="Delete?" description="x" confirmLabel="Delete" onConfirm={() => {}} onCancel={() => {}} />)
+    expect(screen.getByRole('button', { name: 'Delete' })).toHaveClass('bg-red-600')
+  })
 })

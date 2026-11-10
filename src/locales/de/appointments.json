@@ -62,7 +62,6 @@
     "nextDay": "Nächster Tag",
     "noProviders": "Noch keine Ärzte, die Termine annehmen.",
     "moveTitle": "Termin verschieben?",
-    "moveDescription": "{{patient}} → {{when}} · {{doctor}}",
     "moveConfirm": "Verschieben",
     "moveCancel": "Abbrechen",
     "moved": "Termin verschoben",

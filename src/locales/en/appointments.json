@@ -62,7 +62,6 @@
     "nextDay": "Next day",
     "noProviders": "No doctors take appointments yet.",
     "moveTitle": "Move the appointment?",
-    "moveDescription": "{{patient}} → {{when}} · {{doctor}}",
     "moveConfirm": "Move",
     "moveCancel": "Cancel",
     "moved": "Appointment moved",

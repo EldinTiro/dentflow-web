@@ -62,7 +62,6 @@
     "nextDay": "Sljedeći dan",
     "noProviders": "Još nema doktora koji primaju termine.",
     "moveTitle": "Pomjeriti termin?",
-    "moveDescription": "{{patient}} → {{when}} · {{doctor}}",
     "moveConfirm": "Pomjeri",
     "moveCancel": "Odustani",
     "moved": "Termin pomjeren",
