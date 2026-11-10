@@ -7,7 +7,7 @@ import { useTheme } from '@/shared/context/ThemeContext';
 import { useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
 import { SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
 import { useCalendarDrag } from './useCalendarDrag';
-import { AppointmentChipBody, CHIP_LAYOUT } from './AppointmentChipBody';
+import { AppointmentChipBody, CHIP_LAYOUT, chipColors } from './AppointmentChipBody';
 
 // The week test imports it from here
 export { calendarHourRange };
@@ -83,8 +83,6 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
   const nowOffsetMin = now.getHours() * 60 + now.getMinutes() - HOUR_START * 60;
   const nowTopPct = nowOffsetMin >= 0 && nowOffsetMin < totalMinutes ? (nowOffsetMin / totalMinutes) * 100 : null;
 
-  // Opacity suffix for chip background: more opaque in dark mode for visibility
-  const chipBgOpacity = isDark ? '55' : '28';
 
   return (
     // Day columns keep a usable minimum width and the week scrolls sideways instead;
@@ -92,7 +90,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
     <div className="flex flex-col h-full overflow-x-auto overflow-y-hidden">
       {/* Day header */}
       <div className="relative grid min-w-[57rem] border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: '56px repeat(7, 1fr)' }}>
-        <div className="flex items-center justify-center border-r border-gray-100 dark:border-gray-700/60">
+        <div className="flex items-center justify-center border-r border-gray-200 dark:border-gray-700/60">
           {onPrev && (
             <button type="button" onClick={onPrev} aria-label={t('calendar.prevWeek')} className="flex h-7 w-7 items-center justify-center rounded-md border border-control text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
               <ChevronLeft size={16} aria-hidden />
@@ -110,7 +108,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
           return (
             <div
               key={i}
-              className={`px-2 py-2 text-center text-xs font-medium border-r border-gray-100 dark:border-gray-700/60 last:border-r-0 ${
+              className={`px-2 py-2 text-center text-xs font-medium border-r border-gray-200 dark:border-gray-700/60 last:border-r-0 ${
                 isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'
               }`}
             >
@@ -135,7 +133,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
             {Array.from({ length: HOURS }, (_, i) => (
               <div
                 key={i}
-                className="border-b border-gray-100 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5"
+                className="border-b border-gray-300 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5"
                 style={{ height: hourPx, lineHeight: '14px' }}
               >
                 {`${String(HOUR_START + i).padStart(2, '0')}:00`}
@@ -164,7 +162,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                     setHover({ day: dateStr, minutes: slotUnderPointer(e.clientY, e.currentTarget, hourPx, HOUR_START, HOUR_END) });
                   } : undefined}
                   onMouseLeave={() => setHover(null)}
-                  className={`relative flex-1 border-l border-gray-100 dark:border-gray-700/50 ${
+                  className={`relative flex-1 border-l border-gray-200 dark:border-gray-700/50 ${
                     isToday ? 'bg-primary-50/20 dark:bg-primary-900/10' : ''
                   } ${onSlotClick ? 'cursor-copy' : ''}`}
                 >
@@ -172,9 +170,11 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                   {Array.from({ length: HOURS }, (_, i) => (
                     <div
                       key={i}
-                      className="absolute w-full border-b border-gray-100 dark:border-gray-700/50"
+                      className="absolute w-full border-b border-gray-300 dark:border-gray-700/50"
                       style={{ top: `${i * hourPx}px`, height: `${hourPx}px` }}
-                    />
+                    >
+                      <div className="absolute inset-x-0 top-1/2 border-t border-dashed border-gray-200 dark:border-gray-700/30" />
+                    </div>
                   ))}
 
                   {/* Current time, like Google Calendar: a red line with a dot on today's column */}
@@ -247,8 +247,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                           height: `${Math.max(heightPct, 1.5)}%`,
                           left: `calc(${col * widthPct}% + ${col === 0 ? 2 : GAP / 2}px)`,
                           width: `calc(${widthPct}% - ${col === 0 ? 2 + GAP / 2 : GAP}px)`,
-                          backgroundColor: color + chipBgOpacity,
-                          borderLeft: `3px solid ${color}`,
+                          ...chipColors(color, isDark),
                           ...chip.style,
                         }}
                       >

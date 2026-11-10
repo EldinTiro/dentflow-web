@@ -8,7 +8,7 @@ import { useTheme } from '@/shared/context/ThemeContext';
 import { useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
 import { SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
 import { useCalendarDrag } from './useCalendarDrag';
-import { AppointmentChipBody, CHIP_LAYOUT } from './AppointmentChipBody';
+import { AppointmentChipBody, CHIP_LAYOUT, chipColors } from './AppointmentChipBody';
 
 export interface DayProvider {
   id: string;
@@ -46,7 +46,6 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
   const { t } = useTranslation('appointments');
   const { t: ts } = useTranslation('staff');
   const { theme } = useTheme();
-  const chipBgOpacity = theme === 'dark' ? '55' : '28';
 
   const now = useNow();
   const [hover, setHover] = useState<{ providerId: string; minutes: number } | null>(null);
@@ -82,7 +81,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
       <div style={{ minWidth: `calc(56px + ${providers.length} * 11rem)` }}>
       {/* Doctor header */}
       <div className="sticky top-0 z-30 relative grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: columnsTemplate }}>
-        <div className="flex items-center justify-center border-r border-gray-100 dark:border-gray-700/60">
+        <div className="flex items-center justify-center border-r border-gray-200 dark:border-gray-700/60">
           {onPrev && (
             <button type="button" onClick={onPrev} aria-label={t('calendar.prevDay')} className="flex h-7 w-7 items-center justify-center rounded-md border border-control text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
               <ChevronLeft size={16} aria-hidden />
@@ -95,7 +94,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
           </button>
         )}
         {providers.map((p) => (
-          <div key={p.id} className="flex items-center justify-center gap-2 px-2 py-2.5 border-r border-gray-100 dark:border-gray-700/60 last:border-r-0 min-w-0">
+          <div key={p.id} className="flex items-center justify-center gap-2 px-2 py-2.5 border-r border-gray-200 dark:border-gray-700/60 last:border-r-0 min-w-0">
             <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: p.colorHex ?? '#6366F1' }} />
             <span className="truncate text-sm font-medium text-gray-800 dark:text-gray-100">{p.fullName}</span>
           </div>
@@ -107,7 +106,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
         <div className="relative grid" style={{ gridTemplateColumns: columnsTemplate, minHeight: `${HOURS * hourPx}px` }}>
           <div>
             {Array.from({ length: HOURS }, (_, i) => (
-              <div key={i} className="border-b border-gray-100 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5" style={{ height: hourPx, lineHeight: '14px' }}>
+              <div key={i} className="border-b border-gray-300 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5" style={{ height: hourPx, lineHeight: '14px' }}>
                 {`${String(HOUR_START + i).padStart(2, '0')}:00`}
               </div>
             ))}
@@ -133,10 +132,10 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                   setHover({ providerId: p.id, minutes: slotUnderPointer(e.clientY, e.currentTarget, hourPx, HOUR_START, HOUR_END) });
                 } : undefined}
                 onMouseLeave={() => setHover(null)}
-                className={`relative border-l border-gray-100 dark:border-gray-700/50 ${onSlotClick ? 'cursor-copy' : ''}`}
+                className={`relative border-l border-gray-200 dark:border-gray-700/50 ${onSlotClick ? 'cursor-copy' : ''}`}
               >
                 {Array.from({ length: HOURS }, (_, i) => (
-                  <div key={i} className="absolute w-full border-b border-gray-100 dark:border-gray-700/50" style={{ top: `${i * hourPx}px`, height: `${hourPx}px` }} />
+                  <div key={i} className="absolute w-full border-b border-gray-300 dark:border-gray-700/50" style={{ top: `${i * hourPx}px`, height: `${hourPx}px` }}><div className="absolute inset-x-0 top-1/2 border-t border-dashed border-gray-200 dark:border-gray-700/30" /></div>
                 ))}
 
                 {/* The slot a click would book */}
@@ -211,8 +210,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                         height: `${Math.max(pct(appt.durationMinutes), 1.5)}%`,
                         left: `calc(${col * widthPct}% + 2px)`,
                         width: `calc(${widthPct}% - 4px)`,
-                        backgroundColor: color + chipBgOpacity,
-                        borderLeft: `3px solid ${color}`,
+                        ...chipColors(color, theme === 'dark'),
                         ...chip.style,
                       }}
                     >

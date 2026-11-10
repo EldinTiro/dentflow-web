@@ -9,6 +9,17 @@ export function chipTextColor(color: string, dark: boolean): string {
   return dark ? `color-mix(in srgb, ${color} 70%, white)` : `color-mix(in srgb, ${color} 55%, black)`
 }
 
+/**
+ * The chip's colours. Light theme (user request 2026-11-10: the calendar looked washed out):
+ * a stronger tint, a thin outline in the doctor's colour and a 4px edge, so a visit stands
+ * out from the white grid. The dark theme keeps its look.
+ */
+export function chipColors(color: string, dark: boolean) {
+  return dark
+    ? { backgroundColor: color + '55', borderLeft: `3px solid ${color}` }
+    : { backgroundColor: color + '3D', border: `1px solid ${color}66`, borderLeft: `4px solid ${color}` }
+}
+
 /** Class for the chip itself: content starts top-left (a <button> centres it vertically). */
 export const CHIP_LAYOUT = 'flex flex-col items-stretch justify-start text-left'
 
@@ -25,14 +36,14 @@ export function AppointmentChipBody({ time, label, color, durationMinutes, dark 
     return (
       <span data-layout="one-line" className="block truncate leading-tight">
         <span className="font-semibold tabular-nums" style={timeStyle}>{time}</span>{' '}
-        <span className="text-gray-700 dark:text-gray-200">{label}</span>
+        <span className="text-gray-900 dark:text-gray-200">{label}</span>
       </span>
     )
   }
   return (
     <span data-layout="two-lines" className="block leading-tight">
       <span className="block truncate font-semibold tabular-nums" style={timeStyle}>{time}</span>
-      <span className="block truncate text-gray-700 dark:text-gray-200">{label}</span>
+      <span className="block truncate text-gray-900 dark:text-gray-200">{label}</span>
     </span>
   )
 }
