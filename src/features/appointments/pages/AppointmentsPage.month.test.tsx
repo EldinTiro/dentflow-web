@@ -74,9 +74,10 @@ describe('AppointmentsPage month view', () => {
     expect(screen.getByRole('button', { name: '16 December 2026, 0 visits' })).toBeInTheDocument()
   })
 
-  it('leaves cancelled visits out of the count', async () => {
+  it('leaves cancelled and no-show visits out of the count', async () => {
     vi.mocked(appointmentService.list).mockResolvedValue(page([
       visit('a', 'p1', 2026, 11, 17, 9), { ...visit('b', 'p1', 2026, 11, 17, 10), status: 'Cancelled' },
+      { ...visit('c', 'p1', 2026, 11, 17, 11), status: 'NoShow' },
     ]))
     renderPage('/appointments?view=month&month=2026-12')
 

@@ -296,7 +296,11 @@ export function AppointmentsPage() {
     },
     enabled: showMonth,
   });
-  const monthVisits = useMemo(() => forChosenDoctors(onCalendar(monthItems ?? [])), [monthItems, selectedDoctors]);
+  // The month counts visits that happen: no-shows are left out too
+  const monthVisits = useMemo(
+    () => forChosenDoctors(onCalendar(monthItems ?? []).filter((a) => a.status !== 'NoShow')),
+    [monthItems, selectedDoctors],
+  );
 
   const showDay = tab === 'calendar' && calendarView === 'day';
   const { data: dayData } = useQuery({

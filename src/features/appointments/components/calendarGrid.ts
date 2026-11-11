@@ -33,13 +33,16 @@ export function calendarHourRange(
 }
 
 /**
- * The visits the calendar draws: not cancelled or no-show. Those free their slot (the API
- * books over them), so drawn they made it look taken and a click opened them instead of
- * booking (client report 2026-11-10). The list and the patient's history still show them.
+ * The visits the calendar draws: not cancelled ones, which free their slot (client report
+ * 2026-11-10). A no-show stays, drawn as missed, so the desk sees who did not come
+ * (user request 2026-11-11). The list and the patient's history show them all.
  */
 export function onCalendar<T extends { status: string }>(appointments: T[]): T[] {
-  return appointments.filter((a) => a.status !== 'Cancelled' && a.status !== 'NoShow');
+  return appointments.filter((a) => a.status !== 'Cancelled');
 }
+
+/** A no-show is drawn grey and faded, whatever the doctor's colour. */
+export const MISSED_COLOR = '#9CA3AF';
 
 export function isoDate(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

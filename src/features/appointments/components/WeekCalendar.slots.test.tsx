@@ -93,3 +93,18 @@ describe('WeekCalendar click-to-book', () => {
     expect(onSlotClick).not.toHaveBeenCalled()
   })
 })
+
+// User request 2026-11-11: a no-show stays where it was, marked, so the desk sees who missed
+describe('WeekCalendar no-show', () => {
+  it('draws a no-show visit, marked as such', () => {
+    const missed = appointmentFixture({
+      id: 'ns', patientId: 'pat-1', status: 'NoShow', durationMinutes: 60,
+      startAt: new Date(2026, 9, 22, 9, 0).toISOString(), endAt: new Date(2026, 9, 22, 10, 0).toISOString(),
+    })
+    render(<WeekCalendar {...props} appointments={[missed]} />)
+
+    const chip = screen.getByRole('button', { name: /Lejla Hasanović/ })
+    expect(chip).toHaveAttribute('data-status', 'NoShow')
+    expect(chip).toHaveTextContent('No Show')
+  })
+})
