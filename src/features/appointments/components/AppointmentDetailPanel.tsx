@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog'
 import { StatusBadge } from '@/shared/components/StatusBadge'
@@ -21,6 +22,13 @@ import {
   Pencil,
   Check,
   ShieldAlert,
+  CalendarClock,
+  MoreHorizontal,
+  UserX,
+  XCircle,
+  UserCheck,
+  CircleCheck,
+  RotateCcw,
 } from 'lucide-react'
 import {
   appointmentService,
@@ -33,10 +41,15 @@ import { patientService } from '@/features/patients/services/patientService'
 import { NoCardBadge, OpenCardDialog } from '@/features/patients/components/OpenCardDialog'
 import { staffService } from '@/features/staff/services/staffService'
 import { billingService, INVOICE_STATUS_COLORS, INVOICE_STATUS_LABELS } from '@/features/billing/services/billingService'
-import { CreateInvoiceDrawer } from '@/features/billing/components/CreateInvoiceDrawer'
 import { AllergyAlert } from '@/features/patients/components/AllergyAlert'
 import { useEscapeKey } from '@/shared/lib/useEscapeKey'
 import { formatDayMonth } from '@/shared/lib/format'
+import { getApiErrorMessage } from '@/shared/utils/apiError'
+
+/** The visit as the desk sees it (user request 2026-11-11): booked, came in, done. */
+const STEPS = ['scheduled', 'arrived', 'done'] as const
+const stepOf = (status: string) =>
+  status === 'Completed' ? 2 : status === 'CheckedIn' || status === 'InProgress' ? 1 : 0
 
 interface Props {
   appointment: AppointmentResponse
@@ -94,14 +107,15 @@ export function AppointmentDetailPanel({
   const [showBilling, setShowBilling] = useState(false)
   const [editingNotes, setEditingNotes] = useState(false)
   const [notesDraft, setNotesDraft] = useState(a.notes ?? '')
-  const [showCreateInvoice, setShowCreateInvoice] = useState(false)
+  const [showMore, setShowMore] = useState(false)
+  const navigate = useNavigate()
   const [showOverride, setShowOverride] = useState(false)
   const [overrideNewStatus, setOverrideNewStatus] = useState<AppointmentStatus>('Scheduled')
   const [overrideReason, setOverrideReason] = useState('')
   // Client request 2026-11-10: a patient without a card gets one when they arrive
   const [openingCard, setOpeningCard] = useState(false)
   // Escape closes the drawer unless a dialog on top of it should get the key (QA-027).
-  useEscapeKey(onClose, !confirmCancel && !showOverride && !showCreateInvoice && !openingCard)
+  useEscapeKey(onClose, !confirmCancel && !showOverride && !openingCard)
 
   const { data: patient, isError: patientMissing } = useQuery({
     queryKey: ['patient', a.patientId],
@@ -179,7 +193,30 @@ export function AppointmentDetailPanel({
   })
 
   const apptType = types?.find((t) => t.id === a.appointmentTypeId)
-  const isTerminal = ['Completed', 'Cancelled', 'NoShow'].includes(a.status)
+
+  // "Create invoice" opens the invoice itself (user request 2026-11-11): a draft with the
+  // visit's service as its first line, to edit and add to there. The API needs one line.
+  const invoiceMutation = useMutation({
+    mutationFn: () => billingService.create(a.patientId, {
+      dueDate: null,
+      notes: null,
+      appointmentId: a.id,
+      lineItems: [{
+        description: apptType?.name ?? td('detail.visitLine'),
+        cdtCode: null,
+        toothNumber: null,
+        quantity: 1,
+        unitFee: apptType?.defaultFee ?? 0,
+      }],
+    }),
+    onSuccess: (invoice) => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      queryClient.invalidateQueries({ queryKey: ['patient-invoices'] })
+      onClose()
+      navigate(`/invoices/${invoice.id}`)
+    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, td('detail.invoiceFailed'))),
+  })
   // Mirrors the API: only a visit that has not started can be moved or cancelled (QA-034).
   const notStarted = ['Scheduled', 'CheckedIn'].includes(a.status)
 
@@ -421,88 +458,72 @@ export function AppointmentDetailPanel({
           </div>
         </div>
 
-        {/* Actions footer */}
-        {canManage && (
-          <div className="border-t border-gray-200 px-5 py-4 space-y-2 dark:border-gray-600">
-            {/* Primary lifecycle action */}
+        {/* Actions footer (variant A, 2026-11-11): the visit's steps, one main button for the
+            next one, and the rarer actions under More */}
+        {canManage && (() => {
+          const step = stepOf(a.status)
+          const ended = a.status === 'Cancelled' || a.status === 'NoShow'
+          const canInvoice = !visitInvoicesLoading && !visitInvoice && !ended
+          const busy = statusMutation.isPending || invoiceMutation.isPending
+          const primary =
+            a.status === 'Scheduled' && isDue ? { label: td('detail.checkIn'), icon: UserCheck, run: () => statusMutation.mutate('CheckedIn') }
+            : a.status === 'CheckedIn' || a.status === 'InProgress' ? { label: td('detail.finishVisit'), icon: CircleCheck, run: () => statusMutation.mutate('Completed') }
+            : a.status === 'Completed' && canInvoice ? { label: td('detail.createInvoice'), icon: Receipt, run: () => invoiceMutation.mutate() }
+            : ended && onRebook ? { label: td('detail.rebook'), icon: RotateCcw, run: () => onRebook(a) }
+            : null
+          const moreItems = [
+            a.status === 'Scheduled' && { key: 'noShow', label: td('detail.noShow'), icon: UserX, danger: false, run: () => statusMutation.mutate('NoShow') },
+            notStarted && { key: 'cancel', label: td('detail.cancelAppointment'), icon: XCircle, danger: true, run: () => setConfirmCancel(true) },
+            isAdmin && {
+              key: 'override', label: td('detail.overrideButton'), icon: ShieldAlert, danger: false,
+              run: () => { setOverrideNewStatus(a.status === 'Scheduled' ? 'Completed' : 'Scheduled'); setShowOverride(true) },
+            },
+          ].filter(Boolean) as { key: string; label: string; icon: React.ElementType; danger: boolean; run: () => void }[]
+          const secondary = 'flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-control py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
+
+          return (
+          <div className="border-t border-gray-200 px-5 py-4 space-y-3 dark:border-gray-600">
+            {!ended && (
+              <ol aria-label={td('detail.visitProgress')} className="flex items-center text-xs">
+                {STEPS.map((key, i) => {
+                  const done = i < step || (i === step && a.status === 'Completed')
+                  const current = i === step
+                  return (
+                    <li key={key} aria-current={current ? 'step' : undefined} className={`flex items-center gap-1.5 ${i > 0 ? 'flex-1' : ''}`}>
+                      {i > 0 && <span aria-hidden className={`mx-1.5 h-0.5 flex-1 rounded ${i <= step ? 'bg-primary-500' : 'bg-gray-200 dark:bg-gray-700'}`} />}
+                      <span aria-hidden className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+                        done ? 'bg-primary-600 text-white'
+                          : current ? 'border-2 border-primary-500 text-primary-700 dark:text-primary-300'
+                          : 'border border-gray-300 text-gray-400 dark:border-gray-600 dark:text-gray-500'
+                      }`}>
+                        {done ? <Check size={12} strokeWidth={3} /> : i + 1}
+                      </span>
+                      <span className={`whitespace-nowrap ${current ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                        {td(`detail.step.${key}`)}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ol>
+            )}
+
             {a.status === 'Scheduled' && !isDue && (
               <p className="text-xs text-gray-500 dark:text-gray-400">{td('detail.notYetDue')}</p>
             )}
-            {a.status === 'Scheduled' && isDue && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => statusMutation.mutate('CheckedIn')}
-                  disabled={statusMutation.isPending}
-                  className="flex-1 bg-primary-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
-                >
-                  {td('detail.checkIn')}
-                </button>
-                <button
-                  onClick={() => statusMutation.mutate('InProgress')}
-                  disabled={statusMutation.isPending}
-                  className="flex-1 border border-control dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
-                >
-                  {td('detail.startTreatment')}
-                </button>
-              </div>
-            )}
-            {a.status === 'CheckedIn' && (
+
+            {primary && (
               <button
-                onClick={() => statusMutation.mutate('InProgress')}
-                disabled={statusMutation.isPending}
-                className="w-full bg-primary-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
+                type="button"
+                onClick={primary.run}
+                disabled={busy}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:opacity-50"
               >
-                {statusMutation.isPending ? td('detail.updating') : td('detail.startTreatment')}
-              </button>
-            )}
-            {a.status === 'InProgress' && (
-              <button
-                onClick={() => statusMutation.mutate('Completed')}
-                disabled={statusMutation.isPending}
-                className="w-full bg-primary-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
-              >
-                {statusMutation.isPending ? td('detail.updating') : td('detail.complete')}
+                <primary.icon size={16} aria-hidden />
+                {busy ? td('detail.updating') : primary.label}
               </button>
             )}
 
-            {/* Secondary row */}
-            <div className="flex gap-2">
-              {a.status === 'Scheduled' && (
-                <button
-                  onClick={() => statusMutation.mutate('NoShow')}
-                  disabled={statusMutation.isPending}
-                  className="flex-1 border border-control text-gray-600 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-300"
-                >
-                  {td('detail.noShow')}
-                </button>
-              )}
-              {notStarted && (
-                <button
-                  onClick={() => onReschedule(a)}
-                  className="flex-1 border border-control text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-300"
-                >
-                  {td('detail.reschedule')}
-                </button>
-              )}
-              {notStarted && (
-                <button
-                  onClick={() => setConfirmCancel(true)}
-                  className="flex-1 border border-red-200 text-red-600 py-2 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors dark:border-red-400/30 dark:hover:bg-red-400/10 dark:text-red-300"
-                >
-                  {td('detail.cancelAppointment')}
-                </button>
-              )}
-              {isTerminal && onRebook && (
-                <button
-                  onClick={() => onRebook(a)}
-                  className="flex-1 border border-primary-200 text-primary-600 py-2 rounded-lg text-sm font-medium hover:bg-primary-50 transition-colors dark:border-primary-400/30 dark:hover:bg-primary-400/10 dark:text-primary-300"
-                >
-                  {td('detail.rebook')}
-                </button>
-              )}
-            </div>
-
-            {/* Already billed: show that invoice, never a second "Bill patient" */}
+            {/* Already billed: show that invoice, never a second one */}
             {visitInvoice && (
               <Link
                 to={`/invoices/${visitInvoice.id}`}
@@ -516,32 +537,55 @@ export function AppointmentDetailPanel({
               </Link>
             )}
 
-            {/* Bill patient — once it is known the visit has no invoice yet */}
-            {!visitInvoicesLoading && !visitInvoice && a.status !== 'Cancelled' && a.status !== 'NoShow' && (
-              <button
-                onClick={() => setShowCreateInvoice(true)}
-                className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
-                  a.status === 'Completed'
-                    ? 'bg-primary-600 text-white hover:bg-primary-700'
-                    : 'border border-control dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
-              >
-                {a.status === 'Completed' ? td('detail.billPatient') : td('detail.createInvoice')}
-              </button>
+            {(notStarted || (canInvoice && a.status !== 'Completed') || moreItems.length > 0) && (
+              <div className="flex gap-2">
+                {notStarted && (
+                  <button type="button" onClick={() => onReschedule(a)} className={secondary}>
+                    <CalendarClock size={15} aria-hidden /> {td('detail.reschedule')}
+                  </button>
+                )}
+                {canInvoice && a.status !== 'Completed' && (
+                  <button type="button" onClick={() => invoiceMutation.mutate()} disabled={busy} className={secondary}>
+                    <Receipt size={15} aria-hidden /> {td('detail.invoice')}
+                  </button>
+                )}
+                {moreItems.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowMore((v) => !v)}
+                    aria-haspopup="menu"
+                    aria-expanded={showMore}
+                    className={secondary}
+                  >
+                    <MoreHorizontal size={15} aria-hidden /> {td('detail.more')}
+                  </button>
+                )}
+              </div>
             )}
 
-            {/* Admin override */}
-            {isAdmin && (
-              <div className="pt-1 border-t border-gray-100 dark:border-gray-800">
-                {!showOverride ? (
+            {showMore && moreItems.length > 0 && (
+              <div role="menu" aria-label={td('detail.more')} className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                {moreItems.map((item) => (
                   <button
-                    onClick={() => { setOverrideNewStatus(a.status === 'Scheduled' ? 'Completed' : 'Scheduled'); setShowOverride(true) }}
-                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-orange-600 transition-colors dark:text-gray-400"
+                    key={item.key}
+                    type="button"
+                    role="menuitem"
+                    disabled={busy}
+                    onClick={() => { setShowMore(false); item.run() }}
+                    className={`flex w-full items-center gap-2 border-b border-gray-100 px-3 py-2 text-left text-sm last:border-b-0 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-800 dark:hover:bg-gray-800 ${
+                      item.danger ? 'text-red-600 dark:text-red-300' : 'text-gray-700 dark:text-gray-200'
+                    }`}
                   >
-                    <ShieldAlert size={13} />
-                    {td('detail.overrideButton')}
+                    <item.icon size={15} aria-hidden /> {item.label}
                   </button>
-                ) : (
+                ))}
+              </div>
+            )}
+
+            {/* Admin override, opened from More */}
+            {isAdmin && showOverride && (
+              <div>
+                {(
                   <div className="space-y-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 border border-orange-200 dark:border-orange-800">
                     <p className="text-xs font-medium text-orange-700 dark:text-orange-400 flex items-center gap-1.5">
                       <ShieldAlert size={13} />
@@ -585,7 +629,8 @@ export function AppointmentDetailPanel({
               </div>
             )}
           </div>
-        )}
+          )
+        })()}
       </div>
 
       {openingCard && patient && (
@@ -603,14 +648,6 @@ export function AppointmentDetailPanel({
       />
     </div>
 
-    {showCreateInvoice && (
-      <CreateInvoiceDrawer
-        patientId={a.patientId}
-        appointmentTypeId={a.appointmentTypeId}
-        appointmentId={a.id}
-        onClose={() => setShowCreateInvoice(false)}
-      />
-    )}
   </>
   )
 }

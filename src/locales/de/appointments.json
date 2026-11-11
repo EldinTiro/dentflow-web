@@ -212,6 +212,17 @@
     "notYetDue": "Check-in und Behandlung sind am Tag des Termins möglich.",
     "patientNotFound": "Patient nicht gefunden",
     "overrideNewStatus": "Neuer Status",
-    "billed": "Abgerechnet"
+    "billed": "Abgerechnet",
+    "finishVisit": "Besuch abschließen",
+    "more": "Mehr",
+    "invoice": "Rechnung",
+    "visitProgress": "Besuchsverlauf",
+    "visitLine": "Besuch",
+    "invoiceFailed": "Rechnung konnte nicht erstellt werden",
+    "step": {
+      "scheduled": "Geplant",
+      "arrived": "Angekommen",
+      "done": "Fertig"
+    }
   }
 }

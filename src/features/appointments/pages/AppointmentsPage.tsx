@@ -55,7 +55,7 @@ function formatDate(isoStr: string) {
 
 const NEXT_STATUS_MAP: Partial<Record<AppointmentStatus, { labelKey: string; next: AppointmentStatus }>> = {
   Scheduled:  { labelKey: 'appointmentAction.checkIn',        next: 'CheckedIn'  },
-  CheckedIn:  { labelKey: 'appointmentAction.startTreatment', next: 'InProgress' },
+  CheckedIn:  { labelKey: 'appointmentAction.complete',       next: 'Completed'  }, // no "Start treatment" step (2026-11-11)
   InProgress: { labelKey: 'appointmentAction.complete',       next: 'Completed'  },
 };
 
