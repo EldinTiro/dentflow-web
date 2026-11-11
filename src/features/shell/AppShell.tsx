@@ -26,8 +26,8 @@ import {
   X,
   Globe,
   Landmark,
-  PanelLeftClose,
-  PanelLeftOpen,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 
 const langOptions = [
@@ -159,14 +159,14 @@ export function AppShell() {
           </span>
         ))}
         <button
-            type="button"
-            onClick={toggleCollapsed}
-            aria-label={t(folded ? 'aria.expandSidebar' : 'aria.collapseSidebar')}
-            title={`${t(folded ? 'aria.expandSidebar' : 'aria.collapseSidebar')} ([)`}
-            className="hidden lg:flex shrink-0 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-          >
-            {folded ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-          </button>
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label={t(folded ? 'aria.expandSidebar' : 'aria.collapseSidebar')}
+          title={`${t(folded ? 'aria.expandSidebar' : 'aria.collapseSidebar')} ([)`}
+          className="hidden lg:flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+        >
+          {folded ? <ChevronRight size={15} strokeWidth={2.5} /> : <ChevronLeft size={15} strokeWidth={2.5} />}
+        </button>
       </div>
 
       <nav className={cn('flex-1 overflow-y-auto py-3', folded ? 'px-2' : 'px-3')}>
