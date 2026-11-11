@@ -185,4 +185,35 @@ describe('AppShell collapsible sidebar', () => {
     expect(within(sidebar()).getByText('Staff')).not.toHaveClass('sr-only')
     expect(localStorage.getItem('sidebar-collapsed')).toBe('0')
   })
+
+  // User request 2026-11-11 (mock C): the toggle sits at the top, next to the clinic's name
+  it('puts the fold button at the top, before the menu', () => {
+    renderAs('ClinicOwner')
+
+    const toggle = within(sidebar()).getByRole('button', { name: 'Collapse sidebar' })
+    const firstLink = within(sidebar()).getAllByRole('link')[0]
+    expect(toggle.compareDocumentPosition(firstLink) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('folds and unfolds with the [ key', async () => {
+    renderAs('ClinicOwner')
+
+    await userEvent.keyboard('[[')
+    expect(sidebar()).toHaveAttribute('data-collapsed', 'true')
+
+    await userEvent.keyboard('[[')
+    expect(sidebar()).toHaveAttribute('data-collapsed', 'false')
+  })
+
+  it('leaves [ alone while typing', async () => {
+    renderAs('ClinicOwner')
+    const input = document.createElement('input')
+    document.body.appendChild(input)
+    input.focus()
+
+    await userEvent.keyboard('[[')
+
+    expect(sidebar()).toHaveAttribute('data-collapsed', 'false')
+    input.remove()
+  })
 })
