@@ -177,6 +177,20 @@ describe('AppointmentDetailPanel', () => {
       await waitFor(() => expect(within(steps()).getByText('Done').closest('li')).toHaveAttribute('aria-current', 'step'))
     })
 
+    // A no-show had no action left at all: book them again, same patient and doctor
+    it('offers Rebook as the main action for a no-show', async () => {
+      const onRebook = vi.fn()
+      const missed = appointmentFixture({ status: 'NoShow' })
+      renderWithProviders(
+        <AppointmentDetailPanel appointment={missed} onClose={() => {}} onReschedule={() => {}} onRebook={onRebook} canManage />,
+      )
+
+      await userEvent.click(screen.getByRole('button', { name: 'Rebook' }))
+
+      expect(onRebook).toHaveBeenCalledWith(missed)
+      expect(screen.queryByRole('list', { name: 'Visit progress' })).not.toBeInTheDocument()
+    })
+
     it('keeps No show and Cancel under More', async () => {
       renderWithProviders(
         <AppointmentDetailPanel appointment={appointmentFixture()} onClose={() => {}} onReschedule={() => {}} canManage />,
