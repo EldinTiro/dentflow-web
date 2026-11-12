@@ -18,6 +18,7 @@ import {
 } from '../services/treatmentService'
 import { billingService } from '@/features/billing/services/billingService'
 import { StatusBadge } from '@/shared/components/StatusBadge'
+import { invalidateBillingQueries } from '@/features/billing/services/billingQueries'
 
 // ─── Create Plan Form ────────────────────────────────────────────────────────
 
@@ -246,8 +247,7 @@ function PlanCard({
   const createInvoiceMutation = useMutation({
     mutationFn: () => billingService.createFromTreatmentPlan(plan.id),
     onSuccess: (invoice) => {
-      qc.invalidateQueries({ queryKey: ['invoices'] })
-      qc.invalidateQueries({ queryKey: ['patient-invoices'] })
+      invalidateBillingQueries(qc)
       toast.success(tp('treatmentPlans.invoiceCreated'))
       navigate(`/invoices/${invoice.id}`)
     },

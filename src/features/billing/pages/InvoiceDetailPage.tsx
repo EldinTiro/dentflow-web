@@ -19,6 +19,7 @@ import { getApiErrorMessage } from '@/shared/utils/apiError'
 import { formatDate, formatMoney } from '@/shared/lib/format'
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
 import { can, canViewFinance } from '@/shared/lib/permissions'
+import { invalidateBillingQueries } from '../services/billingQueries'
 
 const STATUS_STYLES: Record<InvoiceStatus, string> = {
   Draft: 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
@@ -78,8 +79,7 @@ function AddItemRow({ invoiceId }: { invoiceId: string }) {
       unitFee: Number(price) || 0,
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] })
-      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      invalidateBillingQueries(queryClient)
       setDescription('')
       setQuantity(1)
       setPrice('')
@@ -201,7 +201,7 @@ function NoteBlock({ invoice, canEdit }: { invoice: InvoiceResponse; canEdit: bo
   const save = useMutation({
     mutationFn: () => billingService.update(invoice.id, { dueDate: invoice.dueDate, notes: draft.trim() || null }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invoice', invoice.id] })
+      invalidateBillingQueries(queryClient)
       setEditing(false)
     },
     onError: (err) => toast.error(getApiErrorMessage(err)),
@@ -287,9 +287,7 @@ export function InvoiceDetailPage() {
   const voidMutation = useMutation({
     mutationFn: () => billingService.voidInvoice(id!),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invoice', id] })
-      queryClient.invalidateQueries({ queryKey: ['invoices'] })
-      queryClient.invalidateQueries({ queryKey: ['patient-invoices'] })
+      invalidateBillingQueries(queryClient)
       setConfirmVoid(false)
     },
     // Close the dialog either way; the toast explains why nothing changed (QA-036).
@@ -302,8 +300,7 @@ export function InvoiceDetailPage() {
   const deleteItemMutation = useMutation({
     mutationFn: (itemId: string) => billingService.deleteLineItem(id!, itemId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invoice', id] })
-      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      invalidateBillingQueries(queryClient)
       setConfirmDeleteItemId(null)
     },
     onError: (err) => toast.error(getApiErrorMessage(err)),

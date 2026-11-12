@@ -45,6 +45,7 @@ import { AllergyAlert } from '@/features/patients/components/AllergyAlert'
 import { useEscapeKey } from '@/shared/lib/useEscapeKey'
 import { formatDayMonth } from '@/shared/lib/format'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
+import { invalidateBillingQueries } from '@/features/billing/services/billingQueries'
 
 /** The visit as the desk sees it (user request 2026-11-11): booked, came in, done. */
 const STEPS = ['scheduled', 'arrived', 'done'] as const
@@ -210,8 +211,7 @@ export function AppointmentDetailPanel({
       }],
     }),
     onSuccess: (invoice) => {
-      queryClient.invalidateQueries({ queryKey: ['invoices'] })
-      queryClient.invalidateQueries({ queryKey: ['patient-invoices'] })
+      invalidateBillingQueries(queryClient)
       onClose()
       navigate(`/invoices/${invoice.id}`)
     },

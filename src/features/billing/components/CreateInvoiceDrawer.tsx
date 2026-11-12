@@ -9,6 +9,7 @@ import { appointmentService } from '@/features/appointments/services/appointment
 import { Drawer } from '@/shared/components/Drawer'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
 import { formatMoney } from '@/shared/lib/format'
+import { invalidateBillingQueries } from '../services/billingQueries'
 
 interface LineItemField {
   source: 'preset' | 'other'
@@ -94,8 +95,7 @@ export function CreateInvoiceDrawer({ patientId, appointmentTypeId, appointmentI
       })
     },
     onSuccess: (invoice) => {
-      queryClient.invalidateQueries({ queryKey: ['invoices'] })
-      queryClient.invalidateQueries({ queryKey: ['patient-invoices'] })
+      invalidateBillingQueries(queryClient)
       onClose()
       navigate(`/invoices/${invoice.id}`)
     },
