@@ -101,6 +101,15 @@ describe('PatientDetailPage redesign', () => {
     }
   })
 
+  // User report 2026-11-13: the overview and Demographics gave two different last visits
+  it('gives Demographics the same last visit as the overview', async () => {
+    renderPage()
+
+    await screen.findByRole('list', { name: 'Key facts' })
+    const field = screen.getByText('Last Visit', { selector: 'dt' })
+    expect(field.nextElementSibling).toHaveTextContent('22/10/2026')
+  })
+
   it('shows what happened as a timeline, newest first', async () => {
     renderPage()
 

@@ -1,4 +1,30 @@
-import type { Gender } from '../services/patientService'
+import type { Gender, PatientInsights } from '../services/patientService'
+
+interface VisitSources {
+  firstVisitDate: string | null
+  lastVisitDate: string | null
+  insights?: Pick<PatientInsights, 'firstVisitAt' | 'lastVisitAt'>
+}
+
+/** A stored date (YYYY-MM-DD) or an instant, comparable. */
+const timeOf = (v: string) => new Date(/^\d{4}-\d{2}-\d{2}$/.test(v) ? `${v}T12:00:00` : v).getTime()
+
+/**
+ * The patient's first and last visit, the same everywhere on the record (user report
+ * 2026-11-13). The visits decide; the stored dates are never updated by the app, so they
+ * count only where they reach further, as from an imported paper record.
+ */
+export function visitDates(p: VisitSources): { first: string | null; last: string | null } {
+  const pick = (a: string | null | undefined, b: string | null | undefined, later: boolean) => {
+    if (!a) return b ?? null
+    if (!b) return a
+    return (timeOf(a) > timeOf(b)) === later ? a : b
+  }
+  return {
+    first: pick(p.insights?.firstVisitAt, p.firstVisitDate, false),
+    last: pick(p.insights?.lastVisitAt, p.lastVisitDate, true),
+  }
+}
 
 /** Whole years on `now` for a YYYY-MM-DD birth date. */
 export function ageOn(dateOfBirth: string | null, now: Date = new Date()): number | null {
