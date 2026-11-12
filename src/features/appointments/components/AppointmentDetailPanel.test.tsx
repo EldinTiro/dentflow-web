@@ -128,8 +128,7 @@ describe('AppointmentDetailPanel', () => {
       <AppointmentDetailPanel appointment={appointmentFixture({ status: 'Completed' })} onClose={() => {}} onReschedule={() => {}} canManage />,
     )
 
-    await user.click(await screen.findByRole('button', { name: 'More' }))
-    await user.click(screen.getByRole('menuitem', { name: /change status manually/i }))
+    await user.click(await screen.findByRole('button', { name: /change status manually/i }))
 
     const options = [...(screen.getByRole('combobox', { name: /new status/i }) as HTMLSelectElement).options].map((o) => o.value)
     expect(options).not.toContain('Completed')
@@ -191,17 +190,38 @@ describe('AppointmentDetailPanel', () => {
       expect(screen.queryByRole('list', { name: 'Visit progress' })).not.toBeInTheDocument()
     })
 
-    it('keeps No show and Cancel under More', async () => {
+    // User request 2026-11-13 (variant C): no More button; closing a visit sits apart, one click away
+    it('shows No show and Cancel directly, apart from Reschedule, with no More button', async () => {
+      vi.mocked(appointmentService.updateStatus).mockResolvedValue(appointmentFixture({ status: 'NoShow' }))
       renderWithProviders(
         <AppointmentDetailPanel appointment={appointmentFixture()} onClose={() => {}} onReschedule={() => {}} canManage />,
       )
-      expect(screen.queryByRole('menuitem', { name: 'No Show' })).not.toBeInTheDocument()
 
-      await userEvent.click(screen.getByRole('button', { name: 'More' }))
+      expect(await screen.findByRole('button', { name: 'Reschedule' })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'More' })).not.toBeInTheDocument()
+      const closing = screen.getByRole('group', { name: 'Close the visit' })
+      expect(within(closing).getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+      await userEvent.click(within(closing).getByRole('button', { name: 'No Show' }))
 
-      expect(screen.getByRole('menuitem', { name: 'No Show' })).toBeInTheDocument()
-      expect(screen.getByRole('menuitem', { name: 'Cancel' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Reschedule' })).toBeInTheDocument()
+      expect(appointmentService.updateStatus).toHaveBeenCalledWith('appt-1', 'NoShow')
+    })
+
+    it('offers no No show once the patient has arrived', async () => {
+      renderWithProviders(
+        <AppointmentDetailPanel appointment={appointmentFixture({ status: 'CheckedIn' })} onClose={() => {}} onReschedule={() => {}} canManage />,
+      )
+
+      await screen.findByRole('button', { name: 'Finish visit' })
+      expect(screen.queryByRole('button', { name: 'No Show' })).not.toBeInTheDocument()
+    })
+
+    it('keeps the manual status change for the owner only', async () => {
+      renderWithProviders(
+        <AppointmentDetailPanel appointment={appointmentFixture()} onClose={() => {}} onReschedule={() => {}} canManage />,
+      )
+
+      await screen.findByRole('button', { name: 'Reschedule' })
+      expect(screen.queryByRole('button', { name: /change status manually/i })).not.toBeInTheDocument()
     })
 
     it('creates the invoice and opens it to add the items', async () => {

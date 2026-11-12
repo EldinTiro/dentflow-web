@@ -214,7 +214,6 @@
     "overrideNewStatus": "Neuer Status",
     "billed": "Abgerechnet",
     "finishVisit": "Besuch abschließen",
-    "more": "Mehr",
     "invoice": "Rechnung",
     "visitProgress": "Besuchsverlauf",
     "visitLine": "Besuch",
@@ -223,6 +222,7 @@
       "scheduled": "Geplant",
       "arrived": "Angekommen",
       "done": "Fertig"
-    }
+    },
+    "closeVisit": "Termin abschließen"
   }
 }
