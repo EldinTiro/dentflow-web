@@ -72,7 +72,7 @@
     "days_one": "{{count}} day",
     "days_other": "{{count}} days",
     "overdue": "Overdue",
-    "balance": "Balance",
+    "balance": "Owed",
     "empty": "Nobody owes the clinic money.",
     "bucket": {
       "0-30": "0–30 days",
