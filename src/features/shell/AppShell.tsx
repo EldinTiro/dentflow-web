@@ -26,8 +26,8 @@ import {
   X,
   Globe,
   Landmark,
-  PanelLeftClose,
-  PanelLeftOpen,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 
 const langOptions = [
@@ -108,6 +108,17 @@ export function AppShell() {
       return !c
     })
   }
+  // [ folds and unfolds it, unless someone is typing
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '[' || e.altKey || e.ctrlKey || e.metaKey) return
+      const target = e.target instanceof HTMLElement ? e.target : null
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+      toggleCollapsed()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
   const [langOpen, setLangOpen] = useState(false)
 
   const todayCount = useTodayCount(!!user && !isSuperAdmin)
@@ -134,25 +145,28 @@ export function AppShell() {
   const renderSidebar = (folded: boolean) => (
     <>
       <div className="h-[3px] bg-gradient-to-r from-primary-500 to-primary-700 shrink-0" />
-      <div className={cn('flex h-14 items-center border-b border-gray-200 dark:border-gray-800', folded ? 'justify-center px-2' : 'px-5')}>
-        {currentTenant?.logoBase64 ? (
+      {/* The clinic, and beside it the fold button (mock C); folded, only the button stays */}
+      <div className={cn('flex h-14 items-center gap-2 border-b border-gray-200 dark:border-gray-800', folded ? 'justify-center px-2' : 'justify-between pl-5 pr-3')}>
+        {!folded && (currentTenant?.logoBase64 ? (
           <img
             src={currentTenant.logoBase64}
             alt={currentTenant.name}
-            className={folded ? 'h-8 w-8 object-contain' : 'h-8 w-auto max-w-[140px] object-contain'}
+            className="h-8 w-auto max-w-[140px] object-contain"
           />
-        ) : folded ? (
-          <span
-            title={currentTenant?.name ?? t('nav.appName')}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-sm font-bold text-primary-600 dark:bg-primary-950 dark:text-primary-400"
-          >
-            {(currentTenant?.name ?? t('nav.appName')).charAt(0).toUpperCase()}
-          </span>
         ) : (
-          <span className="text-base font-bold text-primary-600 dark:text-primary-400">
+          <span className="truncate text-base font-bold text-primary-600 dark:text-primary-400">
             {currentTenant?.name ?? t('nav.appName')}
           </span>
-        )}
+        ))}
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label={t(folded ? 'aria.expandSidebar' : 'aria.collapseSidebar')}
+          title={`${t(folded ? 'aria.expandSidebar' : 'aria.collapseSidebar')} ([)`}
+          className="hidden lg:flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+        >
+          {folded ? <ChevronRight size={15} strokeWidth={2.5} /> : <ChevronLeft size={15} strokeWidth={2.5} />}
+        </button>
       </div>
 
       <nav className={cn('flex-1 overflow-y-auto py-3', folded ? 'px-2' : 'px-3')}>
@@ -207,19 +221,6 @@ export function AppShell() {
           </Link>
         </div>
       )}
-
-      {/* Fold / unfold, desktop only (the phone menu is a drawer) */}
-      <div className={cn('hidden lg:flex pb-2', folded ? 'justify-center px-2' : 'justify-end px-3')}>
-        <button
-          type="button"
-          onClick={toggleCollapsed}
-          aria-label={t(folded ? 'aria.expandSidebar' : 'aria.collapseSidebar')}
-          title={t(folded ? 'aria.expandSidebar' : 'aria.collapseSidebar')}
-          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-        >
-          {folded ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
-        </button>
-      </div>
 
       {/* Who is signed in; sign-out stays in the account menu top right */}
       {user && (
