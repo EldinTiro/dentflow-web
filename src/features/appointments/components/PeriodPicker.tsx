@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MiniMonth } from './MiniMonth';
@@ -7,8 +7,11 @@ const ARROW = 'flex h-8 w-8 items-center justify-center rounded-lg border border
 
 interface Props {
   label: string;
-  selected: string;
-  onPick: (date: string) => void;
+  selected?: string;
+  onPick?: (date: string) => void;
+  /** Something else to choose from instead of the month (the list picks a range). */
+  panel?: (close: () => void) => ReactNode;
+  panelLabel?: string;
   onPrev: () => void;
   onNext: () => void;
   prevLabel: string;
@@ -20,7 +23,7 @@ interface Props {
  * date (user requests 2026-11-10: the arrows moved here from the calendar, for more room).
  * The month closes on a pick, on Escape and on a click elsewhere.
  */
-export function PeriodPicker({ label, selected, onPick, onPrev, onNext, prevLabel, nextLabel }: Props) {
+export function PeriodPicker({ label, selected = '', onPick, onPrev, onNext, prevLabel, nextLabel, panel, panelLabel }: Props) {
   const { t } = useTranslation('appointments');
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -60,10 +63,10 @@ export function PeriodPicker({ label, selected, onPick, onPrev, onNext, prevLabe
         <div
           id={id}
           role="dialog"
-          aria-label={t('calendar.pickDate')}
+          aria-label={panelLabel ?? t('calendar.pickDate')}
           className="absolute left-0 top-full z-40 mt-1 rounded-xl border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-800"
         >
-          <MiniMonth selected={selected} onPick={(d) => { setOpen(false); onPick(d); }} />
+          {panel ? panel(() => setOpen(false)) : <MiniMonth selected={selected} onPick={(d) => { setOpen(false); onPick?.(d); }} />}
         </div>
       )}
     </div>

@@ -1,7 +1,6 @@
 {
   "title": "Termine",
   "totalCount": "{{count}} Termin(e)",
-  "filteredOf": "{{filtered}} von",
   "button": {
     "bookAppointment": "+ Termin buchen"
   },
@@ -18,10 +17,7 @@
     "from": "Von Datum",
     "to": "Bis Datum",
     "status": "Status",
-    "provider": "Arzt",
-    "allStatuses": "Alle Status",
-    "allProviders": "Alle Ärzte",
-    "showPast": "Vergangene anzeigen"
+    "allStatuses": "Alle Status"
   },
   "preset": {
     "today": "Heute",
@@ -29,12 +25,11 @@
     "thisMonth": "Dieser Monat"
   },
   "table": {
-    "start": "Beginn",
     "patient": "Patient",
     "provider": "Arzt",
-    "duration": "Dauer",
     "status": "Status",
-    "chiefComplaint": "Hauptbeschwerde"
+    "time": "Zeit",
+    "service": "Leistung"
   },
   "statuses": {
     "Scheduled": "Geplant",
@@ -224,5 +219,11 @@
       "arrived": "Angekommen",
       "done": "Fertig"
     }
+  },
+  "list": {
+    "prevPeriod": "Vorheriger Zeitraum",
+    "nextPeriod": "Nächster Zeitraum",
+    "choosePeriod": "Zeitraum wählen",
+    "tomorrow": "Morgen"
   }
 }
