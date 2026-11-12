@@ -541,7 +541,13 @@ export function AppointmentDetailPanel({
             {notStarted && (
               <div role="group" aria-label={td('detail.closeVisit')} className="flex gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
                 {a.status === 'Scheduled' && (
-                  <button type="button" onClick={() => statusMutation.mutate('NoShow')} disabled={busy} className={secondary}>
+                  // The gray the calendar draws a missed visit in (MISSED_COLOR, gray-400)
+                  <button
+                    type="button"
+                    onClick={() => statusMutation.mutate('NoShow')}
+                    disabled={busy}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-400 bg-gray-100 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200 disabled:opacity-50 dark:border-gray-500 dark:bg-gray-700/50 dark:text-gray-300 dark:hover:bg-gray-700"
+                  >
                     <UserX size={15} aria-hidden /> {td('detail.noShow')}
                   </button>
                 )}
