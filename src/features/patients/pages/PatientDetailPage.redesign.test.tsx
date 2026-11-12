@@ -96,7 +96,7 @@ describe('PatientDetailPage redesign', () => {
     expect(facts).toHaveTextContent('60.00 KM')
     expect(await within(facts).findByText('1 / 2')).toBeInTheDocument()
     // Labels are real text, not missing-key fallbacks
-    for (const label of ['Next appointment', 'Last visit', 'Balance', 'Treatment plan']) {
+    for (const label of ['Next appointment', 'Last visit', 'Owed', 'Treatment plan']) {
       expect(within(facts).getByText(label)).toBeInTheDocument()
     }
   })
