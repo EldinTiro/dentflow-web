@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { AppointmentResponse, AppointmentStatus } from '../services/appointmentService';
 import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
 import { useTheme } from '@/shared/context/ThemeContext';
-import { useHourHeight, calendarHourRange, isoDate, layoutDay, useNow } from './calendarGrid';
+import { useHourHeight, calendarHourRange, isoDate, layoutDay, useNow, MISSED_COLOR } from './calendarGrid';
 import { ResizeHandle, SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
 import { useCalendarDrag } from './useCalendarDrag';
 import { AppointmentChipBody, CHIP_LAYOUT, chipColors } from './AppointmentChipBody';
@@ -243,7 +243,8 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
 
                     const topPct = (offsetMin / totalMinutes) * 100;
                     const heightPct = (span.durationMinutes / totalMinutes) * 100;
-                    const color = appt.colorHex ?? providerColors[appt.providerId] ?? '#6366F1';
+                    const missed = appt.status === 'NoShow';
+                    const color = missed ? MISSED_COLOR : appt.colorHex ?? providerColors[appt.providerId] ?? '#6366F1';
                     const { col, cols } = dayLayout.get(appt.id) ?? { col: 0, cols: 1 };
                     const GAP = 2;
                     const widthPct = 100 / cols;
@@ -258,6 +259,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                     return (
                       <button
                         key={appt.id}
+                        data-status={appt.status}
                         onPointerDown={(e) => { setTooltip(null); chip.onPointerDown?.(e); }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -270,7 +272,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                           setTooltip({ appt, x: rect.right + 8, y: rect.top });
                         }}
                         onMouseLeave={() => setTooltip(null)}
-                        className={`group absolute ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
+                        className={`group absolute ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : missed ? 'opacity-70' : ''}`}
                         style={{
                           top: `${topPct}%`,
                           height: `${Math.max(heightPct, 1.5)}%`,
@@ -286,6 +288,7 @@ export function WeekCalendar({ weekStart, appointments, providerColors, provider
                           color={color}
                           durationMinutes={span.durationMinutes}
                           dark={isDark}
+                          missedLabel={missed ? statusLabels.NoShow : undefined}
                         />
                         {resizeTop && <ResizeHandle {...resizeTop} />}
                         {resizeBottom && <ResizeHandle {...resizeBottom} />}

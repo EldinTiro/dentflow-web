@@ -4,7 +4,8 @@ import type { AppointmentResponse } from '../services/appointmentService';
 import type { StaffBlockedTimeResponse } from '@/features/staff/services/staffService';
 import { ABSENCE_EMOJI } from '@/features/staff/lib/absence';
 import { useTheme } from '@/shared/context/ThemeContext';
-import { useHourHeight, calendarHourRange, isoDate, layoutDay, useNow } from './calendarGrid';
+import { useHourHeight, calendarHourRange, isoDate, layoutDay, useNow, MISSED_COLOR } from './calendarGrid';
+import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
 import { ResizeHandle, SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
 import { useCalendarDrag } from './useCalendarDrag';
 import { AppointmentChipBody, CHIP_LAYOUT, chipColors } from './AppointmentChipBody';
@@ -47,6 +48,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
   const { theme } = useTheme();
 
   const now = useNow();
+  const statusLabels = useAppointmentStatusLabels();
   const [hover, setHover] = useState<{ providerId: string; minutes: number } | null>(null);
   const isToday = isoDate(now) === date;
   const nowHour = isToday ? now.getHours() : null;
@@ -196,6 +198,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                   const widthPct = 100 / cols;
                   const label = [patientNames[appt.patientId], appointmentTypeNames[appt.appointmentTypeId]].filter(Boolean).join(' · ');
                   const chip = drag.chipProps(appt);
+                  const missed = appt.status === 'NoShow';
                   const resizeTop = drag.resizeProps(appt, 'top');
                   const resizeBottom = drag.resizeProps(appt, 'bottom');
                   const duration = span.durationMinutes;
@@ -205,6 +208,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                   return (
                     <button
                       key={appt.id}
+                      data-status={appt.status}
                       onPointerDown={chip.onPointerDown}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -212,22 +216,23 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                         onAppointmentClick?.(appt);
                       }}
                       title={`${fmtTime(startDate)} – ${fmtTime(end)} · ${label}`}
-                      className={`group absolute z-10 ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
+                      className={`group absolute z-10 ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : missed ? 'opacity-70' : ''}`}
                       style={{
                         top: `${pct(offset)}%`,
                         height: `${Math.max(pct(duration), 1.5)}%`,
                         left: `calc(${col * widthPct}% + 2px)`,
                         width: `calc(${widthPct}% - 4px)`,
-                        ...chipColors(color, theme === 'dark'),
+                        ...chipColors(missed ? MISSED_COLOR : color, theme === 'dark'),
                         ...chip.style,
                       }}
                     >
                       <AppointmentChipBody
                         time={`${fmtTime(startDate)} – ${fmtTime(end)}`}
                         label={label}
-                        color={color}
+                        color={missed ? MISSED_COLOR : color}
                         durationMinutes={duration}
                         dark={theme === 'dark'}
+                        missedLabel={missed ? statusLabels.NoShow : undefined}
                       />
                       {resizeTop && <ResizeHandle {...resizeTop} />}
                       {resizeBottom && <ResizeHandle {...resizeBottom} />}

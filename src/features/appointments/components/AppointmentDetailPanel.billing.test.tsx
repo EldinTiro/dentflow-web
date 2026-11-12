@@ -32,7 +32,7 @@ function renderPanel() {
   )
 }
 
-// User report: "Bill patient" stayed enabled after the visit had been billed
+// User report: "Bill patient" (now "Create invoice") stayed enabled after the visit had been billed
 describe('AppointmentDetailPanel billing', () => {
   beforeEach(() => { vi.mocked(billingService.listByPatient).mockReset() })
 
@@ -43,14 +43,14 @@ describe('AppointmentDetailPanel billing', () => {
     const link = await screen.findByRole('link', { name: /INV-20261031-0001/ })
     expect(link).toHaveAttribute('href', '/invoices/inv-1')
     expect(link).toHaveTextContent('Paid')
-    expect(screen.queryByRole('button', { name: 'Bill patient' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Create invoice' })).not.toBeInTheDocument()
   })
 
   it('asks for the invoices of this visit only', async () => {
     vi.mocked(billingService.listByPatient).mockResolvedValue(page([]) as never)
     renderPanel()
 
-    await screen.findByRole('button', { name: 'Bill patient' })
+    await screen.findByRole('button', { name: 'Create invoice' })
     expect(billingService.listByPatient).toHaveBeenCalledWith('pat-1', expect.objectContaining({ appointmentId: 'appt-1' }))
   })
 
@@ -59,13 +59,13 @@ describe('AppointmentDetailPanel billing', () => {
     vi.mocked(billingService.listByPatient).mockResolvedValue(page([invoice('Void')]) as never)
     renderPanel()
 
-    expect(await screen.findByRole('button', { name: 'Bill patient' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Create invoice' })).toBeInTheDocument()
   })
 
   it('does not offer to bill before it knows whether the visit was billed', () => {
     vi.mocked(billingService.listByPatient).mockReturnValue(new Promise(() => {}) as never)
     renderPanel()
 
-    expect(screen.queryByRole('button', { name: 'Bill patient' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Create invoice' })).not.toBeInTheDocument()
   })
 })

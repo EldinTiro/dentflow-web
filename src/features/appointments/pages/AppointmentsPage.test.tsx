@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { Routes, Route, useLocation } from 'react-router'
 import { renderWithProviders } from '@/test/render'
 import { AppointmentsPage } from './AppointmentsPage'
+import { useAuthStore } from '@/features/auth/store/authStore'
 
 const { empty } = vi.hoisted(() => ({ empty: async () => ({ items: [], totalCount: 0, page: 1, pageSize: 20 }) }))
 vi.mock('../services/appointmentService', async (orig) => ({
@@ -208,6 +209,24 @@ describe('AppointmentsPage list and calendar (DT-24, DT-25)', () => {
     const night = await screen.findByText('Night Patient')
     const evening = screen.getByText('Evening Patient')
     expect(night.compareDocumentPosition(evening) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  // User request 2026-11-11: no "Start treatment" step; a checked-in visit is completed next
+  it('offers Complete, not Start treatment, for a checked-in visit in the list', async () => {
+    const { appointmentService } = await import('../services/appointmentService')
+    vi.mocked(appointmentService.list).mockResolvedValue({
+      items: [appt('c', '2026-11-10T09:00:00Z', 'CheckedIn', 'Waiting Patient')], totalCount: 1, page: 1, pageSize: 50,
+    } as never)
+    useAuthStore.getState().setAuth('t', { userId: 'u', email: 'e@x', fullName: 'Desk', roles: ['Staff'] })
+    renderWithProviders(
+      <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,
+      { route: '/appointments?tab=list&from=2026-11-09&to=2026-11-10&past=1' },
+    )
+
+    await screen.findByText('Waiting Patient')
+    expect(screen.getByRole('button', { name: /Complete/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Start Treatment/ })).not.toBeInTheDocument()
+    useAuthStore.getState().clearAuth()
   })
 
   it('lists only bookable staff in the provider filter', async () => {

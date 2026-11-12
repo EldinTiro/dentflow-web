@@ -212,6 +212,17 @@
     "notYetDue": "Check-in and treatment open on the day of the visit.",
     "patientNotFound": "Patient not found",
     "overrideNewStatus": "New status",
-    "billed": "Billed"
+    "billed": "Billed",
+    "finishVisit": "Finish visit",
+    "more": "More",
+    "invoice": "Invoice",
+    "visitProgress": "Visit progress",
+    "visitLine": "Visit",
+    "invoiceFailed": "Could not create the invoice",
+    "step": {
+      "scheduled": "Scheduled",
+      "arrived": "Arrived",
+      "done": "Done"
+    }
   }
 }

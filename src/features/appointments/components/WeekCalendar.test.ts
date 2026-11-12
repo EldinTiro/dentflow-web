@@ -38,8 +38,9 @@ describe('calendarHourRange', () => {
 // Client report 2026-11-10: a cancelled visit still filled its slot on the calendar, and a
 // click there opened it instead of booking. The API already lets the slot be booked again.
 describe('onCalendar', () => {
-  it('leaves out cancelled and no-show visits', () => {
+  // User request 2026-11-11: a no-show stays on the calendar (marked); a cancelled visit goes
+  it('leaves out cancelled visits only', () => {
     const visits = ['Scheduled', 'Cancelled', 'CheckedIn', 'NoShow', 'Completed'].map((status, i) => ({ id: `a${i}`, status }))
-    expect(onCalendar(visits).map((v) => v.status)).toEqual(['Scheduled', 'CheckedIn', 'Completed'])
+    expect(onCalendar(visits).map((v) => v.status)).toEqual(['Scheduled', 'CheckedIn', 'NoShow', 'Completed'])
   })
 })

@@ -25,6 +25,7 @@ import { useConfirm } from '@/shared/components/ConfirmDialog';
 import { getApiErrorMessage } from '@/shared/utils/apiError';
 import { formatDate as formatDay, formatDayMonth, formatMonthYear, formatWeekRange } from '@/shared/lib/format';
 import { toast } from 'sonner';
+import type { PatientSearchResult } from '@/features/patients/services/patientService';
 import { AppointmentDetailPanel } from '../components/AppointmentDetailPanel';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
 import { Search, X, Download, CalendarClock, UserRound } from 'lucide-react';
@@ -55,7 +56,7 @@ function formatDate(isoStr: string) {
 
 const NEXT_STATUS_MAP: Partial<Record<AppointmentStatus, { labelKey: string; next: AppointmentStatus }>> = {
   Scheduled:  { labelKey: 'appointmentAction.checkIn',        next: 'CheckedIn'  },
-  CheckedIn:  { labelKey: 'appointmentAction.startTreatment', next: 'InProgress' },
+  CheckedIn:  { labelKey: 'appointmentAction.complete',       next: 'Completed'  }, // no "Start treatment" step (2026-11-11)
   InProgress: { labelKey: 'appointmentAction.complete',       next: 'Completed'  },
 };
 
@@ -146,7 +147,7 @@ export function AppointmentsPage() {
     }, { replace: true });
 
   const [showBook, setShowBook] = useState(false);
-  const [bookingInitial, setBookingInitial] = useState<{ startAt?: string; providerId?: string } | null>(null);
+  const [bookingInitial, setBookingInitial] = useState<{ startAt?: string; providerId?: string; patient?: PatientSearchResult } | null>(null);
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null);
   const [selected, setSelected] = useState<AppointmentResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -296,7 +297,11 @@ export function AppointmentsPage() {
     },
     enabled: showMonth,
   });
-  const monthVisits = useMemo(() => forChosenDoctors(onCalendar(monthItems ?? [])), [monthItems, selectedDoctors]);
+  // The month counts visits that happen: no-shows are left out too
+  const monthVisits = useMemo(
+    () => forChosenDoctors(onCalendar(monthItems ?? []).filter((a) => a.status !== 'NoShow')),
+    [monthItems, selectedDoctors],
+  );
 
   const showDay = tab === 'calendar' && calendarView === 'day';
   const { data: dayData } = useQuery({
@@ -937,6 +942,22 @@ export function AppointmentsPage() {
           appointment={selected}
           onClose={() => setSelected(null)}
           onReschedule={(a) => { setRescheduling(a); setSelected(null); }}
+          // A no-show or cancelled visit: book the same patient with the same doctor again
+          onRebook={canManage ? (a) => {
+            setBookingInitial({
+              providerId: a.providerId,
+              // The panel has just loaded this patient: keep their card number in the form
+              patient: {
+                id: a.patientId,
+                fullName: a.patientName ?? patientNames[a.patientId] ?? '',
+                patientNumber: queryClient.getQueryData<{ patientNumber: string | null }>(['patient', a.patientId])?.patientNumber ?? null,
+                phoneMobile: null,
+                email: null,
+              },
+            });
+            setSelected(null);
+            setShowBook(true);
+          } : undefined}
           canManage={canManage}
         />
       )}
@@ -946,6 +967,7 @@ export function AppointmentsPage() {
           onClose={() => { setShowBook(false); setBookingInitial(null); }}
           initialStartAt={bookingInitial?.startAt}
           initialProviderId={bookingInitial?.providerId}
+          initialPatient={bookingInitial?.patient}
         />
       )}
       {confirmMove.dialog}
