@@ -209,7 +209,6 @@
     "overrideNewStatus": "New status",
     "billed": "Billed",
     "finishVisit": "Finish visit",
-    "invoice": "Invoice",
     "visitProgress": "Visit progress",
     "visitLine": "Visit",
     "invoiceFailed": "Could not create the invoice",
