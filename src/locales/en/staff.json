@@ -5,7 +5,8 @@
     "addStaff": "+ Add Staff"
   },
   "search": {
-    "placeholder": "Search by name or email…"
+    "placeholder": "Search by name or email…",
+    "label": "Search staff"
   },
   "emptyState": "No staff members found.",
   "table": {
@@ -187,7 +188,8 @@
     "access": "Access filter",
     "anyAccess": "Any access",
     "withAccess": "Has access",
-    "withoutAccess": "No access"
+    "withoutAccess": "No access",
+    "type": "Type filter"
   },
   "edit": {
     "title": "Edit — {{name}}",

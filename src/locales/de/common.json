@@ -29,7 +29,8 @@
     "previous": "Vorherige",
     "activate": "Aktivieren",
     "deactivate": "Deaktivieren",
-    "exportCsv": "CSV exportieren"
+    "exportCsv": "CSV exportieren",
+    "clearSearch": "Suche löschen"
   },
   "status": {
     "active": "Aktiv",

@@ -16,6 +16,8 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { BookAppointmentDrawer } from '../components/BookAppointmentDrawer';
 import { RescheduleModal } from '../components/RescheduleModal';
 import { PeriodPicker } from '../components/PeriodPicker';
+import { FilterChips, CHIP, CHIP_ON, CHIP_OFF } from '@/shared/components/FilterChips';
+import { SearchInput } from '@/shared/components/SearchInput';
 import { ListPeriodPanel } from '../components/ListPeriodPanel';
 import { avatarTint, initialsOf } from '@/features/patients/lib/patientDisplay';
 import { MonthCalendar } from '../components/MonthCalendar';
@@ -30,7 +32,7 @@ import { toast } from 'sonner';
 import type { PatientSearchResult } from '@/features/patients/services/patientService';
 import { AppointmentDetailPanel } from '../components/AppointmentDetailPanel';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
-import { Search, X, Download, CalendarClock, UserRound } from 'lucide-react';
+import { Download, CalendarClock, UserRound } from 'lucide-react';
 import { localDayEndUtc, localDayStartUtc, toLocalIsoDate } from '@/shared/lib/dates';
 import { isClinicMember } from '@/shared/lib/permissions'
 import { tenantService } from '@/features/admin/services/tenantService';
@@ -622,11 +624,7 @@ export function AppointmentsPage() {
                     type="button"
                     aria-pressed={selectedDoctors.size === 0}
                     onClick={() => updateParam('doctors', null)}
-                    className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
-                      selectedDoctors.size === 0
-                        ? 'border-primary-300 bg-primary-50 text-primary-700 dark:border-primary-500/60 dark:bg-primary-500/20 dark:text-primary-200'
-                        : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'
-                    }`}
+                    className={`${CHIP} ${selectedDoctors.size === 0 ? CHIP_ON : CHIP_OFF}`}
                   >
                     {t('calendar.allDoctors')}
                   </button>
@@ -660,49 +658,23 @@ export function AppointmentsPage() {
         <div className="flex-1 overflow-auto px-4 sm:px-6 space-y-3 pb-6">
           {/* Status buttons with their counts; search and export on the right */}
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div role="group" aria-label={t('filter.status')} className="flex flex-wrap items-center gap-1.5">
-              {(['', ...ALL_STATUSES.filter((s) => statusCounts[s] || s === statusFilter)] as (AppointmentStatus | '')[]).map((s) => {
-                const on = statusFilter === s;
-                return (
-                  <button
-                    key={s || 'all'}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => setStatusFilter(s)}
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
-                      on
-                        ? 'border-primary-300 bg-primary-50 text-primary-700 dark:border-primary-500/60 dark:bg-primary-500/20 dark:text-primary-200'
-                        : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    {s ? statusLabels[s] : t('filter.allStatuses')}
-                    <span className={`tabular-nums ${on ? '' : 'text-gray-400 dark:text-gray-500'}`}>{s ? statusCounts[s] ?? 0 : listBase.length}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="relative w-56 sm:w-64">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none dark:text-gray-400" aria-hidden />
-                <input
-                  type="text"
-                  aria-label={t('filter.search')}
-                  placeholder={t('search.placeholder')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="h-8 w-full border border-control dark:border-gray-600 rounded-lg pl-8 pr-8 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-                {searchTerm && (
-                  <button
-                    type="button"
-                    aria-label={t('filter.clearSearch')}
-                    onClick={() => setSearchTerm('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
+            <FilterChips
+              label={t('filter.status')}
+              options={[
+                { value: '' as AppointmentStatus | '', label: t('filter.allStatuses'), count: listBase.length },
+                ...ALL_STATUSES.filter((st) => statusCounts[st] || st === statusFilter)
+                  .map((st) => ({ value: st as AppointmentStatus | '', label: statusLabels[st], count: statusCounts[st] ?? 0 })),
+              ]}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
+            <div className="ml-auto flex items-center gap-2">
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                label={t('filter.search')}
+                placeholder={t('search.placeholder')}
+              />
               <button
                 type="button"
                 onClick={exportCSV}

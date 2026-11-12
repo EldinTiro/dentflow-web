@@ -66,7 +66,7 @@ describe('StaffPage (people-merge plan 4.4, B7)', () => {
     renderWithProviders(<StaffPage />)
     await rowOf('Nada')
 
-    await user.selectOptions(screen.getByLabelText(/access filter/i), 'with')
+    await user.click(within(screen.getByRole('group', { name: /access filter/i })).getByRole('button', { name: 'Has access' }))
 
     expect(screen.queryByText('Nada X')).not.toBeInTheDocument()
     expect(screen.getByText('Aida X')).toBeInTheDocument()
@@ -79,9 +79,35 @@ describe('StaffPage (people-merge plan 4.4, B7)', () => {
     await rowOf('Nada')
     expect(svc.list).toHaveBeenLastCalledWith(expect.objectContaining({ isActive: true }))
 
-    await user.selectOptions(screen.getByLabelText(/status filter/i), 'all')
+    await user.click(within(screen.getByRole('group', { name: /status filter/i })).getByRole('button', { name: 'All statuses' }))
 
     await waitFor(() => expect(svc.list).toHaveBeenLastCalledWith(expect.objectContaining({ isActive: 'all' })))
+  })
+
+  // User request 2026-11-12: filters are buttons, like the appointment list
+  it('filters by staff type with buttons, no drop-downs', async () => {
+    signIn(['ClinicOwner'])
+    const user = userEvent.setup()
+    renderWithProviders(<StaffPage />)
+    await rowOf('Nada')
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+
+    const types = screen.getByRole('group', { name: /type filter/i })
+    expect(within(types).queryByRole('button', { name: 'Hygienist' })).not.toBeInTheDocument()
+    await user.click(within(types).getByRole('button', { name: 'Receptionist' }))
+
+    await waitFor(() => expect(svc.list).toHaveBeenLastCalledWith(expect.objectContaining({ staffType: 'Receptionist' })))
+  })
+
+  it('searches from a named box', async () => {
+    signIn(['ClinicOwner'])
+    const user = userEvent.setup()
+    renderWithProviders(<StaffPage />)
+    await rowOf('Nada')
+
+    await user.type(screen.getByRole('textbox', { name: 'Search staff' }), 'na')
+
+    await waitFor(() => expect(svc.list).toHaveBeenLastCalledWith(expect.objectContaining({ searchTerm: 'na' })))
   })
 
   it('hides "+ Add Staff" and row actions from other roles', async () => {

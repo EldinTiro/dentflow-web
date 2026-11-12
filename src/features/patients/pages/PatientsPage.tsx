@@ -3,7 +3,9 @@ import { NoCardBadge } from '../components/OpenCardDialog'
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, Pencil, Search, X } from 'lucide-react'
+import { AlertTriangle, Pencil, X } from 'lucide-react'
+import { FilterChips } from '@/shared/components/FilterChips'
+import { SearchInput } from '@/shared/components/SearchInput'
 import { patientService, type PatientResponse, type PatientStatus } from '../services/patientService'
 import { CreatePatientDrawer } from '../components/CreatePatientDrawer'
 import { EditPatientDrawer } from '../components/EditPatientDrawer'
@@ -86,26 +88,21 @@ export function PatientsPage() {
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-3 mb-4">
-        <div className="relative w-full sm:w-96">
-          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" aria-hidden />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('search.placeholder')}
-            className="w-full border border-control dark:border-gray-600 rounded-lg pl-9 pr-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
-        <select
-          aria-label={t('filter.status')}
+      {/* Filters on the left, search on the right, like the appointment list */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <FilterChips
+          label={t('filter.status')}
+          options={STATUS_KEYS.map((o) => ({ value: o.value, label: tc(o.labelKey) }))}
           value={status}
-          onChange={(e) => setStatus(e.target.value as StatusFilter)}
-          className="border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        >
-          {STATUS_KEYS.map((o) => (
-            <option key={o.value} value={o.value}>{tc(o.labelKey)}</option>
-          ))}
-        </select>
+          onChange={setStatus}
+        />
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          label={t('search.label')}
+          placeholder={t('search.placeholder')}
+          className="w-full sm:w-80"
+        />
       </div>
 
       {recallFilter && (

@@ -6,7 +6,8 @@
     "newPatient": "+ Novi pacijent"
   },
   "search": {
-    "placeholder": "Pretraži po imenu, emailu, telefonu…"
+    "placeholder": "Pretraži po imenu, emailu, telefonu…",
+    "label": "Pretraži pacijente"
   },
   "emptyState": "Nema pronađenih pacijenata.",
   "table": {

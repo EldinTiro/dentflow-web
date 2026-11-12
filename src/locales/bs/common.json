@@ -29,7 +29,8 @@
     "previous": "Prethodna",
     "activate": "Aktiviraj",
     "deactivate": "Deaktiviraj",
-    "exportCsv": "Izvezi CSV"
+    "exportCsv": "Izvezi CSV",
+    "clearSearch": "Obriši pretragu"
   },
   "status": {
     "active": "Aktivan",
