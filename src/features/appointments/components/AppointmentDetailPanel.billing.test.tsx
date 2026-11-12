@@ -74,11 +74,16 @@ describe('AppointmentDetailPanel billing', () => {
     expect(screen.queryByRole('button', { name: 'Create invoice' })).not.toBeInTheDocument()
   })
 
-  it('offers the invoice once the patient has arrived', async () => {
+  // User request 2026-11-13: an arrived patient is finished, then billed; nothing to move
+  it('offers only Finish visit and Cancel once the patient has arrived', async () => {
     vi.mocked(billingService.listByPatient).mockResolvedValue(page([]) as never)
     renderPanel('CheckedIn')
 
-    expect(await screen.findByRole('button', { name: 'Invoice' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Finish visit' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(screen.queryByRole('button', { name: 'Invoice' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Reschedule' })).not.toBeInTheDocument()
   })
 
   it('does not offer to bill before it knows whether the visit was billed', () => {

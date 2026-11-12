@@ -529,19 +529,12 @@ export function AppointmentDetailPanel({
               </Link>
             )}
 
-            {(notStarted || (canInvoice && a.status !== 'Completed')) && (
-              <div className="flex gap-2">
-                {notStarted && (
-                  <button type="button" onClick={() => onReschedule(a)} className={secondary}>
-                    <CalendarClock size={15} aria-hidden /> {td('detail.reschedule')}
-                  </button>
-                )}
-                {canInvoice && a.status !== 'Completed' && (
-                  <button type="button" onClick={() => invoiceMutation.mutate()} disabled={busy} className={secondary}>
-                    <Receipt size={15} aria-hidden /> {td('detail.invoice')}
-                  </button>
-                )}
-              </div>
+            {/* Only before arrival: once the patient is in, the visit is finished, then billed
+                with the main button (user request 2026-11-13) */}
+            {a.status === 'Scheduled' && (
+              <button type="button" onClick={() => onReschedule(a)} className={`w-full ${secondary}`}>
+                <CalendarClock size={15} aria-hidden /> {td('detail.reschedule')}
+              </button>
             )}
 
             {/* What ends the visit without it happening, apart from the everyday buttons */}
