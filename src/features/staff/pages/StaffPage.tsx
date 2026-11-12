@@ -6,9 +6,6 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   staffService,
-  ALL_STAFF_TYPES,
-  SELECTABLE_STAFF_TYPES,
-  type StaffType,
   type StaffMemberResponse,
 } from '../services/staffService';
 import { CreateStaffDrawer } from '../components/CreateStaffDrawer';
@@ -17,25 +14,7 @@ import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
 import { can } from '@/shared/lib/permissions'
 import { peopleErrorMessage } from '../lib/peopleErrors'
-import { FilterChips } from '@/shared/components/FilterChips'
 import { SearchInput } from '@/shared/components/SearchInput'
-
-type AccessFilter = '' | 'with' | 'without'
-type StatusFilter = 'active' | 'inactive' | 'all'
-
-/** People-merge plan 4.4: one word for where a person's sign-in stands. */
-function accessState(m: StaffMemberResponse): 'none' | 'canSignIn' | 'waiting' | 'disabled' {
-  if (!m.access) return 'none'
-  if (!m.access.isActive) return 'disabled'
-  return m.access.mustChangePassword ? 'waiting' : 'canSignIn'
-}
-
-const ACCESS_TONE = {
-  none: 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
-  canSignIn: 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300',
-  waiting: 'bg-amber-100 text-amber-800 dark:bg-amber-400/10 dark:text-amber-300',
-  disabled: 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300',
-} as const
 
 export function StaffPage() {
   const { t } = useTranslation('staff')
@@ -45,10 +24,6 @@ export function StaffPage() {
   const canManage = can(roles, 'people.manage');
 
   const [search, setSearch] = useState('');
-  const [staffTypeFilter, setStaffTypeFilter] = useState<StaffType | ''>('');
-  // Active by default (D11), like the API; the access filter works on the loaded page.
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
-  const [accessFilter, setAccessFilter] = useState<AccessFilter>('');
   const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
@@ -56,12 +31,12 @@ export function StaffPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['staff', search, staffTypeFilter, statusFilter, page],
+    queryKey: ['staff', search, page],
     queryFn: () =>
       staffService.list({
         searchTerm: search || undefined,
-        staffType: staffTypeFilter || undefined,
-        isActive: statusFilter === 'all' ? 'all' : statusFilter === 'active',
+        // Everyone: with no status filter an inactive person must still be found
+        isActive: 'all',
         page,
         pageSize: 20,
       }),
@@ -82,12 +57,7 @@ export function StaffPage() {
     },
   });
 
-  // The types offered today, plus an older one still on somebody's profile
-  const typeChoices = ALL_STAFF_TYPES.filter((type) =>
-    SELECTABLE_STAFF_TYPES.includes(type) || type === staffTypeFilter || data?.items.some((m) => m.staffType === type));
-
-  const members = (data?.items ?? []).filter((m) =>
-    accessFilter === '' || (accessFilter === 'with' ? !!m.access : !m.access));
+  const members = data?.items ?? [];
   const total = data?.totalCount ?? 0;
   const pageSize = 20;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -111,41 +81,7 @@ export function StaffPage() {
         )}
       </div>
 
-      {/* Filters on the left, search on the right, like the appointment list */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <FilterChips
-            label={t('filter.type')}
-            options={[
-              { value: '' as StaffType | '', label: tc('staffType.allTypes') },
-              ...typeChoices.map((type) => ({ value: type as StaffType | '', label: t(`staffType.${type}`) })),
-            ]}
-            value={staffTypeFilter}
-            onChange={(v) => { setStaffTypeFilter(v); setPage(1); }}
-          />
-          <span className="hidden h-4 w-px bg-gray-200 sm:block dark:bg-gray-700" aria-hidden />
-          <FilterChips
-            label={t('filter.status')}
-            options={[
-              { value: 'active' as StatusFilter, label: tc('status.active') },
-              { value: 'inactive' as StatusFilter, label: tc('status.inactive') },
-              { value: 'all' as StatusFilter, label: tc('status.allStatuses') },
-            ]}
-            value={statusFilter}
-            onChange={(v) => { setStatusFilter(v); setPage(1); }}
-          />
-          <span className="hidden h-4 w-px bg-gray-200 sm:block dark:bg-gray-700" aria-hidden />
-          <FilterChips
-            label={t('filter.access')}
-            options={[
-              { value: '' as AccessFilter, label: t('filter.anyAccess') },
-              { value: 'with' as AccessFilter, label: t('filter.withAccess') },
-              { value: 'without' as AccessFilter, label: t('filter.withoutAccess') },
-            ]}
-            value={accessFilter}
-            onChange={setAccessFilter}
-          />
-        </div>
+      <div className="flex justify-end">
         <SearchInput
           value={search}
           onChange={(v) => { setSearch(v); setPage(1); }}
@@ -165,28 +101,33 @@ export function StaffPage() {
               <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.phone')}</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.specialty')}</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.color')}</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.status')}</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.access')}</th>
               {canManage && <th className="px-4 py-3" />}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {isLoading ? (
               <tr>
-                <td colSpan={canManage ? 9 : 8} className="text-center py-10 text-gray-500 dark:text-gray-400">
+                <td colSpan={canManage ? 7 : 6} className="text-center py-10 text-gray-500 dark:text-gray-400">
                   {tc('loading')}
                 </td>
               </tr>
             ) : members.length === 0 ? (
               <tr>
-                <td colSpan={canManage ? 9 : 8} className="text-center py-10 text-gray-500 dark:text-gray-400">
+                <td colSpan={canManage ? 7 : 6} className="text-center py-10 text-gray-500 dark:text-gray-400">
                   {t('emptyState')}
                 </td>
               </tr>
             ) : (
               members.map((m) => (
-                <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" onClick={() => navigate(`/staff/${m.id}`)}>
-                  <td className="px-4 py-3 font-medium text-primary-600 dark:text-primary-400 hover:underline">{m.fullName}</td>
+                <tr key={m.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer ${m.isActive ? '' : 'opacity-60'}`} onClick={() => navigate(`/staff/${m.id}`)}>
+                  <td className="px-4 py-3">
+                    <span className="font-medium text-primary-600 dark:text-primary-400 hover:underline">{m.fullName}</span>
+                    {!m.isActive && (
+                      <span className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700/60 dark:text-gray-300">
+                        {tc('status.inactive')}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{t(`staffType.${m.staffType}`)}</td>
                   <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.email || '—'}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{m.phone || '—'}</td>
@@ -196,22 +137,6 @@ export function StaffPage() {
                       className="inline-block w-5 h-5 rounded-full border border-gray-200 dark:border-gray-600"
                       style={{ backgroundColor: m.colorHex ?? '#3B82F6' }}
                     />
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`dot-badge inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        m.isActive
-                          ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300'
-                          : 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300'
-                      }`}
-                    >
-                      {m.isActive ? tc('status.active') : tc('status.inactive')}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${ACCESS_TONE[accessState(m)]}`}>
-                      {t(`access.${accessState(m)}`)}
-                    </span>
                   </td>
                   {canManage && (
                     <td className="px-4 py-3 text-right">

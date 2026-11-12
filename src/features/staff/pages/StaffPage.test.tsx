@@ -49,54 +49,27 @@ describe('StaffPage (people-merge plan 4.4, B7)', () => {
   })
   afterEach(() => { useAuthStore.getState().clearAuth() })
 
-  it('shows each person’s access in its own column', async () => {
+  // User request 2026-11-13: no Status or Access columns and no quick filters, only search
+  it('has only the search, with no status or access columns', async () => {
+    signIn(['ClinicOwner'])
+    renderWithProviders(<StaffPage />)
+    await rowOf('Nada')
+
+    expect(screen.getByRole('textbox', { name: 'Search staff' })).toBeInTheDocument()
+    expect(screen.queryByRole('group')).not.toBeInTheDocument()
+    expect(screen.queryByRole('columnheader', { name: /status/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('columnheader', { name: /access/i })).not.toBeInTheDocument()
+  })
+
+  // With no status filter, nobody may become unreachable: everyone is listed, an inactive
+  // person marked by the name so they can still be reactivated
+  it('lists everyone, marking an inactive person by the name', async () => {
     signIn(['ClinicOwner'])
     renderWithProviders(<StaffPage />)
 
-    expect(within(await rowOf('Nada')).getByText('No access')).toBeInTheDocument()
-    expect(within(await rowOf('Aida')).getByText('Can sign in')).toBeInTheDocument()
-    expect(within(await rowOf('Emir')).getByText('Waiting for first sign-in')).toBeInTheDocument()
-    expect(within(await rowOf('Kenan')).getByText('Sign-in turned off')).toBeInTheDocument()
     expect(within(await rowOf('Lejla')).getByText('Inactive')).toBeInTheDocument()
-  })
-
-  it('filters to people who have access', async () => {
-    signIn(['ClinicOwner'])
-    const user = userEvent.setup()
-    renderWithProviders(<StaffPage />)
-    await rowOf('Nada')
-
-    await user.click(within(screen.getByRole('group', { name: /access filter/i })).getByRole('button', { name: 'Has access' }))
-
-    expect(screen.queryByText('Nada X')).not.toBeInTheDocument()
-    expect(screen.getByText('Aida X')).toBeInTheDocument()
-  })
-
-  it('asks the API for active staff by default, and for everyone on request', async () => {
-    signIn(['ClinicOwner'])
-    const user = userEvent.setup()
-    renderWithProviders(<StaffPage />)
-    await rowOf('Nada')
-    expect(svc.list).toHaveBeenLastCalledWith(expect.objectContaining({ isActive: true }))
-
-    await user.click(within(screen.getByRole('group', { name: /status filter/i })).getByRole('button', { name: 'All statuses' }))
-
-    await waitFor(() => expect(svc.list).toHaveBeenLastCalledWith(expect.objectContaining({ isActive: 'all' })))
-  })
-
-  // User request 2026-11-12: filters are buttons, like the appointment list
-  it('filters by staff type with buttons, no drop-downs', async () => {
-    signIn(['ClinicOwner'])
-    const user = userEvent.setup()
-    renderWithProviders(<StaffPage />)
-    await rowOf('Nada')
-    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
-
-    const types = screen.getByRole('group', { name: /type filter/i })
-    expect(within(types).queryByRole('button', { name: 'Hygienist' })).not.toBeInTheDocument()
-    await user.click(within(types).getByRole('button', { name: 'Receptionist' }))
-
-    await waitFor(() => expect(svc.list).toHaveBeenLastCalledWith(expect.objectContaining({ staffType: 'Receptionist' })))
+    expect(within(await rowOf('Nada')).queryByText('Inactive')).not.toBeInTheDocument()
+    expect(svc.list).toHaveBeenLastCalledWith(expect.objectContaining({ isActive: 'all' }))
   })
 
   it('searches from a named box', async () => {
