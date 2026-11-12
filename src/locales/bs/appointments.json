@@ -210,7 +210,6 @@
     "overrideNewStatus": "Novi status",
     "billed": "Naplaćeno",
     "finishVisit": "Završi posjetu",
-    "more": "Više",
     "invoice": "Faktura",
     "visitProgress": "Tok posjete",
     "visitLine": "Posjeta",
@@ -219,7 +218,8 @@
       "scheduled": "Zakazan",
       "arrived": "Došao",
       "done": "Završen"
-    }
+    },
+    "closeVisit": "Zatvori termin"
   },
   "list": {
     "prevPeriod": "Prethodni period",

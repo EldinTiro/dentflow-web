@@ -4,6 +4,7 @@ import { renderWithProviders } from '@/test/render'
 import { appointmentFixture } from '@/test/fixtures/appointment'
 import { billingService } from '@/features/billing/services/billingService'
 import { AppointmentDetailPanel } from './AppointmentDetailPanel'
+import type { AppointmentStatus } from '../services/appointmentService'
 
 const { pending } = vi.hoisted(() => ({ pending: () => new Promise<never>(() => {}) }))
 vi.mock('@/features/patients/services/patientService', () => ({
@@ -26,9 +27,9 @@ const invoice = (status: string) => ({
 })
 const page = (items: unknown[]) => ({ items, totalCount: items.length, page: 1, pageSize: 5 })
 
-function renderPanel() {
+function renderPanel(status: AppointmentStatus = 'Completed') {
   return renderWithProviders(
-    <AppointmentDetailPanel appointment={appointmentFixture({ id: 'appt-1', status: 'Completed' })} onClose={() => {}} onReschedule={() => {}} canManage />,
+    <AppointmentDetailPanel appointment={appointmentFixture({ id: 'appt-1', status })} onClose={() => {}} onReschedule={() => {}} canManage />,
   )
 }
 
@@ -60,6 +61,24 @@ describe('AppointmentDetailPanel billing', () => {
     renderPanel()
 
     expect(await screen.findByRole('button', { name: 'Create invoice' })).toBeInTheDocument()
+  })
+
+  // User request 2026-11-13: nothing to bill before the patient is there
+  it('offers no invoice before the patient has arrived', async () => {
+    vi.mocked(billingService.listByPatient).mockResolvedValue(page([]) as never)
+    renderPanel('Scheduled')
+
+    await screen.findByRole('button', { name: 'Reschedule' })
+    await new Promise((r) => setTimeout(r, 0))
+    expect(screen.queryByRole('button', { name: 'Invoice' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Create invoice' })).not.toBeInTheDocument()
+  })
+
+  it('offers the invoice once the patient has arrived', async () => {
+    vi.mocked(billingService.listByPatient).mockResolvedValue(page([]) as never)
+    renderPanel('CheckedIn')
+
+    expect(await screen.findByRole('button', { name: 'Invoice' })).toBeInTheDocument()
   })
 
   it('does not offer to bill before it knows whether the visit was billed', () => {

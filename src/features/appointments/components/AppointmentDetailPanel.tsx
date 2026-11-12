@@ -23,7 +23,6 @@ import {
   Check,
   ShieldAlert,
   CalendarClock,
-  MoreHorizontal,
   UserX,
   XCircle,
   UserCheck,
@@ -108,7 +107,6 @@ export function AppointmentDetailPanel({
   const [showBilling, setShowBilling] = useState(false)
   const [editingNotes, setEditingNotes] = useState(false)
   const [notesDraft, setNotesDraft] = useState(a.notes ?? '')
-  const [showMore, setShowMore] = useState(false)
   const navigate = useNavigate()
   const [showOverride, setShowOverride] = useState(false)
   const [overrideNewStatus, setOverrideNewStatus] = useState<AppointmentStatus>('Scheduled')
@@ -458,12 +456,14 @@ export function AppointmentDetailPanel({
           </div>
         </div>
 
-        {/* Actions footer (variant A, 2026-11-11): the visit's steps, one main button for the
-            next one, and the rarer actions under More */}
+        {/* Actions footer (variant A, 2026-11-11): the visit's steps and one main button for the
+            next one. Variant C (2026-11-13): no More menu; No show and Cancel sit apart below */}
         {canManage && (() => {
           const step = stepOf(a.status)
           const ended = a.status === 'Cancelled' || a.status === 'NoShow'
-          const canInvoice = !visitInvoicesLoading && !visitInvoice && !ended
+          // Nothing to bill before the patient is there (user request 2026-11-13)
+          const arrived = a.status === 'CheckedIn' || a.status === 'InProgress' || a.status === 'Completed'
+          const canInvoice = !visitInvoicesLoading && !visitInvoice && arrived
           const busy = statusMutation.isPending || invoiceMutation.isPending
           const primary =
             a.status === 'Scheduled' && isDue ? { label: td('detail.checkIn'), icon: UserCheck, run: () => statusMutation.mutate('CheckedIn') }
@@ -471,14 +471,6 @@ export function AppointmentDetailPanel({
             : a.status === 'Completed' && canInvoice ? { label: td('detail.createInvoice'), icon: Receipt, run: () => invoiceMutation.mutate() }
             : ended && onRebook ? { label: td('detail.rebook'), icon: RotateCcw, run: () => onRebook(a) }
             : null
-          const moreItems = [
-            a.status === 'Scheduled' && { key: 'noShow', label: td('detail.noShow'), icon: UserX, danger: false, run: () => statusMutation.mutate('NoShow') },
-            notStarted && { key: 'cancel', label: td('detail.cancelAppointment'), icon: XCircle, danger: true, run: () => setConfirmCancel(true) },
-            isAdmin && {
-              key: 'override', label: td('detail.overrideButton'), icon: ShieldAlert, danger: false,
-              run: () => { setOverrideNewStatus(a.status === 'Scheduled' ? 'Completed' : 'Scheduled'); setShowOverride(true) },
-            },
-          ].filter(Boolean) as { key: string; label: string; icon: React.ElementType; danger: boolean; run: () => void }[]
           const secondary = 'flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-control py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
 
           return (
@@ -537,7 +529,7 @@ export function AppointmentDetailPanel({
               </Link>
             )}
 
-            {(notStarted || (canInvoice && a.status !== 'Completed') || moreItems.length > 0) && (
+            {(notStarted || (canInvoice && a.status !== 'Completed')) && (
               <div className="flex gap-2">
                 {notStarted && (
                   <button type="button" onClick={() => onReschedule(a)} className={secondary}>
@@ -549,40 +541,39 @@ export function AppointmentDetailPanel({
                     <Receipt size={15} aria-hidden /> {td('detail.invoice')}
                   </button>
                 )}
-                {moreItems.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setShowMore((v) => !v)}
-                    aria-haspopup="menu"
-                    aria-expanded={showMore}
-                    className={secondary}
-                  >
-                    <MoreHorizontal size={15} aria-hidden /> {td('detail.more')}
+              </div>
+            )}
+
+            {/* What ends the visit without it happening, apart from the everyday buttons */}
+            {notStarted && (
+              <div role="group" aria-label={td('detail.closeVisit')} className="flex gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
+                {a.status === 'Scheduled' && (
+                  <button type="button" onClick={() => statusMutation.mutate('NoShow')} disabled={busy} className={secondary}>
+                    <UserX size={15} aria-hidden /> {td('detail.noShow')}
                   </button>
                 )}
+                <button
+                  type="button"
+                  onClick={() => setConfirmCancel(true)}
+                  disabled={busy}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-200 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:border-red-400/30 dark:text-red-300 dark:hover:bg-red-400/10"
+                >
+                  <XCircle size={15} aria-hidden /> {td('detail.cancelAppointment')}
+                </button>
               </div>
             )}
 
-            {showMore && moreItems.length > 0 && (
-              <div role="menu" aria-label={td('detail.more')} className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-                {moreItems.map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    role="menuitem"
-                    disabled={busy}
-                    onClick={() => { setShowMore(false); item.run() }}
-                    className={`flex w-full items-center gap-2 border-b border-gray-100 px-3 py-2 text-left text-sm last:border-b-0 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-800 dark:hover:bg-gray-800 ${
-                      item.danger ? 'text-red-600 dark:text-red-300' : 'text-gray-700 dark:text-gray-200'
-                    }`}
-                  >
-                    <item.icon size={15} aria-hidden /> {item.label}
-                  </button>
-                ))}
-              </div>
+            {isAdmin && !showOverride && (
+              <button
+                type="button"
+                onClick={() => { setOverrideNewStatus(a.status === 'Scheduled' ? 'Completed' : 'Scheduled'); setShowOverride(true) }}
+                className="flex w-full items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <ShieldAlert size={13} aria-hidden /> {td('detail.overrideButton')}
+              </button>
             )}
 
-            {/* Admin override, opened from More */}
+            {/* Admin override, opened from the link above */}
             {isAdmin && showOverride && (
               <div>
                 {(
