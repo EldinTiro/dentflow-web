@@ -51,7 +51,14 @@
     "payments": "Plaćanja",
     "noLineItems": "Nema stavki.",
     "noPayments": "Nema evidentiranih plaćanja.",
-    "voidHasPayments": "Račun sa evidentiranom uplatom ne može se stornirati."
+    "voidHasPayments": "Račun sa evidentiranom uplatom ne može se stornirati.",
+    "more": "Više",
+    "itemActions": "Akcije za {{name}}",
+    "totals": "Ukupno",
+    "note": "Napomena",
+    "addNote": "Dodaj napomenu",
+    "editNote": "Uredi napomenu",
+    "saveNote": "Sačuvaj napomenu"
   },
   "lineItem": {
     "description": "Opis",
@@ -112,5 +119,13 @@
   "otherItem": {
     "option": "Ostalo (ručni unos)",
     "placeholder": "Vlastiti opis"
+  },
+  "add": {
+    "group": "Dodaj stavku",
+    "service": "Usluga",
+    "servicePlaceholder": "Dodaj uslugu iz cjenovnika…",
+    "quantity": "Količina",
+    "price": "Cijena",
+    "submit": "Dodaj"
   }
 }
