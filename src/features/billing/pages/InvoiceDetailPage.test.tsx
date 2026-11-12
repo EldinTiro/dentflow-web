@@ -104,6 +104,22 @@ describe('InvoiceDetailPage adding an item', () => {
     })))
   })
 
+  // An added item changes what the patient owes: their cached balance must be refreshed
+  it("refreshes the patient's balance after adding an item", async () => {
+    vi.mocked(billingService.getById).mockResolvedValue(invoiceFixture())
+    const { queryClient } = renderWithProviders(
+      <Routes><Route path="/invoices/:id" element={<InvoiceDetailPage />} /></Routes>,
+      { route: '/invoices/inv-1' },
+    )
+    queryClient.setQueryData(['patient', 'pat-1'], { balance: 75 })
+    await screen.findByText('Filling')
+
+    await userEvent.type(within(addRow()).getByRole('combobox', { name: 'Service' }), 'Kontrola')
+    await userEvent.click(within(addRow()).getByRole('button', { name: 'Add' }))
+
+    await waitFor(() => expect(queryClient.getQueryState(['patient', 'pat-1'])?.isInvalidated).toBe(true))
+  })
+
   it('does not add an item without a description', async () => {
     renderInvoice('Draft')
     await screen.findByText('Filling')

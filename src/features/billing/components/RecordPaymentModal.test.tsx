@@ -40,4 +40,20 @@ describe('RecordPaymentModal', () => {
 
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Payment recorded.'))
   })
+
+  // User report 2026-11-12: after paying, the patient's page still showed a balance of
+  // 22 KM until reloaded; the patient's cached balance and timeline were not refreshed
+  it("refreshes the patient's balance and timeline, and the patient list", async () => {
+    vi.mocked(billingService.recordPayment).mockResolvedValue({} as never)
+    const { queryClient } = renderWithProviders(<RecordPaymentModal invoiceId="inv-1" balanceDue={75} onClose={() => {}} />)
+    queryClient.setQueryData(['patient', 'pat-1'], { balance: 22 })
+    queryClient.setQueryData(['patient-timeline', 'pat-1'], [])
+    queryClient.setQueryData(['patients', { page: 1 }], { items: [] })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Record Payment' }))
+
+    await waitFor(() => expect(queryClient.getQueryState(['patient', 'pat-1'])?.isInvalidated).toBe(true))
+    expect(queryClient.getQueryState(['patient-timeline', 'pat-1'])?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(['patients', { page: 1 }])?.isInvalidated).toBe(true)
+  })
 })

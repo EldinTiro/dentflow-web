@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { billingService, type InvoiceLineItemResponse } from '../services/billingService'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
+import { invalidateBillingQueries } from '../services/billingQueries'
 
 interface FormValues {
   description: string
@@ -71,8 +72,7 @@ export function AddLineItemModal({ invoiceId, item, onClose }: Props) {
         : billingService.addLineItem(invoiceId, body)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] })
-      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      invalidateBillingQueries(queryClient)
       onClose()
     },
     onError: (err) => toast.error(getApiErrorMessage(err)),
