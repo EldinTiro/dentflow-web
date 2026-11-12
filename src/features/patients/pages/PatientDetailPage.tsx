@@ -24,7 +24,7 @@ import { Trash2, Plus, AlertTriangle, Phone, User, Heart, CalendarPlus } from 'l
 import { AllergyAlert } from '../components/AllergyAlert'
 import { PatientKeyFacts } from '../components/PatientKeyFacts'
 import { PatientTimeline } from '../components/PatientTimeline'
-import { ageOn, avatarTint, genderKey, initialsOf } from '../lib/patientDisplay'
+import { ageOn, avatarTint, genderKey, initialsOf, visitDates } from '../lib/patientDisplay'
 import { DeactivatePatientDialog } from '../components/DeactivatePatientDialog'
 import { NoCardBadge, OpenCardDialog } from '../components/OpenCardDialog'
 import { toast } from 'sonner'
@@ -46,7 +46,7 @@ function Field({ label, value }: { label: string; value: string | null | undefin
   return (
     <div>
       <dt className="text-xs text-gray-500 dark:text-gray-400 font-medium">{label}</dt>
-      <dd className="text-sm text-gray-800 dark:text-gray-200 mt-0.5">{value ?? <span className="text-gray-500 dark:text-gray-400">—</span>}</dd>
+      <dd className="text-sm text-gray-800 dark:text-gray-200 mt-0.5 [overflow-wrap:anywhere]">{value ?? <span className="text-gray-500 dark:text-gray-400">—</span>}</dd>
     </div>
   )
 }
@@ -301,8 +301,8 @@ export function PatientDetailPage() {
           <Field label={t('field.dateOfBirth')} value={formatDate(patient.dateOfBirth)} />
           <Field label={t('field.gender')} value={genderKey(patient.gender) ? tc(genderKey(patient.gender)!) : null} />
           <Field label={t('field.preferredContact')} value={patient.preferredContactMethod} />
-          <Field label={t('field.firstVisit')} value={formatDate(patient.firstVisitDate)} />
-          <Field label={t('field.lastVisit')} value={formatDate(patient.lastVisitDate)} />
+          <Field label={t('field.firstVisit')} value={formatDate(visitDates(patient).first)} />
+          <Field label={t('field.lastVisit')} value={formatDate(visitDates(patient).last)} />
           <Field label={t('field.recallDue')} value={formatDate(patient.recallDueDate)} />
         </Section>
 
