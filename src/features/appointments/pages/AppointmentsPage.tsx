@@ -16,6 +16,10 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { BookAppointmentDrawer } from '../components/BookAppointmentDrawer';
 import { RescheduleModal } from '../components/RescheduleModal';
 import { PeriodPicker } from '../components/PeriodPicker';
+import { FilterChips, CHIP, CHIP_ON, CHIP_OFF } from '@/shared/components/FilterChips';
+import { SearchInput } from '@/shared/components/SearchInput';
+import { ListPeriodPanel } from '../components/ListPeriodPanel';
+import { avatarTint, initialsOf } from '@/features/patients/lib/patientDisplay';
 import { MonthCalendar } from '../components/MonthCalendar';
 import { monthWeeks } from '../components/MiniMonth';
 import { WeekCalendar } from '../components/WeekCalendar';
@@ -28,7 +32,7 @@ import { toast } from 'sonner';
 import type { PatientSearchResult } from '@/features/patients/services/patientService';
 import { AppointmentDetailPanel } from '../components/AppointmentDetailPanel';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
-import { Search, X, Download, CalendarClock, UserRound } from 'lucide-react';
+import { Download, CalendarClock, UserRound } from 'lucide-react';
 import { localDayEndUtc, localDayStartUtc, toLocalIsoDate } from '@/shared/lib/dates';
 import { isClinicMember } from '@/shared/lib/permissions'
 import { tenantService } from '@/features/admin/services/tenantService';
@@ -60,25 +64,16 @@ const NEXT_STATUS_MAP: Partial<Record<AppointmentStatus, { labelKey: string; nex
   InProgress: { labelKey: 'appointmentAction.complete',       next: 'Completed'  },
 };
 
-function SortBtn({ label, col, sort, onClick }: {
-  label: string;
-  col: 'startAt' | 'duration' | 'status';
-  sort: { col: string; dir: 'asc' | 'desc' };
-  onClick: () => void;
-}) {
-  const active = sort.col === col;
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-0.5 font-medium whitespace-nowrap hover:text-gray-900 ${
-        active ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-gray-300'
-      }`}
-    >
-      {label}
-      <span className="text-xs ml-0.5 opacity-70">{active ? (sort.dir === 'asc' ? '↑' : '↓') : '↕'}</span>
-    </button>
-  );
+/** Every visit in a period: the API gives at most 200 a page, a busy month has more. */
+async function listAll(params: { dateFrom: string; dateTo: string }) {
+  const first = await appointmentService.list({ ...params, pageSize: 200, page: 1 });
+  const pages = Math.ceil(first.totalCount / 200);
+  const rest = await Promise.all(Array.from({ length: Math.max(0, pages - 1) }, (_, i) => appointmentService.list({ ...params, pageSize: 200, page: i + 2 })));
+  return [first, ...rest].flatMap((r) => r.items);
 }
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const timeOf = (iso: string) => { const d = new Date(iso); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
 
 export function AppointmentsPage() {
   const { t } = useTranslation('appointments')
@@ -92,34 +87,31 @@ export function AppointmentsPage() {
   // The calendar is the default view: clinics plan the day on it. The list keeps ?tab=list.
   const tab = (searchParams.get('tab') ?? 'calendar') as Tab;
   const statusFilter = (searchParams.get('status') ?? '') as AppointmentStatus | '';
-  const dateFrom = searchParams.get('from') ?? toLocalIsoDate(new Date());
-  const dateTo = searchParams.get('to') ?? toLocalIsoDate(new Date());
-  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
-  const providerFilter = searchParams.get('provider') ?? '';
-  const showPast = searchParams.get('past') === '1';
+  const isoDay = (v: string | null) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
+  const dateFrom = isoDay(searchParams.get('from')) ?? toLocalIsoDate(new Date());
+  const dateTo = [isoDay(searchParams.get('to')) ?? dateFrom, dateFrom].sort()[1];
 
-  const updateParam = (key: string, value: string | null, resetPage = true) =>
+  const updateParam = (key: string, value: string | null) =>
     setSearchParams((p) => {
       const n = new URLSearchParams(p);
       value ? n.set(key, value) : n.delete(key);
-      if (resetPage) n.set('page', '1');
       return n;
     }, { replace: true });
 
-  const setTab = (v: Tab) => updateParam('tab', v === 'calendar' ? null : v, false);
+  const setTab = (v: Tab) => updateParam('tab', v === 'calendar' ? null : v);
   // The calendar shows a week, or one day with a column per doctor (?view=day&day=…)
   const viewParam = searchParams.get('view');
   const calendarView: CalendarView = viewParam === 'day' || viewParam === 'month' ? viewParam : 'week';
   const dayParam = searchParams.get('day');
   const day = dayParam && /^\d{4}-\d{2}-\d{2}$/.test(dayParam) ? dayParam : toLocalIsoDate(new Date());
-  const setDay = (v: string) => updateParam('day', v, false);
+  const setDay = (v: string) => updateParam('day', v);
   // Doctor filter (user request 2026-11-10): ?doctors=id,id; none = everyone
   const doctorsParam = searchParams.get('doctors') ?? '';
   const selectedDoctors = useMemo(() => new Set(doctorsParam ? doctorsParam.split(',') : []), [doctorsParam]);
   const toggleDoctor = (id: string) => {
     const next = new Set(selectedDoctors);
     if (next.has(id)) next.delete(id); else next.add(id);
-    updateParam('doctors', [...next].join(',') || null, false);
+    updateParam('doctors', [...next].join(',') || null);
   };
   const forChosenDoctors = <T extends { providerId: string }>(items: T[]) =>
     selectedDoctors.size ? items.filter((a) => selectedDoctors.has(a.providerId)) : items;
@@ -127,31 +119,32 @@ export function AppointmentsPage() {
   const monthParam = searchParams.get('month');
   const ym = monthParam && /^\d{4}-\d{2}$/.test(monthParam) ? monthParam : toLocalIsoDate(new Date()).slice(0, 7);
   const monthStart = useMemo(() => new Date(Number(ym.slice(0, 4)), Number(ym.slice(5, 7)) - 1, 1), [ym]);
-  const setMonth = (v: string) => updateParam('month', v, false);
+  const setMonth = (v: string) => updateParam('month', v);
   const shiftMonth = (n: number) => setMonth(toLocalIsoDate(new Date(monthStart.getFullYear(), monthStart.getMonth() + n, 1)).slice(0, 7));
   const shiftDay = (n: number) => { const d = new Date(`${day}T12:00:00`); d.setDate(d.getDate() + n); setDay(toLocalIsoDate(d)); };
   const setStatusFilter = (v: AppointmentStatus | '') => updateParam('status', v || null);
-  const setDateFrom = (v: string) => updateParam('from', v || null);
-  const setDateTo = (v: string) => updateParam('to', v || null);
-  const setPage = (v: number) => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('page', String(v)); return n }, { replace: true });
-  const setProviderFilter = (v: string) => updateParam('provider', v || null);
-  const setShowPast = (v: boolean) => updateParam('past', v ? '1' : null);
   const setDateRange = (from: string, to: string) =>
     setSearchParams((p) => {
       const n = new URLSearchParams(p);
       n.set('from', from);
       n.set('to', to);
-      n.delete('past');
-      n.set('page', '1');
       return n;
     }, { replace: true });
+  // The list's arrows move the period by its own length: a day, a week, a month of days
+  const shiftRange = (dir: 1 | -1) => {
+    const a = new Date(`${dateFrom}T12:00:00`);
+    const b = new Date(`${dateTo}T12:00:00`);
+    const days = Math.round((b.getTime() - a.getTime()) / 86_400_000) + 1;
+    a.setDate(a.getDate() + dir * days);
+    b.setDate(b.getDate() + dir * days);
+    setDateRange(toLocalIsoDate(a), toLocalIsoDate(b));
+  };
 
   const [showBook, setShowBook] = useState(false);
   const [bookingInitial, setBookingInitial] = useState<{ startAt?: string; providerId?: string; patient?: PatientSearchResult } | null>(null);
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null);
   const [selected, setSelected] = useState<AppointmentResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sort, setSort] = useState<{ col: 'startAt' | 'duration' | 'status'; dir: 'asc' | 'desc' }>({ col: 'startAt', dir: 'asc' });
 
   const location = useLocation();
   const handledStateRef = useRef(false);
@@ -206,7 +199,7 @@ export function AppointmentsPage() {
       const anchor = toLocalIsoDate(today).slice(0, 7) === ym ? toLocalIsoDate(today) : `${ym}-01`;
       if (v === 'week') {
         setWeekStart(getMondayOfWeek(new Date(`${anchor}T12:00:00`)));
-        updateParam('view', null, false);
+        updateParam('view', null);
       } else {
         setSearchParams((p) => {
           const n = new URLSearchParams(p);
@@ -219,7 +212,7 @@ export function AppointmentsPage() {
     }
     if (v === 'week') {
       setWeekStart(getMondayOfWeek(new Date(`${day}T12:00:00`)));
-      updateParam('view', null, false);
+      updateParam('view', null);
       return;
     }
     const today = new Date();
@@ -253,28 +246,17 @@ export function AppointmentsPage() {
     setCalendarView(v);
   };
 
-  const effectiveDateFrom = showPast
-    ? (dateFrom || undefined)
-    : (dateFrom || toLocalIsoDate(new Date()));
-
-  const listParams = {
-    status: statusFilter || undefined,
-    dateFrom: effectiveDateFrom,
-    dateTo: dateTo || undefined,
-    providerId: providerFilter || undefined,
-    page,
-    pageSize: searchTerm ? 200 : 20,
-  };
-
   const calendarParams = {
     dateFrom: toLocalIsoDate(weekStart),
     dateTo: toLocalIsoDate(weekEnd),
     pageSize: 200,
   };
 
-  const { data: listData, isLoading: listLoading } = useQuery({
-    queryKey: ['appointments', listParams],
-    queryFn: () => appointmentService.list(listParams),
+  // The list loads its whole period, then filters by doctor, status and text on the page,
+  // so the status buttons can count and several doctors can be chosen at once
+  const { data: listItems, isLoading: listLoading } = useQuery({
+    queryKey: ['appointments', 'list', dateFrom, dateTo],
+    queryFn: () => listAll({ dateFrom, dateTo }),
     enabled: tab === 'list',
   });
 
@@ -288,13 +270,7 @@ export function AppointmentsPage() {
   const { data: monthItems } = useQuery({
     queryKey: ['appointments-month', ym],
     // The API gives at most 200 a page; a busy clinic books more than that in a month
-    queryFn: async () => {
-      const params = { dateFrom: toLocalIsoDate(monthGrid[0]), dateTo: toLocalIsoDate(monthGrid[monthGrid.length - 1]), pageSize: 200 };
-      const first = await appointmentService.list({ ...params, page: 1 });
-      const pages = Math.ceil(first.totalCount / 200);
-      const rest = await Promise.all(Array.from({ length: Math.max(0, pages - 1) }, (_, i) => appointmentService.list({ ...params, page: i + 2 })));
-      return [first, ...rest].flatMap((r) => r.items);
-    },
+    queryFn: () => listAll({ dateFrom: toLocalIsoDate(monthGrid[0]), dateTo: toLocalIsoDate(monthGrid[monthGrid.length - 1]) }),
     enabled: showMonth,
   });
   // The month counts visits that happen: no-shows are left out too
@@ -357,11 +333,11 @@ export function AppointmentsPage() {
   // The appointment lists carry the names; no need to download every patient (QA-033).
   const patientNames = useMemo(() => {
     const map: Record<string, string> = {};
-    for (const a of [...(listData?.items ?? []), ...(calData?.items ?? []), ...(dayData?.items ?? [])]) {
+    for (const a of [...(listItems ?? []), ...(calData?.items ?? []), ...(dayData?.items ?? [])]) {
       if (a.patientName) map[a.patientId] = a.patientName;
     }
     return map;
-  }, [listData, calData, dayData]);
+  }, [listItems, calData, dayData]);
 
   const appointmentTypeNames = useMemo(() => {
     const map: Record<string, string> = {};
@@ -488,11 +464,6 @@ export function AppointmentsPage() {
     },
   });
 
-  function toggleSort(col: 'startAt' | 'duration' | 'status') {
-    setSort((s) => s.col === col ? { col, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { col, dir: 'asc' });
-    setPage(1);
-  }
-
   function exportCSV() {
     const rows = [
       ['Date/Time', 'Patient', 'Provider', 'Duration (min)', 'Status', 'Chief Complaint'],
@@ -515,32 +486,41 @@ export function AppointmentsPage() {
     URL.revokeObjectURL(url);
   }
 
-  const rawAppointments = listData?.items ?? [];
-  const appointments = useMemo(() => {
-    let result = [...rawAppointments];
-    if (searchTerm) {
-      const q = searchTerm.toLowerCase();
-      result = result.filter(
-        (a) =>
-          (patientNames[a.patientId] ?? '').toLowerCase().includes(q) ||
-          (a.chiefComplaint ?? '').toLowerCase().includes(q),
-      );
+  // Doctor and text first: the status buttons count what is left after them
+  const listBase = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return forChosenDoctors(listItems ?? [])
+      .filter((a) => !q
+        || (patientNames[a.patientId] ?? '').toLowerCase().includes(q)
+        || (a.chiefComplaint ?? '').toLowerCase().includes(q))
+      // DT-25: start time alone decides the order; a cancelled 00:30 stays before 20:00
+      .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
+  }, [listItems, searchTerm, patientNames, selectedDoctors]);
+  const statusCounts = useMemo(() => {
+    const counts: Partial<Record<AppointmentStatus, number>> = {};
+    for (const a of listBase) counts[a.status as AppointmentStatus] = (counts[a.status as AppointmentStatus] ?? 0) + 1;
+    return counts;
+  }, [listBase]);
+  const appointments = useMemo(
+    () => (statusFilter ? listBase.filter((a) => a.status === statusFilter) : listBase),
+    [listBase, statusFilter],
+  );
+  const listDays = useMemo(() => {
+    const days: { date: string; items: AppointmentResponse[] }[] = [];
+    for (const a of appointments) {
+      const date = toLocalIsoDate(new Date(a.startAt));
+      if (days[days.length - 1]?.date !== date) days.push({ date, items: [] });
+      days[days.length - 1].items.push(a);
     }
-    // DT-25: the chosen column alone decides the order; finished and cancelled rows are
-    // marked by their tint, not moved to the end (00:30 sorted after 20:00 when cancelled).
-    result.sort((a, b) => {
-      let cmp = 0;
-      if (sort.col === 'startAt') cmp = new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
-      else if (sort.col === 'duration') cmp = a.durationMinutes - b.durationMinutes;
-      else if (sort.col === 'status') cmp = a.status.localeCompare(b.status);
-      return sort.dir === 'asc' ? cmp : -cmp;
-    });
-    return result;
-  }, [rawAppointments, searchTerm, patientNames, sort]);
-
-  const total = listData?.totalCount ?? 0;
-  const pageSize = searchTerm ? 200 : 20;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    return days;
+  }, [appointments]);
+  const listDayLabel = (iso: string) => {
+    const d = new Date(`${iso}T12:00:00`);
+    const today = new Date();
+    const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    const prefix = iso === toLocalIsoDate(today) ? `${t('preset.today')} · ` : iso === toLocalIsoDate(tomorrow) ? `${t('list.tomorrow')} · ` : '';
+    return `${prefix}${(t('calendar.weekdaysLong', { returnObjects: true }) as string[])[weekdayIndex(d)]}, ${formatDayMonth(d, { month: 'long' })}`;
+  };
 
   const prevWeek = () => {
     setWeekStart((w) => { const d = new Date(w); d.setDate(d.getDate() - 7); return d; });
@@ -555,9 +535,8 @@ export function AppointmentsPage() {
     else prevWeek();
   };
 
-  // ← / → step the calendar, unless someone is typing or a dialog is open
+  // ← / → step the calendar or the list, unless someone is typing or a dialog is open
   useEffect(() => {
-    if (tab !== 'calendar') return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
@@ -565,7 +544,8 @@ export function AppointmentsPage() {
       if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
       if (document.querySelector('[role="dialog"]')) return;
       e.preventDefault();
-      stepPeriod(e.key === 'ArrowRight' ? 1 : -1);
+      const dir = e.key === 'ArrowRight' ? 1 : -1;
+      if (tab === 'list') shiftRange(dir); else stepPeriod(dir);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -579,9 +559,7 @@ export function AppointmentsPage() {
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t('title')}</h1>
           {tab === 'list' ? (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              {searchTerm && appointments.length !== total
-                ? t('filteredOf', { filtered: appointments.length }) + ' '
-                : ''}{t('totalCount', { count: total })}
+              {t('totalCount', { count: appointments.length })}
             </p>
           ) : null}
         </div>
@@ -611,8 +589,18 @@ export function AppointmentsPage() {
             </button>
           )}
         </div>
-        {tab !== 'list' && (
             <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-2">
+              {tab === 'list' ? (
+                <PeriodPicker
+                  label={dateFrom === dateTo ? dayLabel(dateFrom) : formatWeekRange(new Date(`${dateFrom}T12:00:00`), new Date(`${dateTo}T12:00:00`))}
+                  panelLabel={t('list.choosePeriod')}
+                  panel={(close) => <ListPeriodPanel from={dateFrom} to={dateTo} onChange={setDateRange} onDone={close} />}
+                  onPrev={() => shiftRange(-1)}
+                  onNext={() => shiftRange(1)}
+                  prevLabel={t('list.prevPeriod')}
+                  nextLabel={t('list.nextPeriod')}
+                />
+              ) : (
               <PeriodPicker
                 label={calendarView === 'day' ? dayLabel(day)
                   : calendarView === 'month' ? formatMonthYear(monthStart)
@@ -628,18 +616,15 @@ export function AppointmentsPage() {
                 prevLabel={t(calendarView === 'day' ? 'calendar.prevDay' : calendarView === 'month' ? 'calendar.prevMonth' : 'calendar.prevWeek')}
                 nextLabel={t(calendarView === 'day' ? 'calendar.nextDay' : calendarView === 'month' ? 'calendar.nextMonth' : 'calendar.nextWeek')}
               />
+              )}
               {/* Doctor filter: a click shows only that doctor; several can be on */}
               {doctorChips.length > 1 && (
                 <div role="group" aria-label={t('calendar.doctorsFilter')} className="flex flex-wrap items-center gap-1.5">
                   <button
                     type="button"
                     aria-pressed={selectedDoctors.size === 0}
-                    onClick={() => updateParam('doctors', null, false)}
-                    className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
-                      selectedDoctors.size === 0
-                        ? 'border-primary-300 bg-primary-50 text-primary-700 dark:border-primary-500/60 dark:bg-primary-500/20 dark:text-primary-200'
-                        : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'
-                    }`}
+                    onClick={() => updateParam('doctors', null)}
+                    className={`${CHIP} ${selectedDoctors.size === 0 ? CHIP_ON : CHIP_OFF}`}
                   >
                     {t('calendar.allDoctors')}
                   </button>
@@ -667,215 +652,120 @@ export function AppointmentsPage() {
                 </div>
               )}
             </div>
-        )}
       </div>
 
       {tab === 'list' ? (
-        <div className="flex-1 overflow-auto px-4 sm:px-6 space-y-4 pb-6">
-          {/* Filters */}
-          <div className="space-y-2">
-            {/* Row 1: Search + Export */}
-            <div className="flex items-center gap-3">
-              <div className="relative flex-1 max-w-sm">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none dark:text-gray-400" />
-                <input
-                  type="text"
-                  aria-label={t('filter.search')}
-                  placeholder={t('search.placeholder')}
-                  value={searchTerm}
-                  onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-                  className="w-full border border-control dark:border-gray-600 rounded-lg pl-8 pr-8 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-                {searchTerm && (
-                  <button
-                    aria-label={t('filter.clearSearch')}
-                    onClick={() => { setSearchTerm(''); setPage(1); }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600 dark:text-gray-400"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
+        <div className="flex-1 overflow-auto px-4 sm:px-6 space-y-3 pb-6">
+          {/* Status buttons with their counts; search and export on the right */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <FilterChips
+              label={t('filter.status')}
+              options={[
+                { value: '' as AppointmentStatus | '', label: t('filter.allStatuses'), count: listBase.length },
+                ...ALL_STATUSES.filter((st) => statusCounts[st] || st === statusFilter)
+                  .map((st) => ({ value: st as AppointmentStatus | '', label: statusLabels[st], count: statusCounts[st] ?? 0 })),
+              ]}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
+            <div className="ml-auto flex items-center gap-2">
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                label={t('filter.search')}
+                placeholder={t('search.placeholder')}
+              />
               <button
+                type="button"
                 onClick={exportCSV}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
+                aria-label={tc('button.exportCsv')}
+                title={tc('button.exportCsv')}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
               >
-                <Download size={14} />
-                {tc('button.exportCsv')}
+                <Download size={15} aria-hidden />
               </button>
             </div>
-
-            {/* Row 2: Presets + date pickers + dropdowns + show past */}
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Date presets */}
-              {(() => {
-                const now = new Date();
-                const todayS = toLocalIsoDate(now);
-                const mon = getMondayOfWeek(now);
-                const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-                const fom = new Date(now.getFullYear(), now.getMonth(), 1);
-                const lom = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-                return ([
-                  { label: t('preset.today'), from: todayS, to: todayS },
-                  { label: t('preset.thisWeek'), from: toLocalIsoDate(mon), to: toLocalIsoDate(sun) },
-                  { label: t('preset.thisMonth'), from: toLocalIsoDate(fom), to: toLocalIsoDate(lom) },
-                ] as const).map((p) => (
-                  <button
-                    key={p.label}
-                    onClick={() => setDateRange(p.from, p.to)}
-                    className={`px-2.5 py-1 text-xs rounded-md border transition-colors ${
-                      dateFrom === p.from && dateTo === p.to
-                        ? 'bg-primary-600 text-white border-primary-600'
-                        : 'border-control dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ));
-              })()}
-
-              <div className="h-4 w-px bg-gray-200" />
-
-              <input
-                type="date"
-                aria-label={t('filter.from')}
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="border border-control dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-              <span className="text-gray-500 dark:text-gray-400 text-xs">→</span>
-              <input
-                type="date"
-                aria-label={t('filter.to')}
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="border border-control dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-
-              <div className="h-4 w-px bg-gray-200" />
-
-              <select
-                aria-label={t('filter.status')}
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as AppointmentStatus | '')}
-                className="border border-control dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="">{t('filter.allStatuses')}</option>
-                {ALL_STATUSES.map((s) => (
-                  <option key={s} value={s}>{statusLabels[s]}</option>
-                ))}
-              </select>
-
-              <select
-                aria-label={t('filter.provider')}
-                value={providerFilter}
-                onChange={(e) => setProviderFilter(e.target.value)}
-                className="border border-control dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="">{t('filter.allProviders')}</option>
-                {/* Only people who take appointments (DT-25); names of others still resolve from staffData */}
-                {(staffData?.items ?? []).filter((s) => s.isBookable).map((s) => (
-                  <option key={s.id} value={s.id}>{s.fullName}</option>
-                ))}
-              </select>
-
-              <label className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 cursor-pointer select-none ml-1">
-                <input
-                  type="checkbox"
-                  checked={showPast}
-                  onChange={(e) => setShowPast(e.target.checked)}
-                  className="rounded border-control dark:border-gray-600"
-                />
-                {t('filter.showPast')}
-              </label>
-            </div>
           </div>
 
-          {/* Table */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-x-auto">
+          {/* The visits, a block per day */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs">
                 <tr>
-                  <th className="text-left px-4 py-3"><SortBtn label={t('table.start')} col="startAt" sort={sort} onClick={() => toggleSort('startAt')} /></th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.patient')}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.provider')}</th>
-                  <th className="text-left px-4 py-3"><SortBtn label={t('table.duration')} col="duration" sort={sort} onClick={() => toggleSort('duration')} /></th>
-                  <th className="text-left px-4 py-3"><SortBtn label={t('table.status')} col="status" sort={sort} onClick={() => toggleSort('status')} /></th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-400">{t('table.chiefComplaint')}</th>
+                  <th className="w-24 px-4 py-3 text-left font-medium">{t('table.time')}</th>
+                  <th className="px-4 py-3 text-left font-medium">{t('table.patient')}</th>
+                  <th className="px-4 py-3 text-left font-medium">{t('table.service')}</th>
+                  <th className="px-4 py-3 text-left font-medium">{t('table.provider')}</th>
+                  <th className="px-4 py-3 text-left font-medium">{t('table.status')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {listLoading ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-10 text-gray-500 dark:text-gray-400">{tc('loading')}</td>
-                  </tr>
-                ) : appointments.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-10 text-gray-500 dark:text-gray-400">{t('emptyState')}</td>
-                  </tr>
-                ) : (
-                  appointments.map((a: AppointmentResponse) => {
-                    const color = providerColors[a.providerId];
-                    const nextAction = NEXT_STATUS_MAP[a.status as AppointmentStatus];
-                    return (
-                      <tr
-                        key={a.id}
-                        className={`group cursor-pointer ${
-                          a.status === 'Completed' ? 'bg-gray-50/70 dark:bg-gray-800/40 opacity-75' :
-                          a.status === 'Cancelled' ? 'bg-red-50/50 dark:bg-red-950/20' :
-                          a.status === 'NoShow'    ? 'bg-red-50/30 dark:bg-red-950/10' :
-                          'hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                        }`}
-                        style={color ? { borderLeft: `3px solid ${color}` } : undefined}
-                        onClick={() => setSelected(a)}
-                      >
-                        <td className="px-4 py-3 text-gray-900 dark:text-gray-100 font-medium tabular-nums">{formatDate(a.startAt)}</td>
-                        <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{patientNames[a.patientId] ?? '—'}</td>
-                        <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                          <div className="flex items-center gap-1.5">
-                            {color && (
-                              <span className="inline-block h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                            )}
-                            {providerNames[a.providerId] ?? '—'}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{a.durationMinutes} {tc('unit.min')}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={statusLabels} />
-                            {canManage && nextAction && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); quickStatusMutation.mutate({ id: a.id, next: nextAction.next }); }}
-                                className="invisible group-hover:visible inline-flex items-center px-1.5 py-0.5 text-xs text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 rounded-full hover:bg-primary-50 dark:hover:bg-primary-900/40 transition-colors whitespace-nowrap"
-                              >
-                                → {tc(nextAction.labelKey)}
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400 max-w-xs truncate">
-                          {a.chiefComplaint ?? '—'}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
+              {listLoading ? (
+                <tbody><tr><td colSpan={5} className="px-4 py-10 text-center text-gray-600 dark:text-gray-400">{tc('loading')}</td></tr></tbody>
+              ) : listDays.length === 0 ? (
+                <tbody><tr><td colSpan={5} className="px-4 py-10 text-center text-gray-600 dark:text-gray-400">{t('emptyState')}</td></tr></tbody>
+              ) : listDays.map(({ date, items }) => {
+                const label = listDayLabel(date);
+                return (
+                  <tbody key={date} aria-label={label} className="divide-y divide-gray-100 border-t border-gray-100 dark:divide-gray-700 dark:border-gray-700">
+                    <tr className="bg-gray-50/70 dark:bg-gray-900/40">
+                      <th scope="rowgroup" colSpan={5} className="px-4 py-2 text-left text-xs font-semibold text-gray-800 dark:text-gray-200">
+                        {label}
+                        <span className="ml-1.5 font-normal text-gray-500 dark:text-gray-400">· {t('totalCount', { count: items.length })}</span>
+                      </th>
+                    </tr>
+                    {items.map((a) => {
+                      const color = providerColors[a.providerId];
+                      const name = patientNames[a.patientId] ?? '—';
+                      const nextAction = NEXT_STATUS_MAP[a.status as AppointmentStatus];
+                      const gone = a.status === 'Cancelled' || a.status === 'NoShow';
+                      return (
+                        <tr
+                          key={a.id}
+                          onClick={() => setSelected(a)}
+                          className={`group cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 ${gone ? 'opacity-60' : ''}`}
+                        >
+                          <td className="px-4 py-2.5 align-top">
+                            <p className={`font-medium tabular-nums text-gray-900 dark:text-gray-100 ${gone ? 'line-through' : ''}`}>{timeOf(a.startAt)}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{a.durationMinutes} {tc('unit.min')}</p>
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${avatarTint(a.patientId)}`} aria-hidden>{initialsOf(name)}</div>
+                              <span className="truncate font-medium text-gray-900 dark:text-gray-100">{name}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-2.5 max-w-xs">
+                            <p className="truncate text-gray-700 dark:text-gray-300">{appointmentTypeNames[a.appointmentTypeId] ?? '—'}</p>
+                            {a.chiefComplaint && <p className="truncate text-xs text-gray-500 dark:text-gray-400">{a.chiefComplaint}</p>}
+                          </td>
+                          <td className="px-4 py-2.5 whitespace-nowrap text-gray-700 dark:text-gray-300">
+                            <span className="inline-flex items-center gap-1.5">
+                              <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color ?? '#9CA3AF' }} aria-hidden />
+                              {providerNames[a.providerId] ?? '—'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <div className="flex items-center gap-2">
+                              <StatusBadge status={a.status} colorMap={STATUS_COLORS} labelMap={statusLabels} />
+                              {canManage && nextAction && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); quickStatusMutation.mutate({ id: a.id, next: nextAction.next }); }}
+                                  className="invisible group-hover:visible focus:visible inline-flex items-center px-1.5 py-0.5 text-xs text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-800 rounded-full hover:bg-primary-50 dark:hover:bg-primary-900/40 transition-colors whitespace-nowrap"
+                                >
+                                  → {tc(nextAction.labelKey)}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                );
+              })}
             </table>
           </div>
-
-          {/* Pagination */}
-          {!searchTerm && totalPages > 1 && (
-            <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-              <span>{tc('pagination.showingRange', { from: (page - 1) * pageSize + 1, to: Math.min(page * pageSize, total), total })}</span>
-              <div className="flex gap-2">
-                <button disabled={page === 1} onClick={() => setPage(page - 1)}
-                  className="px-3 py-1 rounded border border-control dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700">{tc('button.prev')}</button>
-                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}
-                  className="px-3 py-1 rounded border border-control dark:border-gray-600 dark:text-gray-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700">{tc('button.next')}</button>
-              </div>
-            </div>
-          )}
         </div>
       ) : (
         /* Calendar view */

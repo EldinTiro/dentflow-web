@@ -1,7 +1,6 @@
 {
   "title": "Termini",
   "totalCount": "{{count}} termin(a)",
-  "filteredOf": "{{filtered}} od",
   "button": {
     "bookAppointment": "+ Zakaži termin"
   },
@@ -18,10 +17,7 @@
     "from": "Od datuma",
     "to": "Do datuma",
     "status": "Status",
-    "provider": "Doktor",
-    "allStatuses": "Svi statusi",
-    "allProviders": "Svi doktori",
-    "showPast": "Prikaži prošle"
+    "allStatuses": "Svi statusi"
   },
   "preset": {
     "today": "Danas",
@@ -29,12 +25,11 @@
     "thisMonth": "Ovaj mjesec"
   },
   "table": {
-    "start": "Početak",
     "patient": "Pacijent",
     "provider": "Doktor",
-    "duration": "Trajanje",
     "status": "Status",
-    "chiefComplaint": "Razlog posjete"
+    "time": "Vrijeme",
+    "service": "Usluga"
   },
   "statuses": {
     "Scheduled": "Zakazan",
@@ -225,5 +220,11 @@
       "arrived": "Došao",
       "done": "Završen"
     }
+  },
+  "list": {
+    "prevPeriod": "Prethodni period",
+    "nextPeriod": "Sljedeći period",
+    "choosePeriod": "Odaberi period",
+    "tomorrow": "Sutra"
   }
 }

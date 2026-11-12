@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import {
   staffService,
   ALL_STAFF_TYPES,
+  SELECTABLE_STAFF_TYPES,
   type StaffType,
   type StaffMemberResponse,
 } from '../services/staffService';
@@ -16,6 +17,8 @@ import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
 import { can } from '@/shared/lib/permissions'
 import { peopleErrorMessage } from '../lib/peopleErrors'
+import { FilterChips } from '@/shared/components/FilterChips'
+import { SearchInput } from '@/shared/components/SearchInput'
 
 type AccessFilter = '' | 'with' | 'without'
 type StatusFilter = 'active' | 'inactive' | 'all'
@@ -79,6 +82,10 @@ export function StaffPage() {
     },
   });
 
+  // The types offered today, plus an older one still on somebody's profile
+  const typeChoices = ALL_STAFF_TYPES.filter((type) =>
+    SELECTABLE_STAFF_TYPES.includes(type) || type === staffTypeFilter || data?.items.some((m) => m.staffType === type));
+
   const members = (data?.items ?? []).filter((m) =>
     accessFilter === '' || (accessFilter === 'with' ? !!m.access : !m.access));
   const total = data?.totalCount ?? 0;
@@ -104,45 +111,47 @@ export function StaffPage() {
         )}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <input
-          type="text"
-          placeholder={t('search.placeholder')}
+      {/* Filters on the left, search on the right, like the appointment list */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <FilterChips
+            label={t('filter.type')}
+            options={[
+              { value: '' as StaffType | '', label: tc('staffType.allTypes') },
+              ...typeChoices.map((type) => ({ value: type as StaffType | '', label: t(`staffType.${type}`) })),
+            ]}
+            value={staffTypeFilter}
+            onChange={(v) => { setStaffTypeFilter(v); setPage(1); }}
+          />
+          <span className="hidden h-4 w-px bg-gray-200 sm:block dark:bg-gray-700" aria-hidden />
+          <FilterChips
+            label={t('filter.status')}
+            options={[
+              { value: 'active' as StatusFilter, label: tc('status.active') },
+              { value: 'inactive' as StatusFilter, label: tc('status.inactive') },
+              { value: 'all' as StatusFilter, label: tc('status.allStatuses') },
+            ]}
+            value={statusFilter}
+            onChange={(v) => { setStatusFilter(v); setPage(1); }}
+          />
+          <span className="hidden h-4 w-px bg-gray-200 sm:block dark:bg-gray-700" aria-hidden />
+          <FilterChips
+            label={t('filter.access')}
+            options={[
+              { value: '' as AccessFilter, label: t('filter.anyAccess') },
+              { value: 'with' as AccessFilter, label: t('filter.withAccess') },
+              { value: 'without' as AccessFilter, label: t('filter.withoutAccess') },
+            ]}
+            value={accessFilter}
+            onChange={setAccessFilter}
+          />
+        </div>
+        <SearchInput
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm w-64 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          onChange={(v) => { setSearch(v); setPage(1); }}
+          label={t('search.label')}
+          placeholder={t('search.placeholder')}
         />
-        <select
-          value={staffTypeFilter}
-          onChange={(e) => { setStaffTypeFilter(e.target.value as StaffType | ''); setPage(1); }}
-          className="border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        >
-          <option value="">{tc('staffType.allTypes')}</option>
-          {ALL_STAFF_TYPES.map((type) => (
-            <option key={type} value={type}>{t(`staffType.${type}`)}</option>
-          ))}
-        </select>
-        <select
-          aria-label={t('filter.status')}
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value as StatusFilter); setPage(1); }}
-          className="border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        >
-          <option value="active">{tc('status.active')}</option>
-          <option value="inactive">{tc('status.inactive')}</option>
-          <option value="all">{tc('status.allStatuses')}</option>
-        </select>
-        <select
-          aria-label={t('filter.access')}
-          value={accessFilter}
-          onChange={(e) => setAccessFilter(e.target.value as AccessFilter)}
-          className="border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        >
-          <option value="">{t('filter.anyAccess')}</option>
-          <option value="with">{t('filter.withAccess')}</option>
-          <option value="without">{t('filter.withoutAccess')}</option>
-        </select>
       </div>
 
       {/* Table */}

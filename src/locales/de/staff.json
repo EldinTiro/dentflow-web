@@ -5,7 +5,8 @@
     "addStaff": "+ Personal hinzufügen"
   },
   "search": {
-    "placeholder": "Nach Name oder E-Mail suchen…"
+    "placeholder": "Nach Name oder E-Mail suchen…",
+    "label": "Personal suchen"
   },
   "emptyState": "Keine Personalmitglieder gefunden.",
   "table": {
@@ -187,7 +188,8 @@
     "access": "Zugangsfilter",
     "anyAccess": "Jeder Zugang",
     "withAccess": "Hat Zugang",
-    "withoutAccess": "Kein Zugang"
+    "withoutAccess": "Kein Zugang",
+    "type": "Typfilter"
   },
   "edit": {
     "title": "Bearbeiten — {{name}}",

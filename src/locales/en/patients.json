@@ -6,7 +6,8 @@
     "newPatient": "+ New Patient"
   },
   "search": {
-    "placeholder": "Search by name, email, phone…"
+    "placeholder": "Search by name, email, phone…",
+    "label": "Search patients"
   },
   "emptyState": "No patients found.",
   "table": {

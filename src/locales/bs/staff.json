@@ -5,7 +5,8 @@
     "addStaff": "+ Dodaj osoblje"
   },
   "search": {
-    "placeholder": "Pretraži po imenu ili emailu…"
+    "placeholder": "Pretraži po imenu ili emailu…",
+    "label": "Pretraži osoblje"
   },
   "emptyState": "Nema pronađenog osoblja.",
   "table": {
@@ -189,7 +190,8 @@
     "access": "Filter pristupa",
     "anyAccess": "Svaki pristup",
     "withAccess": "Ima pristup",
-    "withoutAccess": "Bez pristupa"
+    "withoutAccess": "Bez pristupa",
+    "type": "Filter po vrsti"
   },
   "edit": {
     "title": "Uredi — {{name}}",

@@ -1,7 +1,6 @@
 {
   "title": "Appointments",
   "totalCount": "{{count}} appointment(s)",
-  "filteredOf": "{{filtered}} of",
   "button": {
     "bookAppointment": "+ Book Appointment"
   },
@@ -18,10 +17,7 @@
     "from": "From date",
     "to": "To date",
     "status": "Status",
-    "provider": "Provider",
-    "allStatuses": "All statuses",
-    "allProviders": "All providers",
-    "showPast": "Show past"
+    "allStatuses": "All statuses"
   },
   "preset": {
     "today": "Today",
@@ -29,12 +25,11 @@
     "thisMonth": "This Month"
   },
   "table": {
-    "start": "Start",
     "patient": "Patient",
     "provider": "Provider",
-    "duration": "Duration",
     "status": "Status",
-    "chiefComplaint": "Chief Complaint"
+    "time": "Time",
+    "service": "Service"
   },
   "statuses": {
     "Scheduled": "Scheduled",
@@ -224,5 +219,11 @@
       "arrived": "Arrived",
       "done": "Done"
     }
+  },
+  "list": {
+    "prevPeriod": "Previous period",
+    "nextPeriod": "Next period",
+    "choosePeriod": "Choose a period",
+    "tomorrow": "Tomorrow"
   }
 }

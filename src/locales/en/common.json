@@ -29,7 +29,8 @@
     "previous": "Previous",
     "activate": "Activate",
     "deactivate": "Deactivate",
-    "exportCsv": "Export CSV"
+    "exportCsv": "Export CSV",
+    "clearSearch": "Clear search"
   },
   "status": {
     "active": "Active",

@@ -164,11 +164,10 @@ describe('AppointmentsPage filters', () => {
     )
 
     expect(screen.getByRole('textbox', { name: 'Search appointments' })).toBeInTheDocument()
-    expect(screen.getByLabelText('From date')).toHaveAttribute('type', 'date')
-    expect(screen.getByLabelText('To date')).toHaveAttribute('type', 'date')
-    expect(screen.getByRole('combobox', { name: 'Status' })).toBeInTheDocument()
-    expect(screen.getByRole('combobox', { name: 'Provider' })).toBeInTheDocument()
-    expect(screen.getByRole('checkbox', { name: 'Show past' })).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Status' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Previous period' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Next period' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Export CSV' })).toBeInTheDocument()
 
     await userEvent.type(screen.getByRole('textbox', { name: 'Search appointments' }), 'x')
     expect(screen.getByRole('button', { name: 'Clear search' })).toBeInTheDocument()
@@ -203,7 +202,7 @@ describe('AppointmentsPage list and calendar (DT-24, DT-25)', () => {
     } as never)
     renderWithProviders(
       <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,
-      { route: '/appointments?tab=list&from=2026-11-09&to=2026-11-10&past=1' },
+      { route: '/appointments?tab=list&from=2026-11-09&to=2026-11-10' },
     )
 
     const night = await screen.findByText('Night Patient')
@@ -220,34 +219,13 @@ describe('AppointmentsPage list and calendar (DT-24, DT-25)', () => {
     useAuthStore.getState().setAuth('t', { userId: 'u', email: 'e@x', fullName: 'Desk', roles: ['Staff'] })
     renderWithProviders(
       <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,
-      { route: '/appointments?tab=list&from=2026-11-09&to=2026-11-10&past=1' },
+      { route: '/appointments?tab=list&from=2026-11-09&to=2026-11-10' },
     )
 
     await screen.findByText('Waiting Patient')
     expect(screen.getByRole('button', { name: /Complete/ })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Start Treatment/ })).not.toBeInTheDocument()
     useAuthStore.getState().clearAuth()
-  })
-
-  it('lists only bookable staff in the provider filter', async () => {
-    const { staffService } = await import('@/features/staff/services/staffService')
-    vi.mocked(staffService.list).mockResolvedValue({
-      items: [
-        { id: 'd', fullName: 'Dr Bookable', isBookable: true, isActive: true },
-        { id: 'r', fullName: 'Desk Person', isBookable: false, isActive: true },
-        { id: 'x', fullName: 'Gone Dentist', isBookable: false, isActive: false },
-      ],
-      totalCount: 3, page: 1, pageSize: 100,
-    } as never)
-    renderWithProviders(
-      <Routes><Route path="/appointments" element={<AppointmentsPage />} /></Routes>,
-      { route: '/appointments?tab=list' },
-    )
-
-    const filter = await screen.findByRole('combobox', { name: 'Provider' })
-    await screen.findByRole('option', { name: 'Dr Bookable' })
-    expect([...(filter as HTMLSelectElement).options].map((o) => o.textContent)).not.toContain('Desk Person')
-    expect([...(filter as HTMLSelectElement).options].map((o) => o.textContent)).not.toContain('Gone Dentist')
   })
 
   it('opens the calendar on the week given in the URL', async () => {
