@@ -10,7 +10,7 @@ import {
 } from '../services/staffService';
 import { CreateStaffDrawer } from '../components/CreateStaffDrawer';
 import { EditStaffDrawer } from '../components/EditStaffDrawer';
-import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { PermanentDeleteDialog } from '@/shared/components/PermanentDeleteDialog';
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore';
 import { can } from '@/shared/lib/permissions'
 import { peopleErrorMessage } from '../lib/peopleErrors'
@@ -44,7 +44,8 @@ export function StaffPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => staffService.delete(id),
+    // The Administrator deletes for good (user request 2026-11-13)
+    mutationFn: (id: string) => staffService.deletePermanently(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff'] })
       toast.success(t('toast.deleted'))
@@ -195,12 +196,11 @@ export function StaffPage() {
         <EditStaffDrawer staff={editing} onClose={() => setEditing(null)} />
       )}
 
-      <ConfirmDialog
+      <PermanentDeleteDialog
         open={!!deletingId}
-        title={t('confirm.deleteTitle')}
-        description={t('confirm.deleteDescription', { name: deletingMember?.fullName ?? '' })}
-        confirmLabel={tc('button.delete')}
-        cancelLabel={tc('button.cancel')}
+        name={deletingMember?.fullName ?? ''}
+        title={t('purge.title')}
+        description={t('purge.body')}
         isPending={deleteMutation.isPending}
         onConfirm={() => deletingId && deleteMutation.mutate(deletingId)}
         onCancel={() => setDeletingId(null)}

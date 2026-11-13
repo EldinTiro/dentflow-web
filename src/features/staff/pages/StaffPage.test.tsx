@@ -10,7 +10,7 @@ import { StaffPage } from './StaffPage'
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }))
 vi.mock('../services/staffService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../services/staffService')>()
-  return { ...actual, staffService: { ...actual.staffService, list: vi.fn(), delete: vi.fn() } }
+  return { ...actual, staffService: { ...actual.staffService, list: vi.fn(), delete: vi.fn(), deletePermanently: vi.fn() } }
 })
 
 const svc = vi.mocked(staffService)
@@ -92,14 +92,34 @@ describe('StaffPage (people-merge plan 4.4, B7)', () => {
     expect(within(await rowOf('Nada')).queryByRole('button')).not.toBeInTheDocument()
   })
 
-  it('explains why a profile with appointments can’t be deleted', async () => {
+  // User request 2026-11-13: the Administrator deletes for good, after typing the name
+  it('deletes a person for good once their name is typed', async () => {
     signIn(['ClinicOwner'])
-    svc.delete.mockRejectedValue(fastEndpointsError('x', 'staff.HasHistory', 409))
+    svc.deletePermanently.mockResolvedValue(undefined as never)
     const user = userEvent.setup()
     renderWithProviders(<StaffPage />)
 
     await user.click(within(await rowOf('Nada')).getByTitle('Delete'))
-    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete' }))
+    const dialog = await screen.findByRole('dialog')
+    const confirm = within(dialog).getByRole('button', { name: 'Delete permanently' })
+    expect(confirm).toBeDisabled()
+    await user.type(within(dialog).getByRole('textbox', { name: /type nada x to confirm/i }), 'Nada X')
+    await user.click(confirm)
+
+    const { items } = await (svc.list.mock.results[0].value as Promise<{ items: StaffMemberResponse[] }>)
+    await waitFor(() => expect(svc.deletePermanently).toHaveBeenCalledWith(items.find((m) => m.firstName === 'Nada')!.id))
+  })
+
+  it('explains why a profile with appointments can’t be deleted', async () => {
+    signIn(['ClinicOwner'])
+    svc.deletePermanently.mockRejectedValue(fastEndpointsError('x', 'staff.HasHistory', 409))
+    const user = userEvent.setup()
+    renderWithProviders(<StaffPage />)
+
+    await user.click(within(await rowOf('Nada')).getByTitle('Delete'))
+    const dialog = await screen.findByRole('dialog')
+    await user.type(within(dialog).getByRole('textbox'), 'Nada X')
+    await user.click(within(dialog).getByRole('button', { name: 'Delete permanently' }))
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/deactivate it instead/i)))
   })

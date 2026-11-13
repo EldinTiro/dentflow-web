@@ -206,5 +206,9 @@
     "removeBody": "{{name}} će biti uklonjen/a. Moguće samo za profil bez termina — inače ga deaktivirajte.",
     "removeConfirm": "Ukloni",
     "staffTypeHint": "Od vrste zavisi da li se osoba može zakazati. Uloga za prijavu (npr. vlasnik) se postavlja posebno, u dijelu Pristup aplikaciji."
+  },
+  "purge": {
+    "title": "Trajno obrisati člana osoblja?",
+    "body": "Briše se profil s radnim vremenom, odsustvima i pristupom. Ovo se ne može vratiti. Ko je imao termine, može se samo deaktivirati."
   }
 }

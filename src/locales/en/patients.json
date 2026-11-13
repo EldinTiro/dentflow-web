@@ -358,5 +358,11 @@
     "failed": "Could not open the card.",
     "withoutCard": "No card yet — the card is opened at the first visit",
     "withoutCardHint": "For a patient who booked but has not come yet: no card number is used until they come."
+  },
+  "purge": {
+    "title": "Delete this patient permanently?",
+    "body": "Everything on the record goes too: appointments, invoices and payments, treatment plans, the tooth chart, medical data and files. This can’t be undone. If you only want them off the lists, deactivate them instead.",
+    "done": "Patient deleted permanently.",
+    "failed": "Could not delete the patient."
   }
 }
