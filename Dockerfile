@@ -6,6 +6,11 @@ RUN npm ci
 COPY . .
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
+# The build shown at the foot of the sidebar; the deploy passes them, a local build leaves them empty
+ARG APP_COMMIT=
+ARG APP_BUILT_AT=
+ARG APP_ENV=
+ENV VITE_APP_COMMIT=$APP_COMMIT     VITE_APP_BUILT_AT=$APP_BUILT_AT     VITE_APP_ENV=$APP_ENV
 RUN npm run build
 
 # Production stage — serve with nginx

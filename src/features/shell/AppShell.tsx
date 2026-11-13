@@ -11,6 +11,7 @@ import { FeatureProvider } from '@/shared/context/FeatureContext'
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary'
 import { useUserPreferences, useUpdateUserPreferences } from '@/features/auth/hooks/useUserPreferences'
 import { UserMenu, initialsOf } from './UserMenu'
+import { AppVersion } from './AppVersion'
 import { appointmentService } from '@/features/appointments/services/appointmentService'
 import { toLocalIsoDate } from '@/shared/lib/dates'
 import {
@@ -240,6 +241,8 @@ export function AppShell() {
           </span>
         </Link>
       )}
+      {/* The build running, only where a deploy wrote it (2026-11-13) */}
+      {!folded && <AppVersion />}
 
     </>
   )
