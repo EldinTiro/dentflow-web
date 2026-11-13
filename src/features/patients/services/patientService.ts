@@ -249,6 +249,12 @@ export const patientService = {
       .put<PatientResponse>(`/api/v1/patients/${id}`, body)
       .then((r) => r.data),
 
+  /** For good, with everything on the record. The Administrator only (records.purge). */
+  deletePermanently: (id: string) =>
+    apiClient
+      .delete(`/api/v1/patients/${id}/permanent`)
+      .then(() => undefined),
+
   /** Only a duplicate without history; anything else answers 409 Patient.HasHistory (D9). */
   delete: (id: string) =>
     apiClient

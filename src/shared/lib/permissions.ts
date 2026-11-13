@@ -20,12 +20,14 @@ export type Permission =
   | 'finance.view'
   | 'people.manage'
   | 'patients.manage'
+  /** Delete a patient or a staff profile for good. Owner only (2026-11-13). */
+  | 'records.purge'
   /** Treatment plans and their items. The API checks it with Roles.TenantRoles. */
   | 'treatments.manage'
 
 const ALL: readonly Permission[] = [
   'dashboard.view', 'billing.view', 'billing.collect', 'finance.adjust', 'finance.view', 'people.manage', 'patients.manage',
-  'treatments.manage',
+  'treatments.manage', 'records.purge',
 ]
 
 const ROLE_PERMISSIONS: Record<string, readonly Permission[]> = {

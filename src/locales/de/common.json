@@ -185,5 +185,9 @@
     "passwordSpecial": "Muss ein Sonderzeichen enthalten",
     "passwordsMismatch": "Passwörter stimmen nicht überein",
     "passwordUnchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden."
+  },
+  "permanentDelete": {
+    "confirm": "Endgültig löschen",
+    "typeToConfirm": "Zur Bestätigung {{name}} eingeben"
   }
 }

@@ -210,6 +210,11 @@ export const staffService = {
     return apiClient.delete(`${BASE}/${id}`);
   },
 
+  /** For good, with the sign-in; only without appointments (409 Staff.HasHistory). Administrator only. */
+  deletePermanently(id: string) {
+    return apiClient.delete(`${BASE}/${id}/permanent`).then(() => undefined);
+  },
+
   /** Instead of deleting (people-merge plan B6); 409 while appointments are ahead. */
   deactivate(id: string) {
     return apiClient.post<StaffMemberResponse>(`${BASE}/${id}/deactivate`).then((r) => r.data);

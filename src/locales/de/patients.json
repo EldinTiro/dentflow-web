@@ -102,7 +102,8 @@
     "occupation": "Beruf",
     "countryCodePlaceholder": "z.B. DE",
     "saving": "Wird gespeichert…",
-    "saveChanges": "Änderungen speichern"
+    "saveChanges": "Änderungen speichern",
+    "sectionBasics": "Stammdaten"
   },
   "validation": {
     "required": "Pflichtfeld",
@@ -358,5 +359,11 @@
     "failed": "Die Karte konnte nicht angelegt werden.",
     "withoutCard": "Noch keine Karte — die Karte wird beim ersten Besuch angelegt",
     "withoutCardHint": "Für Patienten, die gebucht haben, aber noch nicht da waren: Es wird keine Kartennummer verbraucht, bis sie kommen."
+  },
+  "purge": {
+    "title": "Patient endgültig löschen?",
+    "body": "Alles in der Akte wird mitgelöscht: Termine, Rechnungen und Zahlungen, Behandlungspläne, Zahnschema, medizinische Daten und Dateien. Das kann nicht rückgängig gemacht werden. Um ihn nur aus den Listen zu nehmen, deaktivieren Sie ihn.",
+    "done": "Patient endgültig gelöscht.",
+    "failed": "Patient konnte nicht gelöscht werden."
   }
 }

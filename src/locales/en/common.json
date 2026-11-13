@@ -185,5 +185,9 @@
     "passwordSpecial": "Must contain a special character",
     "passwordsMismatch": "Passwords do not match",
     "passwordUnchanged": "The new password must be different from the current one."
+  },
+  "permanentDelete": {
+    "confirm": "Delete permanently",
+    "typeToConfirm": "Type {{name}} to confirm"
   }
 }

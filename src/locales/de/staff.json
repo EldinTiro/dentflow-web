@@ -131,7 +131,10 @@
     "successTitle": "Mitarbeiter hinzugefügt",
     "successMessage": "{{name}} kann sich jetzt mit dieser E-Mail und dem temporären Passwort anmelden:",
     "tempPasswordWarning": "Dieses Passwort wird nicht erneut angezeigt. Es muss bei der ersten Anmeldung geändert werden.",
-    "done": "Fertig"
+    "done": "Fertig",
+    "sectionPerson": "Person",
+    "sectionContact": "Kontakt",
+    "sectionWork": "Arbeit"
   },
   "access": {
     "title": "App-Zugang",
@@ -204,5 +207,10 @@
     "removeBody": "{{name}} wird entfernt. Nur für ein Profil ohne Termine möglich — sonst bitte deaktivieren.",
     "removeConfirm": "Entfernen",
     "staffTypeHint": "Ob jemand gebucht werden kann, hängt vom Typ ab. Die Anmelderolle (z. B. Inhaber) wird separat unter App-Zugang festgelegt."
+  },
+  "purge": {
+    "title": "Mitarbeiter endgültig löschen?",
+    "body": "Das Profil wird mit Arbeitszeiten, Abwesenheiten und Zugang gelöscht. Das kann nicht rückgängig gemacht werden. Wer Termine hatte, kann nur deaktiviert werden.",
+    "done": "Mitarbeiter endgültig gelöscht."
   }
 }

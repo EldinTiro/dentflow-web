@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useController } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { getApiErrorCodes, getApiErrorMessage } from '@/shared/utils/apiError';
 import { Drawer } from '@/shared/components/Drawer';
+import { ChoiceChips, ColourSwatches, DrawerActions, FIELD_ERROR, FIELD_INPUT, FIELD_LABEL, FormSection, Switch } from '@/shared/components/FormParts';
 import { TempPasswordBox } from '@/shared/components/TempPasswordBox';
 import { TENANT_ROLES, type TenantRole } from '@/shared/lib/permissions';
 import {
@@ -23,9 +24,7 @@ interface FormValues extends Omit<CreateStaffRequest, 'access'> {
   role: TenantRole;
 }
 
-const inputClass =
-  'w-full border border-control rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100';
-const labelClass = 'block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300';
+const FORM_ID = 'create-staff-form';
 
 /**
  * Adds a person once (people-merge plan 4.2). "Can sign in" also creates their account
@@ -40,7 +39,7 @@ export function CreateStaffDrawer({ onClose }: Props) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
@@ -51,7 +50,11 @@ export function CreateStaffDrawer({ onClose }: Props) {
       role: 'Staff',
     },
   });
-  const canSignIn = watch('canSignIn');
+  const { field: staffType } = useController({ name: 'staffType', control });
+  const { field: colour } = useController({ name: 'colorHex', control });
+  const { field: signIn } = useController({ name: 'canSignIn', control });
+  const { field: role } = useController({ name: 'role', control });
+  const canSignIn = signIn.value;
 
   const mutation = useMutation({
     mutationFn: ({ canSignIn, role, ...profile }: FormValues) =>
@@ -103,107 +106,95 @@ export function CreateStaffDrawer({ onClose }: Props) {
   }
 
   return (
-    <Drawer title={t('create.title')} onClose={onClose}>
-      <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-6">
-        <div>
-          <label htmlFor="staff-firstName" className={labelClass}>
-            {t('create.firstName')} <span className="text-red-500">*</span>
-          </label>
-          <input id="staff-firstName" type="text" className={inputClass}
-            {...register('firstName', { required: t('create.required') })} />
-          {errors.firstName && <p className="mt-1 text-xs text-red-600">{errors.firstName.message}</p>}
-        </div>
+    <Drawer
+      title={t('create.title')}
+      onClose={onClose}
+      footer={<DrawerActions formId={FORM_ID} cancelLabel={t('create.cancel')} onCancel={onClose}
+        submitLabel={mutation.isPending ? t('create.saving') : t('create.submit')} pending={isSubmitting || mutation.isPending} />}
+    >
+      {/* Laid out like the rest of the app (user request 2026-11-13): named groups, no drop-downs */}
+      <form id={FORM_ID} noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <FormSection title={t('create.sectionPerson')}>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="staff-firstName" className={FIELD_LABEL}>
+                {t('create.firstName')} <span className="text-red-500">*</span>
+              </label>
+              <input id="staff-firstName" type="text" className={FIELD_INPUT}
+                {...register('firstName', { required: t('create.required') })} />
+              {errors.firstName && <p className={FIELD_ERROR}>{errors.firstName.message}</p>}
+            </div>
+            <div>
+              <label htmlFor="staff-lastName" className={FIELD_LABEL}>
+                {t('create.lastName')} <span className="text-red-500">*</span>
+              </label>
+              <input id="staff-lastName" type="text" className={FIELD_INPUT}
+                {...register('lastName', { required: t('create.required') })} />
+              {errors.lastName && <p className={FIELD_ERROR}>{errors.lastName.message}</p>}
+            </div>
+          </div>
+          <div>
+            <p className={FIELD_LABEL}>{t('create.staffType')}</p>
+            <ChoiceChips
+              label={t('create.staffType')}
+              options={SELECTABLE_STAFF_TYPES.map((type) => ({ value: type, label: t(`staffType.${type}`) }))}
+              value={staffType.value}
+              onChange={staffType.onChange}
+            />
+          </div>
+        </FormSection>
 
-        <div>
-          <label htmlFor="staff-lastName" className={labelClass}>
-            {t('create.lastName')} <span className="text-red-500">*</span>
-          </label>
-          <input id="staff-lastName" type="text" className={inputClass}
-            {...register('lastName', { required: t('create.required') })} />
-          {errors.lastName && <p className="mt-1 text-xs text-red-600">{errors.lastName.message}</p>}
-        </div>
+        <FormSection title={t('create.sectionContact')}>
+          <div>
+            <label htmlFor="staff-email" className={FIELD_LABEL}>
+              {t('create.email')}{canSignIn && <span className="text-red-500"> *</span>}
+            </label>
+            <input id="staff-email" type="email" className={FIELD_INPUT} placeholder="staff@clinic.com"
+              {...register('email', {
+                validate: (v, values) => !values.canSignIn || !!v?.trim() || t('create.emailRequiredForAccess'),
+              })} />
+            {errors.email && <p className={FIELD_ERROR}>{errors.email.message}</p>}
+          </div>
+          <div>
+            <label htmlFor="staff-phone" className={FIELD_LABEL}>{t('create.phone')}</label>
+            <input id="staff-phone" type="tel" className={FIELD_INPUT} {...register('phone')} />
+          </div>
+        </FormSection>
 
-        <div>
-          <label htmlFor="staff-staffType" className={labelClass}>
-            {t('create.staffType')} <span className="text-red-500">*</span>
-          </label>
-          <select id="staff-staffType" className={inputClass} {...register('staffType', { required: true })}>
-            {SELECTABLE_STAFF_TYPES.map((type) => (
-              <option key={type} value={type}>{t(`staffType.${type}`)}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="staff-email" className={labelClass}>
-            {t('create.email')}{canSignIn && <span className="text-red-500"> *</span>}
-          </label>
-          <input id="staff-email" type="email" className={inputClass} placeholder="staff@clinic.com"
-            {...register('email', {
-              validate: (v, values) => !values.canSignIn || !!v?.trim() || t('create.emailRequiredForAccess'),
-            })} />
-          {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
-        </div>
+        <FormSection title={t('create.sectionWork')}>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="staff-specialty" className={FIELD_LABEL}>{t('create.specialty')}</label>
+              <input id="staff-specialty" type="text" className={FIELD_INPUT}
+                placeholder={t('create.specialtyPlaceholder')} {...register('specialty')} />
+            </div>
+            <div>
+              <label htmlFor="staff-hireDate" className={FIELD_LABEL}>{t('create.hireDate')}</label>
+              <input id="staff-hireDate" type="date" className={FIELD_INPUT} {...register('hireDate')} />
+            </div>
+          </div>
+          <div>
+            <p className={FIELD_LABEL}>{t('create.color')}</p>
+            <ColourSwatches label={t('create.color')} value={colour.value ?? '#3B82F6'} onChange={colour.onChange} />
+          </div>
+        </FormSection>
 
         {/* Sign-in access (people-merge plan D1): the profile email becomes the login */}
-        <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-3">
-          <label htmlFor="staff-canSignIn" className="flex items-start gap-2 cursor-pointer">
-            <input id="staff-canSignIn" type="checkbox" className="mt-0.5" {...register('canSignIn')} />
-            <span>
-              <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('create.canSignIn')}</span>
-              <span className="block text-xs text-gray-500 dark:text-gray-400">{t('create.canSignInHint')}</span>
-            </span>
-          </label>
+        <FormSection title={t('access.title')}>
+          <Switch id="staff-canSignIn" label={t('create.canSignIn')} hint={t('create.canSignInHint')}
+            checked={canSignIn} onChange={signIn.onChange} />
           {canSignIn && (
             <div>
-              <label htmlFor="staff-role" className={labelClass}>{t('create.role')}</label>
-              <select id="staff-role" className={inputClass} {...register('role')}>
-                {TENANT_ROLES.map((role) => (
-                  <option key={role} value={role}>{tc(`role.${role}`)}</option>
-                ))}
-              </select>
+              <p className={FIELD_LABEL}>{t('create.role')}</p>
+              <ChoiceChips
+                label={t('create.role')}
+                options={TENANT_ROLES.map((r) => ({ value: r, label: tc(`role.${r}`) }))}
+                value={role.value}
+                onChange={role.onChange}
+              />
             </div>
           )}
-        </div>
-
-        <div>
-          <label htmlFor="staff-phone" className={labelClass}>{t('create.phone')}</label>
-          <input id="staff-phone" type="tel" className={inputClass} {...register('phone')} />
-        </div>
-
-        <div>
-          <label htmlFor="staff-specialty" className={labelClass}>{t('create.specialty')}</label>
-          <input id="staff-specialty" type="text" className={inputClass}
-            placeholder={t('create.specialtyPlaceholder')} {...register('specialty')} />
-        </div>
-
-        <div>
-          <label htmlFor="staff-hireDate" className={labelClass}>{t('create.hireDate')}</label>
-          <input id="staff-hireDate" type="date" className={inputClass} {...register('hireDate')} />
-        </div>
-
-        <div>
-          <label htmlFor="staff-colorHex" className={labelClass}>{t('create.color')}</label>
-          <input id="staff-colorHex" type="color" {...register('colorHex')}
-            className="h-9 w-20 border border-control rounded-lg px-1 py-1 cursor-pointer dark:border-gray-600" />
-        </div>
-
-        <div className="flex justify-end gap-3 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-control rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
-          >
-            {t('create.cancel')}
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting || mutation.isPending}
-            className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
-          >
-            {mutation.isPending ? t('create.saving') : t('create.submit')}
-          </button>
-        </div>
+        </FormSection>
       </form>
     </Drawer>
   );

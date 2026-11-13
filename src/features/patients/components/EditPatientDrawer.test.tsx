@@ -88,4 +88,13 @@ describe('EditPatientDrawer', () => {
 
     expect(update.mock.calls[0][1].preferredProviderId).toBe('doc-1')
   })
+
+  // User request 2026-11-13: the same named groups as the other forms
+  it('groups the fields into named sections', () => {
+    renderWithProviders(<EditPatientDrawer patient={patient()} onClose={() => {}} />)
+
+    for (const name of ['Basic details', 'Contact', 'Address', 'Notes']) {
+      expect(screen.getByRole('group', { name })).toBeInTheDocument()
+    }
+  })
 })
