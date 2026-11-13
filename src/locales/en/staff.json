@@ -131,7 +131,10 @@
     "successTitle": "Staff member added",
     "successMessage": "{{name}} can now sign in with this email and temporary password:",
     "tempPasswordWarning": "This password will not be shown again. It must be changed at first sign-in.",
-    "done": "Done"
+    "done": "Done",
+    "sectionPerson": "Person",
+    "sectionContact": "Contact",
+    "sectionWork": "Work"
   },
   "access": {
     "title": "App access",
@@ -207,6 +210,7 @@
   },
   "purge": {
     "title": "Delete this person permanently?",
-    "body": "The profile goes with its working hours, absences and sign-in. This can’t be undone. Someone who has had appointments can only be deactivated."
+    "body": "The profile goes with its working hours, absences and sign-in. This can’t be undone. Someone who has had appointments can only be deactivated.",
+    "done": "Staff member deleted permanently."
   }
 }

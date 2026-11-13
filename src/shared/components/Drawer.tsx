@@ -5,9 +5,11 @@ interface DrawerProps {
   onClose: () => void
   children: React.ReactNode
   width?: string
+  /** Stays at the bottom while the content scrolls: the form's buttons. */
+  footer?: React.ReactNode
 }
 
-export function Drawer({ title, onClose, children, width = 'w-[460px]' }: DrawerProps) {
+export function Drawer({ title, onClose, children, width = 'w-[460px]', footer }: DrawerProps) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -39,6 +41,9 @@ export function Drawer({ title, onClose, children, width = 'w-[460px]' }: Drawer
         <div className="flex-1 overflow-y-auto px-5 py-5">
           {children}
         </div>
+        {footer && (
+          <div className="border-t border-gray-200 bg-white px-5 py-3 dark:border-gray-700 dark:bg-gray-900">{footer}</div>
+        )}
       </div>
     </div>
   )

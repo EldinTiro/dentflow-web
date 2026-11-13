@@ -132,7 +132,10 @@
     "successTitle": "Član osoblja dodan",
     "successMessage": "{{name}} se sada može prijaviti ovim emailom i privremenom lozinkom:",
     "tempPasswordWarning": "Ova lozinka se više neće prikazati. Mora se promijeniti pri prvoj prijavi.",
-    "done": "Gotovo"
+    "done": "Gotovo",
+    "sectionPerson": "Osoba",
+    "sectionContact": "Kontakt",
+    "sectionWork": "Posao"
   },
   "access": {
     "title": "Pristup aplikaciji",
@@ -209,6 +212,7 @@
   },
   "purge": {
     "title": "Trajno obrisati člana osoblja?",
-    "body": "Briše se profil s radnim vremenom, odsustvima i pristupom. Ovo se ne može vratiti. Ko je imao termine, može se samo deaktivirati."
+    "body": "Briše se profil s radnim vremenom, odsustvima i pristupom. Ovo se ne može vratiti. Ko je imao termine, može se samo deaktivirati.",
+    "done": "Član osoblja je trajno obrisan."
   }
 }

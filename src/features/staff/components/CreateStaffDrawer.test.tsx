@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders, fastEndpointsError } from '@/test/render'
 import { staffService } from '../services/staffService'
@@ -27,7 +27,7 @@ describe('CreateStaffDrawer', () => {
     const user = userEvent.setup()
     renderWithProviders(<CreateStaffDrawer onClose={onClose} />)
 
-    expect(screen.queryByLabelText(/^role/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('radiogroup', { name: 'Role' })).not.toBeInTheDocument()
     await fillName(user)
     await user.click(screen.getByRole('button', { name: /add staff member/i }))
 
@@ -40,12 +40,12 @@ describe('CreateStaffDrawer', () => {
     renderWithProviders(<CreateStaffDrawer onClose={vi.fn()} />)
     await fillName(user)
 
-    await user.click(screen.getByRole('checkbox', { name: /can sign in/i }))
+    await user.click(screen.getByRole('switch', { name: /can sign in/i }))
 
     // Two roles, named for what they may do: Administrator and Staff (2026-11-02)
-    const role = screen.getByLabelText(/^role/i) as HTMLSelectElement
-    expect([...role.options].map((o) => [o.value, o.textContent])).toEqual([['ClinicOwner', 'Administrator'], ['Staff', 'Staff']])
-    expect(role).toHaveValue('Staff')
+    const role = screen.getByRole('radiogroup', { name: 'Role' })
+    expect(within(role).getAllByRole('radio').map((o) => o.textContent)).toEqual(['Administrator', 'Staff'])
+    expect(within(role).getByRole('radio', { name: 'Staff' })).toHaveAttribute('aria-checked', 'true')
     await user.click(screen.getByRole('button', { name: /add staff member/i }))
 
     expect(await screen.findByText(/email is needed to sign in/i)).toBeInTheDocument()
@@ -59,8 +59,8 @@ describe('CreateStaffDrawer', () => {
     renderWithProviders(<CreateStaffDrawer onClose={onClose} />)
     await fillName(user)
     await user.type(screen.getByLabelText(/^email/i), 'ana@x.ba')
-    await user.click(screen.getByRole('checkbox', { name: /can sign in/i }))
-    await user.selectOptions(screen.getByLabelText(/^role/i), 'ClinicOwner')
+    await user.click(screen.getByRole('switch', { name: /can sign in/i }))
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Role' })).getByRole('radio', { name: 'Administrator' }))
 
     await user.click(screen.getByRole('button', { name: /add staff member/i }))
 
@@ -88,18 +88,35 @@ describe('CreateStaffDrawer', () => {
     const user = userEvent.setup()
     renderWithProviders(<CreateStaffDrawer onClose={vi.fn()} />)
 
-    await user.selectOptions(screen.getByLabelText(/^staff type/i), staffType)
-    await user.click(screen.getByRole('checkbox', { name: /can sign in/i }))
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Staff type' })).getByRole('radio', { name: new RegExp(`^${{ Dentist: 'Dentist', DentalAssistant: 'Dental technician', Receptionist: 'Receptionist' }[staffType]}$`) }))
+    await user.click(screen.getByRole('switch', { name: /can sign in/i }))
 
-    expect(screen.getByLabelText(/^role/i)).toHaveValue('Staff')
+    expect(within(screen.getByRole('radiogroup', { name: 'Role' })).getByRole('radio', { name: 'Staff' })).toHaveAttribute('aria-checked', 'true')
   })
 
   // DT-22: retired names (Hygienist, Clinic admin) were still offered
   it('offers the current staff types only, with the role-aligned name', () => {
     renderWithProviders(<CreateStaffDrawer onClose={vi.fn()} />)
 
-    const types = [...(screen.getByLabelText(/^staff type/i) as HTMLSelectElement).options]
-    expect(types.map((o) => o.value)).toEqual(['Dentist', 'DentalAssistant', 'Receptionist', 'OfficeManager'])
-    expect(types.map((o) => o.textContent)).toContain('Dental technician')
+    const types = within(screen.getByRole('radiogroup', { name: 'Staff type' })).getAllByRole('radio').map((o) => o.textContent)
+    expect(types).toEqual(['Dentist', 'Dental technician', 'Receptionist', 'Office manager'])
+  })
+
+  // User request 2026-11-13: laid out like the rest of the app — named groups, no drop-downs,
+  // the colour picked from the calendar's swatches, the buttons always in view
+  it('groups the form, with no drop-downs, and saves the colour picked', async () => {
+    create.mockResolvedValue({ id: 's1' } as never)
+    const user = userEvent.setup()
+    renderWithProviders(<CreateStaffDrawer onClose={vi.fn()} />)
+
+    for (const name of ['Person', 'Contact', 'Work', 'App access']) {
+      expect(screen.getByRole('group', { name })).toBeInTheDocument()
+    }
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+    await fillName(user)
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Calendar colour' })).getByRole('radio', { name: '#10B981' }))
+    await user.click(screen.getByRole('button', { name: /add staff member/i }))
+
+    await waitFor(() => expect(create.mock.calls[0][0]).toMatchObject({ colorHex: '#10B981' }))
   })
 })
