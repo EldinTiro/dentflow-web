@@ -1,6 +1,7 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
+import { initialLanguage } from './shared/lib/language'
 import { installZodErrorMap } from '@/shared/lib/zodI18n'
 
 // EN
@@ -89,8 +90,10 @@ i18n
     },
     defaultNS: 'common',
     fallbackLng: 'en',
+    // The language chosen before, else Bosnian; never the browser's (2026-11-13)
+    lng: initialLanguage(),
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
       caches: ['localStorage'],
     },
