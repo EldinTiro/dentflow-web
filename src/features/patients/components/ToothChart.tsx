@@ -28,7 +28,7 @@ const ZONE: Record<Side, string> = {
 function ToothGlyph({ tooth, summary }: { tooth: number; summary: ToothSummary }) {
   const crown = summary.whole.includes('Crown')
   return (
-    <svg viewBox="-3 -3 46 46" className="h-9 w-9" aria-hidden>
+    <svg viewBox="-3 -3 46 46" className="aspect-square h-auto w-full max-w-9" aria-hidden>
       {SURFACES.map((s) => {
         const state = summary.surfaces[s as Surface]
         return (
@@ -73,7 +73,7 @@ export function ToothChart({ patientId, canEdit }: { patientId: string; canEdit:
   const conditionLabel = (c: string) => t(`teeth.condition.${c}`, { defaultValue: c })
 
   const renderRow = (row: readonly number[], label: string) => (
-    <div role="group" aria-label={label} className="flex gap-0.5 sm:gap-1">
+    <div role="group" aria-label={label} className="flex w-full gap-0.5 sm:gap-1">
       {row.map((n, i) => {
         const s = toothSummary(n, findings, items)
         return (
@@ -86,7 +86,7 @@ export function ToothChart({ patientId, canEdit }: { patientId: string; canEdit:
             data-missing={s.missing || undefined}
             data-plan={s.plan ?? undefined}
             onClick={() => setSelected(n)}
-            className={`relative flex flex-col items-center rounded-lg px-0.5 pb-1 pt-0.5 transition-colors ${
+            className={`relative flex min-w-7 flex-1 flex-col items-center rounded-lg px-0.5 pb-1 pt-0.5 transition-colors ${
               i === 8 ? 'ml-2 sm:ml-4' : ''
             } ${selected === n ? 'bg-primary-50 ring-2 ring-primary-500 dark:bg-primary-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'} ${s.missing ? 'opacity-50' : ''}`}
           >
@@ -107,9 +107,10 @@ export function ToothChart({ patientId, canEdit }: { patientId: string; canEdit:
     // The chart takes the width it needs; the tooth panel sits beside it when there is room
     <div className="grid items-start gap-4 xl:grid-cols-[auto_minmax(16rem,1fr)]">
       <div className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-        {/* w-max + mx-auto: centred when it fits, scrollable from tooth 18 when it does not */}
+        {/* The teeth share the width and shrink to fit a laptop (they were cut off at 1280px,
+            2026-11-14); below about 28px a tooth, on a phone, the chart scrolls instead */}
         <div className="overflow-x-auto">
-        <div className="mx-auto w-max space-y-3">
+        <div className="mx-auto w-full min-w-[32rem] max-w-[46rem] space-y-3">
           {renderRow(CHART_ROWS.upper, t('teeth.upperJaw'))}
           <div className="mx-auto h-px w-full bg-gray-200 dark:bg-gray-700" />
           {renderRow(CHART_ROWS.lower, t('teeth.lowerJaw'))}
