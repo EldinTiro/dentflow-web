@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { billingService, type PaymentMethod } from '../services/billingService'
 import { getApiErrorMessage } from '@/shared/utils/apiError'
 import { todayLocal, localDateToInstant } from '@/shared/lib/dates'
+import { invalidateBillingQueries } from '../services/billingQueries'
 
 const PAYMENT_METHODS: PaymentMethod[] = ['Cash', 'Card', 'Insurance', 'BankTransfer', 'Other']
 
@@ -55,9 +56,7 @@ export function RecordPaymentModal({ invoiceId, balanceDue, onClose }: Props) {
         notes: values.notes || null,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] })
-      queryClient.invalidateQueries({ queryKey: ['invoices'] })
-      queryClient.invalidateQueries({ queryKey: ['patient-invoices'] })
+      invalidateBillingQueries(queryClient)
       toast.success(t('toast.paymentRecorded'))
       onClose()
     },

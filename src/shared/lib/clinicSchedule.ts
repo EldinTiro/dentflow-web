@@ -63,6 +63,17 @@ export function openingHourRange(
     ?? hoursOf(Object.values(parseWeeklySchedule(json)))
 }
 
+/**
+ * Dates (local `YYYY-MM-DD`) the week can leave out (user request 2026-11-10): the clinic is
+ * closed then and nothing is booked on them. Nothing is hidden if the clinic never opens.
+ */
+export function closedDaysToHide(json: string | null | undefined, dates: string[], datesWithVisits: string[]): string[] {
+  const busy = new Set(datesWithVisits)
+  const closed = dates.filter((date) => !daySchedule(json, date).isOpen)
+  if (closed.length === dates.length) return []
+  return closed.filter((date) => !busy.has(date))
+}
+
 const ACTIVE_STATUSES = new Set(['Scheduled', 'CheckedIn', 'InProgress'])
 
 interface BookedSlot {

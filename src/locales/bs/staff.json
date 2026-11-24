@@ -5,7 +5,8 @@
     "addStaff": "+ Dodaj osoblje"
   },
   "search": {
-    "placeholder": "Pretraži po imenu ili emailu…"
+    "placeholder": "Pretraži po imenu ili emailu…",
+    "label": "Pretraži osoblje"
   },
   "emptyState": "Nema pronađenog osoblja.",
   "table": {
@@ -131,7 +132,10 @@
     "successTitle": "Član osoblja dodan",
     "successMessage": "{{name}} se sada može prijaviti ovim emailom i privremenom lozinkom:",
     "tempPasswordWarning": "Ova lozinka se više neće prikazati. Mora se promijeniti pri prvoj prijavi.",
-    "done": "Gotovo"
+    "done": "Gotovo",
+    "sectionPerson": "Osoba",
+    "sectionContact": "Kontakt",
+    "sectionWork": "Posao"
   },
   "access": {
     "title": "Pristup aplikaciji",
@@ -165,7 +169,12 @@
     "roleTitle": "Promijeniti ulogu?",
     "roleBody": "{{name}} postaje {{role}}. Šta može vidjeti i raditi mijenja se pri sljedećoj prijavi.",
     "roleOwnerBody": "{{name}} postaje vlasnik klinike i dobija punu kontrolu nad klinikom: osoblje i pristup, finansije i postavke.",
-    "roleConfirm": "Promijeni ulogu"
+    "roleConfirm": "Promijeni ulogu",
+    "changeEmail": "Promijeni email za prijavu",
+    "newEmail": "Novi email za prijavu",
+    "saveEmail": "Sačuvaj email",
+    "newEmailHint": "Lozinka i termini ostaju isti; od sada se prijavljuje ovim emailom.",
+    "emailChanged": "{{name}} se od sada prijavljuje sa {{email}}."
   },
   "status": {
     "deactivate": "Deaktiviraj",
@@ -184,7 +193,8 @@
     "access": "Filter pristupa",
     "anyAccess": "Svaki pristup",
     "withAccess": "Ima pristup",
-    "withoutAccess": "Bez pristupa"
+    "withoutAccess": "Bez pristupa",
+    "type": "Filter po vrsti"
   },
   "edit": {
     "title": "Uredi — {{name}}",
@@ -199,5 +209,10 @@
     "removeBody": "{{name}} će biti uklonjen/a. Moguće samo za profil bez termina — inače ga deaktivirajte.",
     "removeConfirm": "Ukloni",
     "staffTypeHint": "Od vrste zavisi da li se osoba može zakazati. Uloga za prijavu (npr. vlasnik) se postavlja posebno, u dijelu Pristup aplikaciji."
+  },
+  "purge": {
+    "title": "Trajno obrisati člana osoblja?",
+    "body": "Briše se profil s radnim vremenom, odsustvima i pristupom. Ovo se ne može vratiti. Ko je imao termine, može se samo deaktivirati.",
+    "done": "Član osoblja je trajno obrisan."
   }
 }

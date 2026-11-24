@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatDate, formatMoney, formatTime, formatDayMonth } from './format'
+import { formatDate, formatMoney, formatTime, formatDayMonth, formatWeekRange } from './format'
 
 describe('formatDate', () => {
   // QA-032: lists showed US "10/22/2026" for a BiH clinic; staff hire date showed raw ISO
@@ -47,5 +47,24 @@ describe('formatDayMonth', () => {
   it('follows the app language, not the browser', () => {
     expect(formatDayMonth(tuesday, { weekday: 'long', month: 'long', year: true }, 'en')).toMatch(/Tuesday.*3 November 2026/)
     expect(formatDayMonth(tuesday, { weekday: 'long', month: 'long', year: true }, 'de')).toMatch(/Dienstag.*3\. November 2026/)
+  })
+})
+
+// User request 2026-11-10: the week as "9 – 15 Nov 2026" next to the arrows
+describe('formatWeekRange', () => {
+  it('writes the month and year once within a month', () => {
+    expect(formatWeekRange('2026-11-09', '2026-11-15', 'en')).toBe('9 – 15 Nov 2026')
+    expect(formatWeekRange('2026-11-09', '2026-11-15', 'bs')).toBe('9. – 15. nov 2026.')
+    expect(formatWeekRange('2026-11-09', '2026-11-15', 'de')).toBe('9. – 15. Nov. 2026')
+  })
+
+  it('names both months across a month end', () => {
+    expect(formatWeekRange('2026-11-30', '2026-12-06', 'en')).toBe('30 Nov – 6 Dec 2026')
+    expect(formatWeekRange('2026-11-30', '2026-12-06', 'bs')).toBe('30. nov – 6. dec 2026.')
+  })
+
+  it('names both years across a year end', () => {
+    expect(formatWeekRange('2026-12-28', '2027-01-03', 'en')).toBe('28 Dec 2026 – 3 Jan 2027')
+    expect(formatWeekRange('2026-12-28', '2027-01-03', 'bs')).toBe('28. dec 2026. – 3. jan 2027.')
   })
 })

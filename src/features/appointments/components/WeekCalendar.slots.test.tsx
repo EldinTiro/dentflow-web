@@ -43,11 +43,36 @@ describe('WeekCalendar click-to-book', () => {
     const { container } = render(
       <WeekCalendar {...props} appointments={[]} onSlotClick={onSlotClick} openHours={{ start: 10, end: 19 }} />)
 
-    expect(screen.getByText('10:00')).toBeInTheDocument()
+    // The hour on the axis (the now-label also reads 10:00 at this test's clock)
+    expect(screen.getAllByText('10:00').length).toBeGreaterThan(0)
     expect(screen.queryByText('06:00')).not.toBeInTheDocument()
     expect(screen.queryByText('19:00')).not.toBeInTheDocument()
     fireEvent.click(dayColumn(container, '2026-10-22'), { clientY: H + (34 / 60) * H }) // 1h 34min after 10:00
     expect(onSlotClick).toHaveBeenCalledWith('2026-10-22T11:30')
+  })
+
+  // User request 2026-11-10: show which slot a click would book, before clicking
+  it('highlights the slot under the mouse with its start time, and clears it on leaving', () => {
+    const { container } = render(<WeekCalendar {...props} appointments={[]} onSlotClick={vi.fn()} />)
+    const col = dayColumn(container, '2026-10-22')
+
+    fireEvent.mouseMove(col, { clientY: 4 * H + (34 / 60) * H })
+
+    expect(screen.getByTestId('slot-preview')).toHaveTextContent('10:30')
+    fireEvent.mouseLeave(col)
+    expect(screen.queryByTestId('slot-preview')).not.toBeInTheDocument()
+  })
+
+  it('does not highlight a slot over an existing visit, or for someone who cannot book', () => {
+    const visit = appointmentFixture({ startAt: '2026-10-22T08:00:00Z', endAt: '2026-10-22T08:30:00Z' })
+    const { container, rerender } = render(<WeekCalendar {...props} appointments={[visit]} onSlotClick={vi.fn()} />)
+
+    fireEvent.mouseMove(screen.getByRole('button', { name: /Lejla Hasanović/ }), { clientY: 4 * H + (34 / 60) * H })
+    expect(screen.queryByTestId('slot-preview')).not.toBeInTheDocument()
+
+    rerender(<WeekCalendar {...props} appointments={[]} />)
+    fireEvent.mouseMove(dayColumn(container, '2026-10-22'), { clientY: 4 * H + (34 / 60) * H })
+    expect(screen.queryByTestId('slot-preview')).not.toBeInTheDocument()
   })
 
   it('opens an existing appointment instead of booking over it', () => {
@@ -66,5 +91,20 @@ describe('WeekCalendar click-to-book', () => {
 
     expect(onAppointmentClick).toHaveBeenCalled()
     expect(onSlotClick).not.toHaveBeenCalled()
+  })
+})
+
+// User request 2026-11-11: a no-show stays where it was, marked, so the desk sees who missed
+describe('WeekCalendar no-show', () => {
+  it('draws a no-show visit, marked as such', () => {
+    const missed = appointmentFixture({
+      id: 'ns', patientId: 'pat-1', status: 'NoShow', durationMinutes: 60,
+      startAt: new Date(2026, 9, 22, 9, 0).toISOString(), endAt: new Date(2026, 9, 22, 10, 0).toISOString(),
+    })
+    render(<WeekCalendar {...props} appointments={[missed]} />)
+
+    const chip = screen.getByRole('button', { name: /Lejla Hasanović/ })
+    expect(chip).toHaveAttribute('data-status', 'NoShow')
+    expect(chip).toHaveTextContent('No Show')
   })
 })

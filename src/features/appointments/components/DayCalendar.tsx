@@ -1,12 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AppointmentResponse } from '../services/appointmentService';
 import type { StaffBlockedTimeResponse } from '@/features/staff/services/staffService';
 import { ABSENCE_EMOJI } from '@/features/staff/lib/absence';
 import { useTheme } from '@/shared/context/ThemeContext';
-import { SLOT_MINUTES, useHourHeight, calendarHourRange, isoDate, layoutDay, minutesSinceDayStart, useNow } from './calendarGrid';
+import { useHourHeight, calendarHourRange, isoDate, layoutDay, useNow, MISSED_COLOR } from './calendarGrid';
+import { useAppointmentStatusLabels } from '../hooks/useAppointmentStatusLabels';
+import { ResizeHandle, SlotPreview, hhmm, isOverSomething, slotUnderPointer } from './SlotPreview';
 import { useCalendarDrag } from './useCalendarDrag';
-import { AppointmentChipBody, CHIP_LAYOUT } from './AppointmentChipBody';
+import { AppointmentChipBody, CHIP_LAYOUT, chipColors } from './AppointmentChipBody';
 
 export interface DayProvider {
   id: string;
@@ -27,6 +29,9 @@ interface Props {
   onSlotClick?: (startAt: string, providerId: string) => void;
   /** Drop after a drag: new local start, and the new doctor when the column changed. */
   onMove?: (appt: AppointmentResponse, newStartAt: string, newProviderId?: string) => void;
+  /** An edge let go: the new local start and end ("YYYY-MM-DDTHH:mm"). */
+  onResize?: (appt: AppointmentResponse, newStartAt: string, newEndAt: string) => void;
+  /** Step to the previous / next day (arrows at both ends of the doctor header). */
   /** Clinic opening hours (whole hours) the grid shows; defaults to 06:00–21:00. */
   openHours?: { start: number; end: number } | null;
 }
@@ -37,13 +42,14 @@ const DOCTOR_HEADER_PX = 45;
 const fmtTime = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
 /** One day, one column per doctor: how the front desk plans the day. */
-export function DayCalendar({ date, providers, appointments, absences, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, openHours }: Props) {
+export function DayCalendar({ date, providers, appointments, absences, patientNames, appointmentTypeNames, onAppointmentClick, onSlotClick, onMove, onResize, openHours }: Props) {
   const { t } = useTranslation('appointments');
   const { t: ts } = useTranslation('staff');
   const { theme } = useTheme();
-  const chipBgOpacity = theme === 'dark' ? '55' : '28';
 
   const now = useNow();
+  const statusLabels = useAppointmentStatusLabels();
+  const [hover, setHover] = useState<{ providerId: string; minutes: number } | null>(null);
   const isToday = isoDate(now) === date;
   const nowHour = isToday ? now.getHours() : null;
   const { start: HOUR_START, end: HOUR_END } = useMemo(
@@ -56,7 +62,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
 
   // Hours fill the space the calendar has, at least MIN_hourPx each (15 min = one line)
   const [scrollRef, hourPx] = useHourHeight(HOURS, DOCTOR_HEADER_PX);
-  const drag = useCalendarDrag({ hourStart: HOUR_START, hourEnd: HOUR_END, hourPx, onMove });
+  const drag = useCalendarDrag({ hourStart: HOUR_START, hourEnd: HOUR_END, hourPx, onMove, onResize });
 
   const dayStart = new Date(`${date}T00:00:00`).getTime();
   const gridStart = dayStart + HOUR_START * 3_600_000;
@@ -68,6 +74,7 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
 
   const nowOffset = now.getHours() * 60 + now.getMinutes() - HOUR_START * 60;
   const nowTopPct = isToday && nowOffset >= 0 && nowOffset < totalMinutes ? pct(nowOffset) : null;
+  // Time labels and one column per doctor: the same in header and grid
   const columnsTemplate = `56px repeat(${providers.length}, minmax(11rem, 1fr))`;
 
   return (
@@ -76,9 +83,9 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
       <div style={{ minWidth: `calc(56px + ${providers.length} * 11rem)` }}>
       {/* Doctor header */}
       <div className="sticky top-0 z-30 grid border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" style={{ gridTemplateColumns: columnsTemplate }}>
-        <div className="border-r border-gray-100 dark:border-gray-700/60" />
+        <div />
         {providers.map((p) => (
-          <div key={p.id} className="flex items-center justify-center gap-2 px-2 py-2.5 border-r border-gray-100 dark:border-gray-700/60 last:border-r-0 min-w-0">
+          <div key={p.id} className="flex items-center justify-center gap-2 px-2 py-2.5 border-l border-gray-200 dark:border-gray-700/60 min-w-0">
             <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: p.colorHex ?? '#6366F1' }} />
             <span className="truncate text-sm font-medium text-gray-800 dark:text-gray-100">{p.fullName}</span>
           </div>
@@ -88,12 +95,23 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
       {/* Time grid */}
       <div>
         <div className="relative grid" style={{ gridTemplateColumns: columnsTemplate, minHeight: `${HOURS * hourPx}px` }}>
-          <div>
+          <div className="relative">
             {Array.from({ length: HOURS }, (_, i) => (
-              <div key={i} className="border-b border-gray-100 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5" style={{ height: hourPx, lineHeight: '14px' }}>
+              <div key={i} className="border-b border-gray-300 dark:border-gray-700/50 pr-2 text-right text-xs text-gray-500 dark:text-gray-400 pt-0.5" style={{ height: hourPx, lineHeight: '14px' }}>
                 {`${String(HOUR_START + i).padStart(2, '0')}:00`}
               </div>
             ))}
+            {/* The time now, on the axis next to the red line (user request 2026-11-10) */}
+            {nowTopPct !== null && (
+              <div
+                data-testid="now-label"
+                aria-hidden
+                className="pointer-events-none absolute right-1 z-20 -translate-y-1/2 rounded bg-red-500 px-1 py-px text-[10px] font-semibold leading-tight text-white dark:bg-red-400 dark:text-gray-900"
+                style={{ top: `${nowTopPct}%` }}
+              >
+                {hhmm(now.getHours() * 60 + now.getMinutes())}
+              </div>
+            )}
           </div>
 
           {providers.map((p) => {
@@ -109,16 +127,24 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                 data-drop-day={date}
                 data-provider-id={p.id}
                 onClick={onSlotClick ? (e) => {
-                  const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
-                  const slot = Math.floor((y / hourPx) * (60 / SLOT_MINUTES));
-                  const minutes = Math.min(Math.max(HOUR_START * 60 + slot * SLOT_MINUTES, HOUR_START * 60), HOUR_END * 60 - SLOT_MINUTES);
-                  onSlotClick(`${date}T${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`, p.id);
+                  if (drag.consumeClick()) return;
+                  onSlotClick(`${date}T${hhmm(slotUnderPointer(e.clientY, e.currentTarget, hourPx, HOUR_START, HOUR_END))}`, p.id);
                 } : undefined}
-                className={`relative border-l border-gray-100 dark:border-gray-700/50 ${onSlotClick ? 'cursor-copy hover:bg-gray-50/60 dark:hover:bg-gray-800/40' : ''}`}
+                onMouseMove={onSlotClick ? (e) => {
+                  if (drag.dragged || isOverSomething(e.target)) { setHover(null); return; }
+                  setHover({ providerId: p.id, minutes: slotUnderPointer(e.clientY, e.currentTarget, hourPx, HOUR_START, HOUR_END) });
+                } : undefined}
+                onMouseLeave={() => setHover(null)}
+                className={`relative border-l border-gray-200 dark:border-gray-700/50 ${onSlotClick ? 'cursor-copy' : ''}`}
               >
                 {Array.from({ length: HOURS }, (_, i) => (
-                  <div key={i} className="absolute w-full border-b border-gray-100 dark:border-gray-700/50" style={{ top: `${i * hourPx}px`, height: `${hourPx}px` }} />
+                  <div key={i} className="absolute w-full border-b border-gray-300 dark:border-gray-700/50" style={{ top: `${i * hourPx}px`, height: `${hourPx}px` }}><div className="absolute inset-x-0 top-1/2 border-t border-dashed border-gray-200 dark:border-gray-700/30" /></div>
                 ))}
+
+                {/* The slot a click would book */}
+                {hover?.providerId === p.id && (
+                  <SlotPreview minutes={hover.minutes} hourStart={HOUR_START} totalMinutes={totalMinutes} />
+                )}
 
                 {/* Absence: striped, and not bookable */}
                 {away.map((b) => {
@@ -165,40 +191,51 @@ export function DayCalendar({ date, providers, appointments, absences, patientNa
                 )}
 
                 {visits.map((appt) => {
-                  const offset = minutesSinceDayStart(appt.startAt) - HOUR_START * 60;
+                  const span = drag.span(appt);
+                  const offset = span.startMinutes - HOUR_START * 60;
                   if (offset < 0 || offset >= totalMinutes) return null;
                   const { col, cols } = layout.get(appt.id) ?? { col: 0, cols: 1 };
                   const widthPct = 100 / cols;
                   const label = [patientNames[appt.patientId], appointmentTypeNames[appt.appointmentTypeId]].filter(Boolean).join(' · ');
                   const chip = drag.chipProps(appt);
+                  const missed = appt.status === 'NoShow';
+                  const resizeTop = drag.resizeProps(appt, 'top');
+                  const resizeBottom = drag.resizeProps(appt, 'bottom');
+                  const duration = span.durationMinutes;
+                  const startDate = new Date(date + 'T00:00:00');
+                  startDate.setMinutes(span.startMinutes);
+                  const end = new Date(startDate.getTime() + duration * 60_000);
                   return (
                     <button
                       key={appt.id}
+                      data-status={appt.status}
                       onPointerDown={chip.onPointerDown}
                       onClick={(e) => {
                         e.stopPropagation();
                         if (drag.consumeClick()) return;
                         onAppointmentClick?.(appt);
                       }}
-                      title={`${fmtTime(new Date(appt.startAt))} – ${fmtTime(new Date(appt.endAt))} · ${label}`}
-                      className={`absolute z-10 ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : ''}`}
+                      title={`${fmtTime(startDate)} – ${fmtTime(end)} · ${label}`}
+                      className={`group absolute z-10 ${CHIP_LAYOUT} overflow-hidden rounded text-xs px-1.5 py-0.5 shadow-sm hover:brightness-110 transition select-none ${drag.dragged?.id === appt.id ? 'opacity-40' : missed ? 'opacity-70' : ''}`}
                       style={{
                         top: `${pct(offset)}%`,
-                        height: `${Math.max(pct(appt.durationMinutes), 1.5)}%`,
+                        height: `${Math.max(pct(duration), 1.5)}%`,
                         left: `calc(${col * widthPct}% + 2px)`,
                         width: `calc(${widthPct}% - 4px)`,
-                        backgroundColor: color + chipBgOpacity,
-                        borderLeft: `3px solid ${color}`,
+                        ...chipColors(missed ? MISSED_COLOR : color, theme === 'dark'),
                         ...chip.style,
                       }}
                     >
                       <AppointmentChipBody
-                        time={`${fmtTime(new Date(appt.startAt))} – ${fmtTime(new Date(appt.endAt))}`}
+                        time={`${fmtTime(startDate)} – ${fmtTime(end)}`}
                         label={label}
-                        color={color}
-                        durationMinutes={appt.durationMinutes}
+                        color={missed ? MISSED_COLOR : color}
+                        durationMinutes={duration}
                         dark={theme === 'dark'}
+                        missedLabel={missed ? statusLabels.NoShow : undefined}
                       />
+                      {resizeTop && <ResizeHandle {...resizeTop} />}
+                      {resizeBottom && <ResizeHandle {...resizeBottom} />}
                     </button>
                   );
                 })}

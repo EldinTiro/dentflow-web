@@ -140,3 +140,80 @@ describe('AppShell grouped sidebar', () => {
     expect(me).toHaveTextContent('Administrator')
   })
 })
+
+// User request 2026-11-11: fold the sidebar to icons, for more room (the calendar above all)
+describe('AppShell collapsible sidebar', () => {
+  afterEach(() => { useAuthStore.getState().clearAuth(); localStorage.removeItem('sidebar-collapsed') })
+
+  const sidebar = () => screen.getByRole('complementary', { name: 'Main menu' })
+
+  it('folds to icons and keeps every link named', async () => {
+    renderAs('ClinicOwner')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Collapse sidebar' }))
+
+    expect(sidebar()).toHaveAttribute('data-collapsed', 'true')
+    const staff = within(sidebar()).getByRole('link', { name: 'Staff' })
+    expect(staff).toHaveAttribute('title', 'Staff')
+    expect(within(staff).getByText('Staff')).toHaveClass('sr-only')
+    expect(within(sidebar()).getByRole('link', { name: /Pink Owner/ })).toBeInTheDocument()
+  })
+
+  it("still shows today's count on the folded Appointments icon", async () => {
+    localStorage.setItem('sidebar-collapsed', '1')
+    renderAs('Staff')
+
+    const link = within(sidebar()).getByRole('link', { name: /^Appointments/ })
+    await waitFor(() => expect(link).toHaveAccessibleName('Appointments 3 today'))
+  })
+
+  it('remembers being folded', () => {
+    localStorage.setItem('sidebar-collapsed', '1')
+    renderAs('ClinicOwner')
+
+    expect(sidebar()).toHaveAttribute('data-collapsed', 'true')
+    expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument()
+  })
+
+  it('opens again and remembers that too', async () => {
+    localStorage.setItem('sidebar-collapsed', '1')
+    renderAs('ClinicOwner')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Expand sidebar' }))
+
+    expect(sidebar()).toHaveAttribute('data-collapsed', 'false')
+    expect(within(sidebar()).getByText('Staff')).not.toHaveClass('sr-only')
+    expect(localStorage.getItem('sidebar-collapsed')).toBe('0')
+  })
+
+  // User request 2026-11-11 (mock C): the toggle sits at the top, next to the clinic's name
+  it('puts the fold button at the top, before the menu', () => {
+    renderAs('ClinicOwner')
+
+    const toggle = within(sidebar()).getByRole('button', { name: 'Collapse sidebar' })
+    const firstLink = within(sidebar()).getAllByRole('link')[0]
+    expect(toggle.compareDocumentPosition(firstLink) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('folds and unfolds with the [ key', async () => {
+    renderAs('ClinicOwner')
+
+    await userEvent.keyboard('[[')
+    expect(sidebar()).toHaveAttribute('data-collapsed', 'true')
+
+    await userEvent.keyboard('[[')
+    expect(sidebar()).toHaveAttribute('data-collapsed', 'false')
+  })
+
+  it('leaves [ alone while typing', async () => {
+    renderAs('ClinicOwner')
+    const input = document.createElement('input')
+    document.body.appendChild(input)
+    input.focus()
+
+    await userEvent.keyboard('[[')
+
+    expect(sidebar()).toHaveAttribute('data-collapsed', 'false')
+    input.remove()
+  })
+})

@@ -5,7 +5,8 @@
     "addStaff": "+ Personal hinzufügen"
   },
   "search": {
-    "placeholder": "Nach Name oder E-Mail suchen…"
+    "placeholder": "Nach Name oder E-Mail suchen…",
+    "label": "Personal suchen"
   },
   "emptyState": "Keine Personalmitglieder gefunden.",
   "table": {
@@ -130,7 +131,10 @@
     "successTitle": "Mitarbeiter hinzugefügt",
     "successMessage": "{{name}} kann sich jetzt mit dieser E-Mail und dem temporären Passwort anmelden:",
     "tempPasswordWarning": "Dieses Passwort wird nicht erneut angezeigt. Es muss bei der ersten Anmeldung geändert werden.",
-    "done": "Fertig"
+    "done": "Fertig",
+    "sectionPerson": "Person",
+    "sectionContact": "Kontakt",
+    "sectionWork": "Arbeit"
   },
   "access": {
     "title": "App-Zugang",
@@ -164,7 +168,12 @@
     "roleTitle": "Rolle ändern?",
     "roleBody": "{{name}} wird {{role}}. Was die Person sehen und tun kann, ändert sich bei der nächsten Anmeldung.",
     "roleOwnerBody": "{{name}} wird Praxisinhaber und erhält die volle Kontrolle über die Praxis: Mitarbeiter und Zugänge, Finanzen und Einstellungen.",
-    "roleConfirm": "Rolle ändern"
+    "roleConfirm": "Rolle ändern",
+    "changeEmail": "Anmelde-E-Mail ändern",
+    "newEmail": "Neue Anmelde-E-Mail",
+    "saveEmail": "E-Mail speichern",
+    "newEmailHint": "Passwort und Termine bleiben gleich; die Anmeldung erfolgt ab jetzt mit dieser E-Mail.",
+    "emailChanged": "{{name}} meldet sich jetzt mit {{email}} an."
   },
   "status": {
     "deactivate": "Deaktivieren",
@@ -182,7 +191,8 @@
     "access": "Zugangsfilter",
     "anyAccess": "Jeder Zugang",
     "withAccess": "Hat Zugang",
-    "withoutAccess": "Kein Zugang"
+    "withoutAccess": "Kein Zugang",
+    "type": "Typfilter"
   },
   "edit": {
     "title": "Bearbeiten — {{name}}",
@@ -197,5 +207,10 @@
     "removeBody": "{{name}} wird entfernt. Nur für ein Profil ohne Termine möglich — sonst bitte deaktivieren.",
     "removeConfirm": "Entfernen",
     "staffTypeHint": "Ob jemand gebucht werden kann, hängt vom Typ ab. Die Anmelderolle (z. B. Inhaber) wird separat unter App-Zugang festgelegt."
+  },
+  "purge": {
+    "title": "Mitarbeiter endgültig löschen?",
+    "body": "Das Profil wird mit Arbeitszeiten, Abwesenheiten und Zugang gelöscht. Das kann nicht rückgängig gemacht werden. Wer Termine hatte, kann nur deaktiviert werden.",
+    "done": "Mitarbeiter endgültig gelöscht."
   }
 }

@@ -51,7 +51,14 @@
     "payments": "Zahlungen",
     "noLineItems": "Noch keine Positionen.",
     "noPayments": "Keine Zahlungen erfasst.",
-    "voidHasPayments": "Eine Rechnung mit erfasster Zahlung kann nicht storniert werden."
+    "voidHasPayments": "Eine Rechnung mit erfasster Zahlung kann nicht storniert werden.",
+    "more": "Mehr",
+    "itemActions": "Aktionen für {{name}}",
+    "totals": "Summen",
+    "note": "Notiz",
+    "addNote": "Notiz hinzufügen",
+    "editNote": "Notiz bearbeiten",
+    "saveNote": "Notiz speichern"
   },
   "lineItem": {
     "description": "Beschreibung",
@@ -112,5 +119,13 @@
   "otherItem": {
     "option": "Sonstiges (manuelle Eingabe)",
     "placeholder": "Eigene Beschreibung"
+  },
+  "add": {
+    "group": "Position hinzufügen",
+    "service": "Leistung",
+    "servicePlaceholder": "Leistung aus der Preisliste hinzufügen…",
+    "quantity": "Menge",
+    "price": "Preis",
+    "submit": "Hinzufügen"
   }
 }

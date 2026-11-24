@@ -51,7 +51,14 @@
     "payments": "Payments",
     "noLineItems": "No line items yet.",
     "noPayments": "No payments recorded.",
-    "voidHasPayments": "An invoice with a payment recorded can't be voided."
+    "voidHasPayments": "An invoice with a payment recorded can't be voided.",
+    "more": "More",
+    "itemActions": "Actions for {{name}}",
+    "totals": "Totals",
+    "note": "Note",
+    "addNote": "Add a note",
+    "editNote": "Edit note",
+    "saveNote": "Save note"
   },
   "lineItem": {
     "description": "Description",
@@ -112,5 +119,13 @@
   "otherItem": {
     "option": "Other (manual entry)",
     "placeholder": "Custom description"
+  },
+  "add": {
+    "group": "Add an item",
+    "service": "Service",
+    "servicePlaceholder": "Add a service from the price list…",
+    "quantity": "Quantity",
+    "price": "Price",
+    "submit": "Add"
   }
 }

@@ -210,6 +210,11 @@ export const staffService = {
     return apiClient.delete(`${BASE}/${id}`);
   },
 
+  /** For good, with the sign-in; only without appointments (409 Staff.HasHistory). Administrator only. */
+  deletePermanently(id: string) {
+    return apiClient.delete(`${BASE}/${id}/permanent`).then(() => undefined);
+  },
+
   /** Instead of deleting (people-merge plan B6); 409 while appointments are ahead. */
   deactivate(id: string) {
     return apiClient.post<StaffMemberResponse>(`${BASE}/${id}/deactivate`).then((r) => r.data);
@@ -231,6 +236,11 @@ export const staffService = {
 
   changeRole(userId: string, role: TenantRole) {
     return apiClient.put(`/api/v1/users/${userId}/role`, { role }).then((r) => r.data);
+  },
+
+  /** The sign-in email; the API updates the linked profile's email with it. */
+  changeSignInEmail(userId: string, email: string) {
+    return apiClient.put(`/api/v1/users/${userId}/email`, { email }).then((r) => r.data);
   },
 
   setAccessActive(userId: string, isActive: boolean) {

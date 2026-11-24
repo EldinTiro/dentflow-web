@@ -6,7 +6,8 @@ export type PatientStatus = 'Active' | 'Inactive' | 'Transferred'
 
 export interface PatientResponse {
   id: string
-  patientNumber: string
+  /** Null until the card is opened at the first visit (booked by email, never seen). */
+  patientNumber: string | null
   firstName: string
   lastName: string
   preferredName: string | null
@@ -82,6 +83,8 @@ export interface PagedResult<T> {
 
 export interface CreatePatientRequest {
   patientNumber?: string | null
+  /** Saved without a card: the number is given when the card is opened. */
+  withoutCard?: boolean
   firstName: string
   lastName: string
   preferredName?: string | null
@@ -135,7 +138,7 @@ export interface UpdatePatientRequest {
 
 export interface PatientSearchResult {
   id: string
-  patientNumber: string
+  patientNumber: string | null
   fullName: string
   phoneMobile: string | null
   email: string | null
@@ -246,6 +249,12 @@ export const patientService = {
       .put<PatientResponse>(`/api/v1/patients/${id}`, body)
       .then((r) => r.data),
 
+  /** For good, with everything on the record. The Administrator only (records.purge). */
+  deletePermanently: (id: string) =>
+    apiClient
+      .delete(`/api/v1/patients/${id}/permanent`)
+      .then(() => undefined),
+
   /** Only a duplicate without history; anything else answers 409 Patient.HasHistory (D9). */
   delete: (id: string) =>
     apiClient
@@ -257,6 +266,10 @@ export const patientService = {
     apiClient
       .post<PatientResponse>(`/api/v1/patients/${id}/deactivate`, { reason: reason?.trim() || null })
       .then((r) => r.data),
+
+  /** Opens the card: the paper card's number, or the clinic's next one when null. */
+  openCard: (id: string, patientNumber: string | null) =>
+    apiClient.post<PatientResponse>(`/api/v1/patients/${id}/card`, { patientNumber }).then((r) => r.data),
 
   reactivate: (id: string) =>
     apiClient

@@ -1,7 +1,6 @@
 {
   "title": "Termine",
   "totalCount": "{{count}} Termin(e)",
-  "filteredOf": "{{filtered}} von",
   "button": {
     "bookAppointment": "+ Termin buchen"
   },
@@ -18,10 +17,7 @@
     "from": "Von Datum",
     "to": "Bis Datum",
     "status": "Status",
-    "provider": "Arzt",
-    "allStatuses": "Alle Status",
-    "allProviders": "Alle Ärzte",
-    "showPast": "Vergangene anzeigen"
+    "allStatuses": "Alle Status"
   },
   "preset": {
     "today": "Heute",
@@ -29,12 +25,11 @@
     "thisMonth": "Dieser Monat"
   },
   "table": {
-    "start": "Beginn",
     "patient": "Patient",
     "provider": "Arzt",
-    "duration": "Dauer",
     "status": "Status",
-    "chiefComplaint": "Hauptbeschwerde"
+    "time": "Zeit",
+    "service": "Leistung"
   },
   "statuses": {
     "Scheduled": "Geplant",
@@ -55,16 +50,12 @@
   },
   "emptyState": "Keine Termine gefunden.",
   "calendar": {
-    "prev": "← Zurück",
-    "next": "Weiter →",
-    "today": "Heute",
     "day": "Tag",
     "week": "Woche",
     "prevDay": "Vorheriger Tag",
     "nextDay": "Nächster Tag",
     "noProviders": "Noch keine Ärzte, die Termine annehmen.",
     "moveTitle": "Termin verschieben?",
-    "moveDescription": "{{patient}} → {{when}} · {{doctor}}",
     "moveConfirm": "Verschieben",
     "moveCancel": "Abbrechen",
     "moved": "Termin verschoben",
@@ -86,7 +77,22 @@
       "Freitag",
       "Samstag",
       "Sonntag"
-    ]
+    ],
+    "prevWeek": "Vorherige Woche",
+    "nextWeek": "Nächste Woche",
+    "openDay": "{{day}} öffnen",
+    "resizeTitle": "Dauer ändern?",
+    "resizeConfirm": "Speichern",
+    "resized": "Termindauer geändert",
+    "resizeFailed": "Dauer konnte nicht geändert werden",
+    "pickDate": "Datum wählen",
+    "prevMonth": "Vorheriger Monat",
+    "nextMonth": "Nächster Monat",
+    "month": "Monat",
+    "visitCount_one": "{{count}} Termin",
+    "visitCount_other": "{{count}} Termine",
+    "allDoctors": "Alle Ärzte",
+    "doctorsFilter": "Ärzte"
   },
   "types": {
     "title": "Leistungsarten",
@@ -129,10 +135,8 @@
     "firstNamePlaceholder": "z. B. Amra",
     "lastNamePlaceholder": "z. B. Begić",
     "phone": "Telefon",
-    "chartOpenedOnBooking": "Die Patientenakte wird bei der Buchung angelegt.",
     "patientSearchPlaceholder": "Name, Telefon oder Aktennummer…",
     "searching": "Suche…",
-    "createChartFor": "Neue Akte für „{{query}}“ anlegen",
     "provider": "Behandler",
     "loading": "Wird geladen…",
     "selectProvider": "Behandler wählen…",
@@ -158,7 +162,9 @@
     "startRequired": "Startzeit ist erforderlich",
     "patientCreated": "Patient {{name}} angelegt",
     "patientCreateFailed": "Patient konnte nicht angelegt werden",
-    "bookFailed": "Termin konnte nicht gebucht werden. Bitte erneut versuchen."
+    "bookFailed": "Termin konnte nicht gebucht werden. Bitte erneut versuchen.",
+    "noCardUntilVisit": "Noch keine Kartennummer: Die Karte wird beim Eintreffen des Patienten angelegt.",
+    "addAsNewPatient": "„{{query}}“ als neuen Patienten hinzufügen"
   },
   "detail": {
     "title": "Termindetails",
@@ -201,6 +207,22 @@
     "notYetDue": "Check-in und Behandlung sind am Tag des Termins möglich.",
     "patientNotFound": "Patient nicht gefunden",
     "overrideNewStatus": "Neuer Status",
-    "billed": "Abgerechnet"
+    "billed": "Abgerechnet",
+    "finishVisit": "Besuch abschließen",
+    "visitProgress": "Besuchsverlauf",
+    "visitLine": "Besuch",
+    "invoiceFailed": "Rechnung konnte nicht erstellt werden",
+    "step": {
+      "scheduled": "Geplant",
+      "arrived": "Angekommen",
+      "done": "Fertig"
+    },
+    "closeVisit": "Termin abschließen"
+  },
+  "list": {
+    "prevPeriod": "Vorheriger Zeitraum",
+    "nextPeriod": "Nächster Zeitraum",
+    "choosePeriod": "Zeitraum wählen",
+    "tomorrow": "Morgen"
   }
 }

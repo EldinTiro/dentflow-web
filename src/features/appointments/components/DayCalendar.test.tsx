@@ -51,6 +51,14 @@ describe('DayCalendar', () => {
     expect(screen.queryByText('06:00')).not.toBeInTheDocument()
   })
 
+  // User request 2026-11-10: the arrows moved next to the period above, for more calendar room
+  it('has no arrows of its own', () => {
+    render(<DayCalendar {...baseProps} />)
+
+    expect(screen.queryByRole('button', { name: 'Previous day' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Next day' })).toBeNull()
+  })
+
   it('shows one column per doctor, with their visits in it', () => {
     const { container } = render(<DayCalendar {...baseProps} />)
 
@@ -87,11 +95,27 @@ describe('DayCalendar', () => {
     expect(onSlotClick).toHaveBeenCalledWith('2026-10-29T10:30', 'p2')
   })
 
+  // User request 2026-11-10: show which slot a click would book, in that doctor's column
+  it("highlights the slot under the mouse in that doctor's column only", () => {
+    const { container } = render(<DayCalendar {...baseProps} onSlotClick={vi.fn()} />)
+    const col = pin(column(container, 'p2'))
+
+    fireEvent.mouseMove(col, { clientY: 4 * H + 40 })
+
+    const preview = screen.getByTestId('slot-preview')
+    expect(preview).toHaveTextContent('10:30')
+    expect(col).toContainElement(preview)
+    fireEvent.mouseLeave(col)
+    expect(screen.queryByTestId('slot-preview')).not.toBeInTheDocument()
+  })
+
   it('draws the current-time line across the day when it is today', () => {
     vi.setSystemTime(new Date(2026, 9, 29, 10, 30))
     const { container } = render(<DayCalendar {...baseProps} />)
 
     expect(container.querySelector('[data-testid="now-line"]')).toHaveStyle({ top: '30%' })
+    // User request 2026-11-10: and the time itself on the time axis
+    expect(container.querySelector('[data-testid="now-label"]')).toHaveTextContent('10:30')
   })
 
   it('says so when there is no doctor to show', () => {
@@ -163,6 +187,131 @@ describe('DayCalendar drag and drop', () => {
     fireEvent.click(chip)
 
     expect(onAppointmentClick).not.toHaveBeenCalled()
+  })
+
+  // User report 2026-11-10: a drop in a column also opened the booking drawer, because the
+  // browser sends a click to the column after the pointer is let go there
+  it('does not book a slot when a visit is dropped in a column', async () => {
+    const onSlotClick = vi.fn()
+    const { container } = render(<DayCalendar {...baseProps} onMove={vi.fn()} onSlotClick={onSlotClick} />)
+    const chip = screen.getByRole('button', { name: /Miroslav Vuletić/ })
+    chip.getBoundingClientRect = () => ({ top: 3 * H, left: 0, right: 200, bottom: 4 * H, width: 200, height: H, x: 0, y: 3 * H, toJSON: () => ({}) })
+    const p1 = pin(column(container, 'p1'), 0)
+
+    drag(chip, p1, 20, 5 * H)
+    fireEvent.click(p1, { clientY: 5 * H })
+    expect(onSlotClick).not.toHaveBeenCalled()
+
+    // The next real click still books
+    await new Promise((r) => setTimeout(r, 0))
+    fireEvent.click(p1, { clientY: 5 * H })
+    expect(onSlotClick).toHaveBeenCalledTimes(1)
+  })
+
+  // User request 2026-11-10: change a visit's length by dragging its bottom edge
+  describe('resizing', () => {
+    function setupResize() {
+      const onResize = vi.fn()
+      const onMove = vi.fn()
+      const onAppointmentClick = vi.fn()
+      const utils = render(<DayCalendar {...baseProps} onMove={onMove} onResize={onResize} onAppointmentClick={onAppointmentClick} />)
+      const p1 = pin(column(utils.container, 'p1'), 0)
+      const chip = screen.getByRole('button', { name: /Miroslav Vuletić/ })
+      const handle = utils.container.querySelector<HTMLElement>('[data-testid="resize-handle"][data-edge="bottom"]')!
+      const topHandle = utils.container.querySelector<HTMLElement>('[data-testid="resize-handle"][data-edge="top"]')!
+      return { ...utils, p1, chip, handle, topHandle, onResize, onMove, onAppointmentClick }
+    }
+    /** Grab the bottom edge (10:00 = 4h below 06:00) and let go at `y`. */
+    function pull(handle: HTMLElement, y: number) {
+      fireEvent.pointerDown(handle, { clientX: 10, clientY: 4 * H, button: 0 })
+      fireEvent.pointerMove(window, { clientX: 10, clientY: y })
+      fireEvent.pointerUp(window, { clientX: 10, clientY: y })
+    }
+
+    it('sets a new end, snapped to 15 minutes, keeping the start', () => {
+      const { handle, onResize, onMove } = setupResize()
+
+      pull(handle, 4.5 * H + 3) // 10:33 → 10:30
+
+      expect(onResize).toHaveBeenCalledWith(visit, '2026-10-29T09:00', '2026-10-29T10:30')
+      expect(onMove).not.toHaveBeenCalled()
+    })
+
+    it('keeps at least 15 minutes', () => {
+      const { handle, onResize } = setupResize()
+
+      pull(handle, 2 * H) // above the start
+
+      expect(onResize).toHaveBeenCalledWith(visit, '2026-10-29T09:00', '2026-10-29T09:15')
+    })
+
+    it('stretches the visit while pulling', () => {
+      const { handle, chip } = setupResize()
+
+      fireEvent.pointerDown(handle, { clientX: 10, clientY: 4 * H, button: 0 })
+      fireEvent.pointerMove(window, { clientX: 10, clientY: 5 * H })
+
+      expect(chip).toHaveTextContent('09:00 – 11:00')
+    })
+
+    it('does not open the visit after resizing it', () => {
+      const { handle, chip, onAppointmentClick } = setupResize()
+
+      pull(handle, 5 * H)
+      fireEvent.click(chip)
+
+      expect(onAppointmentClick).not.toHaveBeenCalled()
+    })
+
+    // User report 2026-11-10: pulling the top edge down did nothing; it changes the start
+    it('sets a new start from the top edge, keeping the end', () => {
+      const { topHandle, onResize, onMove } = setupResize()
+
+      fireEvent.pointerDown(topHandle, { clientX: 10, clientY: 3 * H, button: 0 })
+      fireEvent.pointerMove(window, { clientX: 10, clientY: 3.5 * H })
+      fireEvent.pointerUp(window, { clientX: 10, clientY: 3.5 * H })
+
+      expect(onResize).toHaveBeenCalledWith(visit, '2026-10-29T09:30', '2026-10-29T10:00')
+      expect(onMove).not.toHaveBeenCalled()
+    })
+
+    it('keeps at least 15 minutes when the top is pulled past the end', () => {
+      const { topHandle, onResize } = setupResize()
+
+      fireEvent.pointerDown(topHandle, { clientX: 10, clientY: 3 * H, button: 0 })
+      fireEvent.pointerMove(window, { clientX: 10, clientY: 6 * H })
+      fireEvent.pointerUp(window, { clientX: 10, clientY: 6 * H })
+
+      expect(onResize).toHaveBeenCalledWith(visit, '2026-10-29T09:45', '2026-10-29T10:00')
+    })
+
+    it('moves the top of the visit while pulling it', () => {
+      const { topHandle, chip } = setupResize()
+
+      fireEvent.pointerDown(topHandle, { clientX: 10, clientY: 3 * H, button: 0 })
+      fireEvent.pointerMove(window, { clientX: 10, clientY: 2 * H })
+
+      expect(chip).toHaveTextContent('08:00 – 10:00')
+    })
+
+    // A drag the browser takes over (pointercancel) left the visit stretched with no dialog
+    it('puts the visit back when the browser cancels the pull', () => {
+      const { handle, chip, onResize } = setupResize()
+
+      fireEvent.pointerDown(handle, { clientX: 10, clientY: 4 * H, button: 0 })
+      fireEvent.pointerMove(window, { clientX: 10, clientY: 5 * H })
+      fireEvent.pointerCancel(window, { clientX: 10, clientY: 5 * H })
+      fireEvent.pointerUp(window, { clientX: 10, clientY: 5 * H })
+
+      expect(chip).toHaveTextContent('09:00 – 10:00')
+      expect(onResize).not.toHaveBeenCalled()
+    })
+
+    it('has no handle on a finished visit', () => {
+      const { container } = render(<DayCalendar {...baseProps} appointments={[{ ...visit, status: 'Completed' as const }]} onResize={vi.fn()} />)
+
+      expect(container.querySelector('[data-testid="resize-handle"]')).toBeNull()
+    })
   })
 
   // The API refuses to move a started or finished visit (QA-034)

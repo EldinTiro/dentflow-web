@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useParams, useSearchParams, Link } from 'react-router'
+import { useParams, useSearchParams, Link, useNavigate } from 'react-router'
+import { Mail, Phone, Trash2 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
@@ -10,6 +11,7 @@ import { StaffBlockedTimesTab } from '../components/StaffBlockedTimesTab'
 import { StaffAccessSection } from '../components/StaffAccessSection'
 import { peopleErrorMessage } from '../lib/peopleErrors'
 import { useConfirm } from '@/shared/components/ConfirmDialog'
+import { PermanentDeleteDialog } from '@/shared/components/PermanentDeleteDialog'
 import { formatDate } from '@/shared/lib/format'
 import { can } from '@/shared/lib/permissions'
 
@@ -48,7 +50,11 @@ export function StaffDetailPage() {
   const tab: Tab = searchParams.get('tab') === 'absence' ? 'absence' : 'overview'
   const setTab = (v: Tab) => setSearchParams(v === 'overview' ? {} : { tab: v }, { replace: true })
 
-  const canManage = can(useAuthStore(selectRoles), 'people.manage')
+  const roles = useAuthStore(selectRoles)
+  const canManage = can(roles, 'people.manage')
+  const canPurge = can(roles, 'records.purge')
+  const navigate = useNavigate()
+  const [confirmPurge, setConfirmPurge] = useState(false)
   const queryClient = useQueryClient()
   const confirm = useConfirm()
 
@@ -67,6 +73,21 @@ export function StaffDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['staff'] })
     },
     onError: (err) => toast.error(peopleErrorMessage(err, t, staff?.fullName ?? '')),
+  })
+
+  // The Administrator deletes for good (user request 2026-11-13); anyone who has worked stays
+  const purge = useMutation({
+    mutationFn: () => staffService.deletePermanently(id!),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['staff', id] })
+      queryClient.invalidateQueries({ queryKey: ['staff'] })
+      toast.success(t('purge.done'))
+      navigate('/staff')
+    },
+    onError: (err) => {
+      setConfirmPurge(false)
+      toast.error(peopleErrorMessage(err, t, staff?.fullName ?? ''))
+    },
   })
 
   if (isLoading) {
@@ -91,38 +112,45 @@ export function StaffDetailPage() {
 
   return (
     <div className="p-6 space-y-5 max-w-5xl">
-      {/* Breadcrumb */}
-      <nav className="text-sm text-gray-500 dark:text-gray-400">
-        <Link to="/staff" className="hover:text-primary-600 dark:hover:text-primary-400">{t('title')}</Link>
-        <span className="mx-2">/</span>
-        <span className="text-gray-800 dark:text-gray-100">{staff.fullName}</span>
-      </nav>
+      <Link to="/staff" className="block text-sm text-primary-600 hover:underline dark:text-primary-400">
+        {t('backToStaff')}
+      </Link>
 
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex items-center gap-4">
+      {/* Header: who the person is and what can be done, like the patient record (2026-11-13) */}
+      <section aria-label={staff.fullName} className="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+        <div className="flex min-w-0 items-start gap-4">
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-semibold flex-shrink-0"
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-semibold text-white"
             style={{ backgroundColor: staff.colorHex ?? '#3B82F6' }}
           >
             {staff.firstName[0]}{staff.lastName[0]}
           </div>
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{staff.fullName}</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm text-gray-500 dark:text-gray-400">{t(`staffType.${staff.staffType}`)}</span>
-              <span
-                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                  staff.isActive ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300'
-                }`}
-              >
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{staff.fullName}</h1>
+              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                staff.isActive ? 'bg-green-100 text-green-800 dark:bg-green-400/10 dark:text-green-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700/60 dark:text-gray-300'
+              }`}>
                 {staff.isActive ? tc('status.active') : tc('status.inactive')}
               </span>
             </div>
+            <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-gray-600 dark:text-gray-400">
+              <span className="font-medium text-gray-800 dark:text-gray-100">
+                {t(`staffType.${staff.staffType}`)}{staff.specialty ? ` · ${staff.specialty}` : ''}
+              </span>
+              {staff.phone && <a href={`tel:${staff.phone}`} className="inline-flex items-center gap-1 hover:text-primary-600"><Phone size={13} aria-hidden /> {staff.phone}</a>}
+              {staff.email && <a href={`mailto:${staff.email}`} className="inline-flex min-w-0 items-center gap-1 break-all hover:text-primary-600"><Mail size={13} aria-hidden /> {staff.email}</a>}
+            </p>
           </div>
         </div>
         {canManage && (
           <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setShowEdit(true)}
+              className="rounded-md border border-control px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              {tc('button.edit')}
+            </button>
             {staff.isActive ? (
               <button
                 onClick={() => confirm.ask({
@@ -133,7 +161,7 @@ export function StaffDetailPage() {
                   onConfirm: () => setActive.mutate(false),
                 })}
                 disabled={setActive.isPending}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                className="rounded-md border border-control px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
               >
                 {t('status.deactivate')}
               </button>
@@ -141,26 +169,30 @@ export function StaffDetailPage() {
               <button
                 onClick={() => setActive.mutate(true)}
                 disabled={setActive.isPending}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-control dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                className="rounded-md border border-control px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
               >
                 {t('status.reactivate')}
               </button>
             )}
-            <button
-              onClick={() => setShowEdit(true)}
-              className="px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 border border-primary-300 dark:border-primary-600 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-            >
-              {tc('button.edit')}
-            </button>
+            {canPurge && (
+              <button
+                onClick={() => setConfirmPurge(true)}
+                className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-400/10"
+              >
+                <Trash2 size={15} aria-hidden /> {tc('permanentDelete.confirm')}
+              </button>
+            )}
           </div>
         )}
-      </div>
+      </section>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700">
+      <div role="tablist" aria-label={staff.fullName} className="flex gap-1 border-b border-gray-200 dark:border-gray-700">
         {tabs.map(({ key, label }) => (
           <button
             key={key}
+            role="tab"
+            aria-selected={tab === key}
             onClick={() => setTab(key)}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               tab === key
@@ -177,11 +209,6 @@ export function StaffDetailPage() {
       {tab === 'overview' && (
         <div className="space-y-4">
           <StaffAccessSection staff={staff} />
-
-          <Section title={t('section.contact')}>
-            <Field label={t('field.email')} value={staff.email} />
-            <Field label={t('field.phone')} value={staff.phone} />
-          </Section>
 
           <Section title={t('section.employment')}>
             <Field label={t('field.staffType')} value={t(`staffType.${staff.staffType}`)} />
@@ -210,6 +237,16 @@ export function StaffDetailPage() {
       {tab === 'absence' && <StaffBlockedTimesTab staffId={id!} />}
 
       {confirm.dialog}
+
+      <PermanentDeleteDialog
+        open={confirmPurge}
+        name={staff.fullName}
+        title={t('purge.title')}
+        description={t('purge.body')}
+        isPending={purge.isPending}
+        onConfirm={() => purge.mutate()}
+        onCancel={() => setConfirmPurge(false)}
+      />
 
       {showEdit && (
         <EditStaffDrawer staff={staff} onClose={() => setShowEdit(false)} />

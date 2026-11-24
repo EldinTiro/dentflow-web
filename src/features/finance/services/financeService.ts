@@ -24,7 +24,7 @@ export interface FinanceSummary {
 export interface FinanceDebtor {
   patientId: string
   patientName: string
-  patientNumber: string
+  patientNumber: string | null
   phoneMobile: string | null
   balance: number
   overdueBalance: number

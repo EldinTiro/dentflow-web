@@ -29,7 +29,8 @@
     "previous": "Previous",
     "activate": "Activate",
     "deactivate": "Deactivate",
-    "exportCsv": "Export CSV"
+    "exportCsv": "Export CSV",
+    "clearSearch": "Clear search"
   },
   "status": {
     "active": "Active",
@@ -127,7 +128,10 @@
     "close": "Close",
     "hidePassword": "Hide password",
     "showPassword": "Show password",
-    "userMenu": "Account menu"
+    "userMenu": "Account menu",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "mainMenu": "Main menu"
   },
   "errorBoundary": {
     "title": "Something went wrong",
@@ -181,5 +185,9 @@
     "passwordSpecial": "Must contain a special character",
     "passwordsMismatch": "Passwords do not match",
     "passwordUnchanged": "The new password must be different from the current one."
+  },
+  "permanentDelete": {
+    "confirm": "Delete permanently",
+    "typeToConfirm": "Type {{name}} to confirm"
   }
 }

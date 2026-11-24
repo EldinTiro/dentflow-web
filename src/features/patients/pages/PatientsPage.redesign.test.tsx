@@ -30,7 +30,8 @@ const patient = (id: string, fullName: string, over: object = {}) => ({
 const page = (items: unknown[]) => ({ items, totalCount: items.length, page: 1, pageSize: 20, totalPages: 1, hasPreviousPage: false, hasNextPage: false })
 
 function Where() {
-  return <p data-testid="where">{useLocation().pathname}</p>
+  const l = useLocation()
+  return <p data-testid="where">{l.pathname + l.search}</p>
 }
 const renderPage = () => renderWithProviders(
   <Routes><Route path="/patients" element={<><PatientsPage /><Where /></>} /><Route path="/patients/:id" element={<Where />} /></Routes>,
@@ -49,6 +50,15 @@ describe('PatientsPage redesign', () => {
     useAuthStore.getState().setAuth('t', { userId: 'u', email: 'e@x', fullName: 'U', roles: ['Staff'] })
   })
   afterEach(() => { vi.useRealTimers(); useAuthStore.getState().clearAuth() })
+
+  // Client request 2026-11-10: booked by email, card not opened yet
+  it('marks a patient whose card is not opened yet', async () => {
+    vi.mocked(patientService.list).mockResolvedValue(page([patient('9', 'Anita Zaimović', { patientNumber: null })]) as never)
+    renderPage()
+
+    const anita = (await screen.findByText('Anita Zaimović')).closest('tr')!
+    expect(within(anita).getByText('No card')).toBeInTheDocument()
+  })
 
   // A: what the desk needs per row, instead of empty columns
   // User request: date of birth instead of the next appointment, and the last visit with its year
@@ -76,47 +86,14 @@ describe('PatientsPage redesign', () => {
     expect(karlo).not.toHaveTextContent('60.00 KM')
   })
 
-  // B: a quick look without leaving the list
-  it('opens a preview of the patient on a row click, and the record from there', async () => {
+  // User request 2026-11-13: no preview; a click opens the patient's tooth chart
+  it('opens the tooth chart of the patient clicked, with no preview', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     renderPage()
 
     await user.click(await screen.findByText('Karlo Mijatović'))
 
-    const preview = screen.getByRole('region', { name: 'Karlo Mijatović' })
-    expect(screen.getByTestId('where')).toHaveTextContent('/patients')
-
-    await user.click(within(preview).getByRole('link', { name: 'Open record' }))
-    expect(screen.getByTestId('where')).toHaveTextContent('/patients/2')
-  })
-
-  // The preview answers "how is this patient doing": last visit, visits, files; no booking or billing from here
-  it('shows first and last visit, visit count and file count in the preview, and only the record link', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-    renderPage()
-
-    await user.click(await screen.findByText('Karlo Mijatović'))
-
-    const preview = screen.getByRole('region', { name: 'Karlo Mijatović' })
-    const tiles = within(preview).getAllByText(/^(First visit|Last visit|Total visits|Total files)$/).map((l) => l.textContent)
-    expect(tiles).toEqual(['First visit', 'Last visit', 'Total visits', 'Total files'])
-    expect(within(preview).getByText('First visit').nextSibling).toHaveTextContent('15 Feb 2021')
-    expect(within(preview).getByText('Last visit').nextSibling).toHaveTextContent('30 Oct 2026')
-    expect(within(preview).getByText('Total visits').nextSibling).toHaveTextContent('7')
-    expect(within(preview).getByText('Total files').nextSibling).toHaveTextContent('3')
-    expect(within(preview).queryByText('Balance')).not.toBeInTheDocument()
-    expect(within(preview).queryByText('Treatment plan')).not.toBeInTheDocument()
-    expect(within(preview).queryByText('Next appointment')).not.toBeInTheDocument()
-    expect(within(preview).queryByRole('button', { name: /book|bill/i })).not.toBeInTheDocument()
-  })
-
-  it('names the allergies in the preview', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-    renderPage()
-
-    await user.click(await screen.findByText('Lejla Hasanović'))
-
-    const preview = screen.getByRole('region', { name: 'Lejla Hasanović' })
-    expect(await within(preview).findByText(/Penicillin/)).toBeInTheDocument()
+    expect(screen.getByTestId('where')).toHaveTextContent('/patients/2?tab=teeth')
+    expect(screen.queryByRole('region', { name: 'Karlo Mijatović' })).not.toBeInTheDocument()
   })
 })

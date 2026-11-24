@@ -8,6 +8,7 @@ import { DialPicker, isPlausibleLocalNumber, joinPhone } from './PhoneField'
 
 interface FormValues {
   patientNumber: string
+  withoutCard: boolean
   firstName: string
   lastName: string
   parentName: string
@@ -32,9 +33,10 @@ export function CreatePatientDrawer({ onClose }: Props) {
   const tc = useTranslation('common').t
   const queryClient = useQueryClient()
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, control, watch, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
       patientNumber: '',
+      withoutCard: false,
       status: 'Active',
       gender: '',
       phoneDialCode: '+387',
@@ -45,11 +47,13 @@ export function CreatePatientDrawer({ onClose }: Props) {
   })
 
   const { field: dialField } = useController({ name: 'phoneDialCode', control })
+  const withoutCard = watch('withoutCard')
 
   const create = useMutation({
     mutationFn: (values: FormValues) => {
       const body: CreatePatientRequest = {
-        patientNumber: values.patientNumber || null,
+        patientNumber: values.withoutCard ? null : values.patientNumber || null,
+        withoutCard: values.withoutCard,
         firstName: values.firstName,
         lastName: values.lastName,
         preferredName: values.preferredName || null,
@@ -77,15 +81,26 @@ export function CreatePatientDrawer({ onClose }: Props) {
   return (
     <Drawer title={t('drawer.createTitle')} onClose={onClose}>
       <form noValidate onSubmit={handleSubmit((v) => create.mutate(v))} className="space-y-4">
-        {/* Patient Number (optional override) */}
+        {/* Client request 2026-11-10: booked by email, not seen yet - no card number until they come */}
         <div>
+          <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input type="checkbox" {...register('withoutCard')} className="mt-0.5 rounded" />
+            <span>
+              {t('card.withoutCard')}
+              <span className="block text-xs text-gray-500 dark:text-gray-400">{t('card.withoutCardHint')}</span>
+            </span>
+          </label>
+        </div>
+
+        {/* Patient Number (optional override) */}
+        {!withoutCard && <div>
           <label htmlFor="patient-patientNumber" className={labelClass}>{t('drawer.patientNumber')} <span className="text-gray-500 font-normal dark:text-gray-400">{t('drawer.autoGenerate')}</span></label>
           <input id="patient-patientNumber"
             {...register('patientNumber')}
             className={inputClass}
             placeholder={t('drawer.patientNumberPlaceholder')}
           />
-        </div>
+        </div>}
 
         {/* Name row */}
         <div className="grid grid-cols-2 gap-3">

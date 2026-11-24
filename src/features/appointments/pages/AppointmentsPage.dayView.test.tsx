@@ -15,10 +15,15 @@ const visit = appointmentFixture({
   startAt: new Date(2026, 9, 29, 9, 0).toISOString(), endAt: new Date(2026, 9, 29, 10, 0).toISOString(), durationMinutes: 60,
 } as never)
 
+const cancelled = appointmentFixture({
+  id: 'a2', providerId: 'p1', patientId: 'pat-2', patientName: 'Ajdin Kubat', status: 'Cancelled',
+  startAt: new Date(2026, 9, 29, 13, 30).toISOString(), endAt: new Date(2026, 9, 29, 13, 45).toISOString(), durationMinutes: 15,
+} as never)
+
 vi.mock('../services/appointmentService', async (orig) => ({
   ...(await orig<typeof import('../services/appointmentService')>()),
   appointmentService: {
-    list: vi.fn(async () => ({ items: [visit], totalCount: 1, page: 1, pageSize: 200 })),
+    list: vi.fn(async () => ({ items: [visit, cancelled], totalCount: 2, page: 1, pageSize: 200 })),
     listTypes: vi.fn(async () => []),
     reschedule: vi.fn(async () => visit),
   },
@@ -46,10 +51,12 @@ vi.mock('@/features/admin/services/tenantService', () => ({
 }))
 // The grid itself is covered by DayCalendar.test; here only what the page does with it
 vi.mock('../components/DayCalendar', () => ({
-  DayCalendar: (props: { date: string; providers: DayProvider[]; openHours?: { start: number; end: number } | null; onMove?: (a: unknown, s: string, p?: string) => void }) => (
-    <div data-testid="day-calendar" data-date={props.date} data-open={props.openHours ? `${props.openHours.start}-${props.openHours.end}` : ''}>
+  DayCalendar: (props: { date: string; providers: DayProvider[]; appointments: { id: string }[]; onPrev?: () => void; onNext?: () => void; openHours?: { start: number; end: number } | null; onMove?: (a: unknown, s: string, p?: string) => void; onResize?: (a: unknown, s: string, e: string) => void }) => (
+    <div data-testid="day-calendar" data-date={props.date} data-visits={props.appointments.map((a) => a.id).join(',')} data-open={props.openHours ? `${props.openHours.start}-${props.openHours.end}` : ''}>
       {props.providers.map((p) => <span key={p.id}>{p.fullName}</span>)}
       <button onClick={() => props.onMove?.(visit, '2026-10-29T11:15', 'p2')}>drop on Ana 11:15</button>
+      <button onClick={() => props.onResize?.(visit, '2026-10-29T09:00', '2026-10-29T10:30')}>end at 10:30</button>
+      <button onClick={() => props.onResize?.(visit, '2026-10-29T09:30', '2026-10-29T10:00')}>start at 09:30</button>
     </div>
   ),
 }))
@@ -90,6 +97,13 @@ describe('AppointmentsPage day view', () => {
 
     const day = await screen.findByTestId('day-calendar')
     await vi.waitFor(() => expect(day).toHaveAttribute('data-open', '10-19'))
+  })
+
+  // Client report: a cancelled visit kept its slot looking taken
+  it('leaves cancelled visits off the calendar, so their slot can be booked', async () => {
+    renderPage()
+
+    await vi.waitFor(async () => expect(await screen.findByTestId('day-calendar')).toHaveAttribute('data-visits', 'a1'))
   })
 
   it('switches between day and week and keeps it in the URL', async () => {
@@ -145,18 +159,61 @@ describe('AppointmentsPage day view', () => {
     expect(screen.getByText('Friday, 30/10/2026')).toBeInTheDocument()
   })
 
+  it('steps days with the arrow keys', async () => {
+    renderPage()
+    await screen.findByTestId('day-calendar')
+
+    await userEvent.keyboard('{ArrowRight}')
+
+    expect(screen.getByTestId('day-calendar')).toHaveAttribute('data-date', '2026-10-30')
+  })
+
   it('asks before moving a visit, then moves it to the new doctor', async () => {
     renderPage()
 
     await userEvent.click(await screen.findByRole('button', { name: 'drop on Ana 11:15' }))
     const dialog = screen.getByRole('dialog')
-    expect(dialog).toHaveTextContent('Miroslav Vuletić → Thursday, 29/10/2026 11:15 · Ana Rozić')
+    expect(dialog).toHaveTextContent('Miroslav Vuletić')
+    expect(dialog).toHaveTextContent('Thursday, 29/10/2026 · 11:15')
+    expect(dialog).toHaveTextContent('Ana Rozić')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Move' }))
 
     expect(appointmentService.reschedule).toHaveBeenCalledWith('a1', {
       newStartAt: new Date(2026, 9, 29, 11, 15).toISOString(),
       newEndAt: new Date(2026, 9, 29, 12, 15).toISOString(),
       newProviderId: 'p2',
+    })
+  })
+
+  // User request 2026-11-10: resizing a visit asks first, then saves the new end
+  it('asks before changing the length, then keeps the start and saves the new end', async () => {
+    renderPage()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'end at 10:30' }))
+    const dialog = screen.getByRole('dialog', { name: 'Change the length?' })
+    expect(dialog).toHaveTextContent('Miroslav Vuletić')
+    expect(dialog).toHaveTextContent('09:00 – 10:30')
+    expect(dialog).toHaveTextContent('90 min')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+
+    expect(appointmentService.reschedule).toHaveBeenCalledWith('a1', {
+      newStartAt: new Date(2026, 9, 29, 9, 0).toISOString(),
+      newEndAt: new Date(2026, 9, 29, 10, 30).toISOString(),
+    })
+  })
+
+  it('saves a new start when the top edge was pulled', async () => {
+    renderPage()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'start at 09:30' }))
+    const dialog = screen.getByRole('dialog', { name: 'Change the length?' })
+    expect(dialog).toHaveTextContent('09:30 – 10:00')
+    expect(dialog).toHaveTextContent('30 min')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+
+    expect(appointmentService.reschedule).toHaveBeenCalledWith('a1', {
+      newStartAt: new Date(2026, 9, 29, 9, 30).toISOString(),
+      newEndAt: new Date(2026, 9, 29, 10, 0).toISOString(),
     })
   })
 

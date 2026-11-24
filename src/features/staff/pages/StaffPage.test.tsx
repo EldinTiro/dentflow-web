@@ -10,7 +10,7 @@ import { StaffPage } from './StaffPage'
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }))
 vi.mock('../services/staffService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../services/staffService')>()
-  return { ...actual, staffService: { ...actual.staffService, list: vi.fn(), delete: vi.fn() } }
+  return { ...actual, staffService: { ...actual.staffService, list: vi.fn(), delete: vi.fn(), deletePermanently: vi.fn() } }
 })
 
 const svc = vi.mocked(staffService)
@@ -49,39 +49,38 @@ describe('StaffPage (people-merge plan 4.4, B7)', () => {
   })
   afterEach(() => { useAuthStore.getState().clearAuth() })
 
-  it('shows each person’s access in its own column', async () => {
+  // User request 2026-11-13: no Status or Access columns and no quick filters, only search
+  it('has only the search, with no status or access columns', async () => {
+    signIn(['ClinicOwner'])
+    renderWithProviders(<StaffPage />)
+    await rowOf('Nada')
+
+    expect(screen.getByRole('textbox', { name: 'Search staff' })).toBeInTheDocument()
+    expect(screen.queryByRole('group')).not.toBeInTheDocument()
+    expect(screen.queryByRole('columnheader', { name: /status/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('columnheader', { name: /access/i })).not.toBeInTheDocument()
+  })
+
+  // With no status filter, nobody may become unreachable: everyone is listed, an inactive
+  // person marked by the name so they can still be reactivated
+  it('lists everyone, marking an inactive person by the name', async () => {
     signIn(['ClinicOwner'])
     renderWithProviders(<StaffPage />)
 
-    expect(within(await rowOf('Nada')).getByText('No access')).toBeInTheDocument()
-    expect(within(await rowOf('Aida')).getByText('Can sign in')).toBeInTheDocument()
-    expect(within(await rowOf('Emir')).getByText('Waiting for first sign-in')).toBeInTheDocument()
-    expect(within(await rowOf('Kenan')).getByText('Sign-in turned off')).toBeInTheDocument()
     expect(within(await rowOf('Lejla')).getByText('Inactive')).toBeInTheDocument()
+    expect(within(await rowOf('Nada')).queryByText('Inactive')).not.toBeInTheDocument()
+    expect(svc.list).toHaveBeenLastCalledWith(expect.objectContaining({ isActive: 'all' }))
   })
 
-  it('filters to people who have access', async () => {
+  it('searches from a named box', async () => {
     signIn(['ClinicOwner'])
     const user = userEvent.setup()
     renderWithProviders(<StaffPage />)
     await rowOf('Nada')
 
-    await user.selectOptions(screen.getByLabelText(/access filter/i), 'with')
+    await user.type(screen.getByRole('textbox', { name: 'Search staff' }), 'na')
 
-    expect(screen.queryByText('Nada X')).not.toBeInTheDocument()
-    expect(screen.getByText('Aida X')).toBeInTheDocument()
-  })
-
-  it('asks the API for active staff by default, and for everyone on request', async () => {
-    signIn(['ClinicOwner'])
-    const user = userEvent.setup()
-    renderWithProviders(<StaffPage />)
-    await rowOf('Nada')
-    expect(svc.list).toHaveBeenLastCalledWith(expect.objectContaining({ isActive: true }))
-
-    await user.selectOptions(screen.getByLabelText(/status filter/i), 'all')
-
-    await waitFor(() => expect(svc.list).toHaveBeenLastCalledWith(expect.objectContaining({ isActive: 'all' })))
+    await waitFor(() => expect(svc.list).toHaveBeenLastCalledWith(expect.objectContaining({ searchTerm: 'na' })))
   })
 
   it('hides "+ Add Staff" and row actions from other roles', async () => {
@@ -93,14 +92,34 @@ describe('StaffPage (people-merge plan 4.4, B7)', () => {
     expect(within(await rowOf('Nada')).queryByRole('button')).not.toBeInTheDocument()
   })
 
-  it('explains why a profile with appointments can’t be deleted', async () => {
+  // User request 2026-11-13: the Administrator deletes for good, after typing the name
+  it('deletes a person for good once their name is typed', async () => {
     signIn(['ClinicOwner'])
-    svc.delete.mockRejectedValue(fastEndpointsError('x', 'staff.HasHistory', 409))
+    svc.deletePermanently.mockResolvedValue(undefined as never)
     const user = userEvent.setup()
     renderWithProviders(<StaffPage />)
 
     await user.click(within(await rowOf('Nada')).getByTitle('Delete'))
-    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Delete' }))
+    const dialog = await screen.findByRole('dialog')
+    const confirm = within(dialog).getByRole('button', { name: 'Delete permanently' })
+    expect(confirm).toBeDisabled()
+    await user.type(within(dialog).getByRole('textbox', { name: /type nada x to confirm/i }), 'Nada X')
+    await user.click(confirm)
+
+    const { items } = await (svc.list.mock.results[0].value as Promise<{ items: StaffMemberResponse[] }>)
+    await waitFor(() => expect(svc.deletePermanently).toHaveBeenCalledWith(items.find((m) => m.firstName === 'Nada')!.id))
+  })
+
+  it('explains why a profile with appointments can’t be deleted', async () => {
+    signIn(['ClinicOwner'])
+    svc.deletePermanently.mockRejectedValue(fastEndpointsError('x', 'staff.HasHistory', 409))
+    const user = userEvent.setup()
+    renderWithProviders(<StaffPage />)
+
+    await user.click(within(await rowOf('Nada')).getByTitle('Delete'))
+    const dialog = await screen.findByRole('dialog')
+    await user.type(within(dialog).getByRole('textbox'), 'Nada X')
+    await user.click(within(dialog).getByRole('button', { name: 'Delete permanently' }))
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/deactivate it instead/i)))
   })

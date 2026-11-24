@@ -20,12 +20,14 @@ import { ToothChart } from '../components/ToothChart'
 import { PatientFilesTab } from '../components/PatientFilesTab'
 import { PatientBillingTab } from '@/features/billing/components/PatientBillingTab'
 import { ConfirmDialog, useConfirm } from '@/shared/components/ConfirmDialog'
+import { PermanentDeleteDialog } from '@/shared/components/PermanentDeleteDialog'
 import { Trash2, Plus, AlertTriangle, Phone, User, Heart, CalendarPlus } from 'lucide-react'
 import { AllergyAlert } from '../components/AllergyAlert'
 import { PatientKeyFacts } from '../components/PatientKeyFacts'
 import { PatientTimeline } from '../components/PatientTimeline'
-import { ageOn, avatarTint, genderKey, initialsOf } from '../lib/patientDisplay'
+import { ageOn, avatarTint, genderKey, initialsOf, visitDates } from '../lib/patientDisplay'
 import { DeactivatePatientDialog } from '../components/DeactivatePatientDialog'
+import { NoCardBadge, OpenCardDialog } from '../components/OpenCardDialog'
 import { toast } from 'sonner'
 import { getApiErrorCodes, getApiErrorMessage } from '@/shared/utils/apiError'
 import { formatDate } from '@/shared/lib/format'
@@ -45,7 +47,7 @@ function Field({ label, value }: { label: string; value: string | null | undefin
   return (
     <div>
       <dt className="text-xs text-gray-500 dark:text-gray-400 font-medium">{label}</dt>
-      <dd className="text-sm text-gray-800 dark:text-gray-200 mt-0.5">{value ?? <span className="text-gray-500 dark:text-gray-400">—</span>}</dd>
+      <dd className="text-sm text-gray-800 dark:text-gray-200 mt-0.5 [overflow-wrap:anywhere]">{value ?? <span className="text-gray-500 dark:text-gray-400">—</span>}</dd>
     </div>
   )
 }
@@ -82,6 +84,7 @@ export function PatientDetailPage() {
     }, { replace: true })
   const [selectedAppt, setSelectedAppt] = useState<AppointmentResponse | null>(null)
   const [rescheduling, setRescheduling] = useState<AppointmentResponse | null>(null)
+  const [openingCard, setOpeningCard] = useState(false)
 
   const roles = useAuthStore(selectRoles)
   const canManage = can(roles, 'patients.manage')
@@ -96,6 +99,23 @@ export function PatientDetailPage() {
     queryKey: ['patient-appointments', id],
     queryFn: () => appointmentService.list({ patientId: id!, pageSize: 50 }),
     enabled: !!id && tab === 'appointments',
+  })
+
+  // The Administrator deletes for good, with everything (user request 2026-11-13)
+  const [confirmPurge, setConfirmPurge] = useState(false)
+  const canPurge = can(roles, 'records.purge')
+  const purgeMutation = useMutation({
+    mutationFn: () => patientService.deletePermanently(id!),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['patient', id] })
+      queryClient.invalidateQueries({ queryKey: ['patients'] })
+      toast.success(t('purge.done'))
+      navigate('/patients')
+    },
+    onError: (err) => {
+      setConfirmPurge(false)
+      toast.error(getApiErrorMessage(err, t('purge.failed')))
+    },
   })
 
   // People-merge plan D9: delete is only for a duplicate without history.
@@ -158,7 +178,19 @@ export function PatientDetailPage() {
               </span>
             </div>
             <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-gray-600 dark:text-gray-400">
-              <span className="font-bold tabular-nums text-gray-800 dark:text-gray-100">{patient.patientNumber}</span>
+              {patient.patientNumber
+                ? <span className="font-bold tabular-nums text-gray-800 dark:text-gray-100">{patient.patientNumber}</span>
+                : (
+                  <span className="inline-flex items-center gap-2">
+                    <NoCardBadge />
+                    {canManage && (
+                      <button type="button" onClick={() => setOpeningCard(true)}
+                        className="text-xs font-medium text-primary-600 hover:underline dark:text-primary-400">
+                        {t('card.openButton')}
+                      </button>
+                    )}
+                  </span>
+                )}
               {(() => {
                 const gender = genderKey(patient.gender)
                 const age = ageOn(patient.dateOfBirth)
@@ -201,7 +233,15 @@ export function PatientDetailPage() {
             </button>
           )}
           {/* Only a duplicate without history can be deleted (D9, DT-19). */}
-          {canManage && !patient.hasHistory && (
+          {canPurge && (
+            <button
+              onClick={() => setConfirmPurge(true)}
+              className="inline-flex items-center gap-1.5 text-red-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-50 dark:hover:bg-red-400/10 dark:text-red-300"
+            >
+              <Trash2 size={15} aria-hidden /> {tc('permanentDelete.confirm')}
+            </button>
+          )}
+          {canManage && !canPurge && !patient.hasHistory && (
             <button
               onClick={() => setConfirmDelete(true)}
               className="text-red-600 px-2 py-2 rounded-md text-xs font-medium hover:bg-red-50 dark:hover:bg-red-400/10 dark:text-red-300"
@@ -287,8 +327,8 @@ export function PatientDetailPage() {
           <Field label={t('field.dateOfBirth')} value={formatDate(patient.dateOfBirth)} />
           <Field label={t('field.gender')} value={genderKey(patient.gender) ? tc(genderKey(patient.gender)!) : null} />
           <Field label={t('field.preferredContact')} value={patient.preferredContactMethod} />
-          <Field label={t('field.firstVisit')} value={formatDate(patient.firstVisitDate)} />
-          <Field label={t('field.lastVisit')} value={formatDate(patient.lastVisitDate)} />
+          <Field label={t('field.firstVisit')} value={formatDate(visitDates(patient).first)} />
+          <Field label={t('field.lastVisit')} value={formatDate(visitDates(patient).last)} />
           <Field label={t('field.recallDue')} value={formatDate(patient.recallDueDate)} />
         </Section>
 
@@ -363,6 +403,10 @@ export function PatientDetailPage() {
         <RescheduleModal appointment={rescheduling} onClose={() => setRescheduling(null)} />
       )}
 
+      {openingCard && (
+        <OpenCardDialog patientId={patient.id} patientName={patient.fullName} onClose={() => setOpeningCard(false)} />
+      )}
+
       {confirmDeactivate && (
         <DeactivatePatientDialog
           name={patient.fullName}
@@ -371,6 +415,16 @@ export function PatientDetailPage() {
           onCancel={() => setConfirmDeactivate(false)}
         />
       )}
+
+      <PermanentDeleteDialog
+        open={confirmPurge}
+        name={patient.fullName}
+        title={t('purge.title')}
+        description={t('purge.body')}
+        isPending={purgeMutation.isPending}
+        onConfirm={() => purgeMutation.mutate()}
+        onCancel={() => setConfirmPurge(false)}
+      />
 
       <ConfirmDialog
         open={confirmDelete}

@@ -1,12 +1,14 @@
 import { useState } from 'react'
+import { NoCardBadge } from '../components/OpenCardDialog'
 import { useQuery } from '@tanstack/react-query'
-import { useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, Pencil, Search, X } from 'lucide-react'
+import { AlertTriangle, Pencil, X } from 'lucide-react'
+import { FilterChips } from '@/shared/components/FilterChips'
+import { SearchInput } from '@/shared/components/SearchInput'
 import { patientService, type PatientResponse, type PatientStatus } from '../services/patientService'
 import { CreatePatientDrawer } from '../components/CreatePatientDrawer'
 import { EditPatientDrawer } from '../components/EditPatientDrawer'
-import { PatientPreviewPanel } from '../components/PatientPreviewPanel'
 import { ageOn, avatarTint, initialsOf } from '../lib/patientDisplay'
 import { formatDate, formatDayMonth } from '@/shared/lib/format'
 import { useAuthStore, selectRoles } from '@/features/auth/store/authStore'
@@ -41,14 +43,13 @@ export function PatientsPage() {
   const search = searchParams.get('search') ?? ''
   const status = (searchParams.get('status') ?? 'Active') as StatusFilter
   const recallFilter = (searchParams.get('recallFilter') ?? '') as 'overdue' | 'due-soon' | ''
-  const selectedId = searchParams.get('p')
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
 
   const update = (key: string, value: string | null, resetPage = true) =>
     setSearchParams((p) => { const n = new URLSearchParams(p); value ? n.set(key, value) : n.delete(key); if (resetPage) n.set('page', '1'); return n }, { replace: true })
   const setSearch = (v: string) => update('search', v || null)
   const setStatus = (v: StatusFilter) => update('status', v !== 'Active' ? v : null)
-  const select = (id: string | null) => update('p', id, false)
+  const navigate = useNavigate()
   const clearRecallFilter = () => update('recallFilter', null)
   const setPage = (v: number) => update('page', String(v), false)
 
@@ -64,7 +65,6 @@ export function PatientsPage() {
       }),
     placeholderData: (prev) => prev,
   })
-  const selected = data?.items.find((p) => p.id === selectedId) ?? null
   const colCount = canManage ? 5 : 4
   return (
     <div className="p-6 max-w-[1600px]">
@@ -85,26 +85,21 @@ export function PatientsPage() {
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-3 mb-4">
-        <div className="relative w-full sm:w-96">
-          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" aria-hidden />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('search.placeholder')}
-            className="w-full border border-control dark:border-gray-600 rounded-lg pl-9 pr-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
-        <select
-          aria-label={t('filter.status')}
+      {/* Filters on the left, search on the right, like the appointment list */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <FilterChips
+          label={t('filter.status')}
+          options={STATUS_KEYS.map((o) => ({ value: o.value, label: tc(o.labelKey) }))}
           value={status}
-          onChange={(e) => setStatus(e.target.value as StatusFilter)}
-          className="border border-control dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        >
-          {STATUS_KEYS.map((o) => (
-            <option key={o.value} value={o.value}>{tc(o.labelKey)}</option>
-          ))}
-        </select>
+          onChange={setStatus}
+        />
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          label={t('search.label')}
+          placeholder={t('search.placeholder')}
+          className="w-full sm:w-80"
+        />
       </div>
 
       {recallFilter && (
@@ -123,8 +118,6 @@ export function PatientsPage() {
         </div>
       )}
 
-      {/* B: the list, and beside it (from 1280px) a quick look at the patient picked */}
-      <div className={`grid gap-4 ${selected ? 'xl:grid-cols-[minmax(0,1fr)_24rem]' : ''} xl:items-start`}>
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs">
@@ -154,9 +147,9 @@ export function PatientsPage() {
                 <tr
                   key={p.id}
                   data-inactive={p.status === 'Inactive' ? 'true' : undefined}
-                  aria-selected={p.id === selectedId}
-                  className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 ${p.id === selectedId ? 'bg-primary-50/60 dark:bg-primary-900/20' : ''} ${p.status === 'Inactive' ? 'opacity-60' : ''}`}
-                  onClick={() => select(p.id === selectedId ? null : p.id)}
+                  className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 ${p.status === 'Inactive' ? 'opacity-60' : ''}`}
+                  // Straight to the tooth chart, no preview (user request 2026-11-13)
+                  onClick={() => navigate(`/patients/${p.id}?tab=teeth`)}
                 >
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-3 min-w-0">
@@ -172,7 +165,9 @@ export function PatientsPage() {
                           )}
                         </p>
                         <p className="text-xs text-gray-600 dark:text-gray-400 tabular-nums">
-                          <span className="font-semibold text-gray-800 dark:text-gray-200">{p.patientNumber}</span>
+                          {p.patientNumber
+                            ? <span className="font-semibold text-gray-800 dark:text-gray-200">{p.patientNumber}</span>
+                            : <NoCardBadge />}
                           {[age !== null ? t('age', { count: age }) : null, p.phoneMobile].filter(Boolean).map((part) => ` · ${part}`).join('')}
                         </p>
                       </div>
@@ -215,12 +210,6 @@ export function PatientsPage() {
         )}
       </div>
 
-      {selected && (
-        <div className="fixed inset-x-0 bottom-0 z-40 max-h-[85vh] overflow-y-auto p-3 xl:static xl:z-auto xl:max-h-none xl:overflow-visible xl:p-0 xl:sticky xl:top-4">
-          <PatientPreviewPanel patient={selected} onClose={() => select(null)} />
-        </div>
-      )}
-      </div>
 
       {showCreate && <CreatePatientDrawer onClose={() => setShowCreate(false)} />}
       {editing && <EditPatientDrawer patient={editing} onClose={() => setEditing(null)} />}

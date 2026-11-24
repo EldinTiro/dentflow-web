@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Routes, Route } from 'react-router'
+import { Routes, Route, useLocation } from 'react-router'
 import { toast } from 'sonner'
 import { renderWithProviders, fastEndpointsError } from '@/test/render'
 import { useAuthStore } from '@/features/auth/store/authStore'
@@ -19,10 +19,12 @@ vi.mock('../services/staffService', async (importOriginal) => {
       grantAccess: vi.fn(),
       resetPassword: vi.fn(),
       changeRole: vi.fn(),
+      changeSignInEmail: vi.fn(),
       setAccessActive: vi.fn(),
       deactivate: vi.fn(),
       reactivate: vi.fn(),
       listBlockedTimes: vi.fn(async () => []),
+      deletePermanently: vi.fn(async () => undefined),
     },
   }
 })
@@ -138,6 +140,51 @@ describe('StaffDetailPage — app access (people-merge plan 4.3)', () => {
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /change role/i }))
 
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(expect.stringMatching(/role changed/i)))
+  })
+
+  // User report: Lejla's sign-in email was wrong and could not be changed anywhere
+  it("changes someone's sign-in email", async () => {
+    signIn(['ClinicOwner'])
+    svc.getById.mockResolvedValue(staff({ access: account() }))
+    svc.changeSignInEmail.mockResolvedValue(undefined)
+    const user = userEvent.setup()
+    renderPage()
+    const section = await accessSection()
+
+    await user.click(section.getByRole('button', { name: /change sign-in email/i }))
+    const input = section.getByLabelText(/new sign-in email/i)
+    expect(input).toHaveValue('amra@x.ba')
+    await user.clear(input)
+    await user.type(input, 'amra.hadzic@x.ba')
+    await user.click(section.getByRole('button', { name: /^save email$/i }))
+
+    await waitFor(() => expect(svc.changeSignInEmail).toHaveBeenCalledWith('u-amra', 'amra.hadzic@x.ba'))
+    expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('amra.hadzic@x.ba'))
+    expect(section.queryByLabelText(/new sign-in email/i)).not.toBeInTheDocument()
+  })
+
+  it('says so when the new sign-in email is already used', async () => {
+    signIn(['ClinicOwner'])
+    svc.getById.mockResolvedValue(staff({ access: account() }))
+    svc.changeSignInEmail.mockRejectedValue(fastEndpointsError('An account with this email already exists.', 'auth.EmailAlreadyExists', 409))
+    const user = userEvent.setup()
+    renderPage()
+    const section = await accessSection()
+
+    await user.click(section.getByRole('button', { name: /change sign-in email/i }))
+    await user.clear(section.getByLabelText(/new sign-in email/i))
+    await user.type(section.getByLabelText(/new sign-in email/i), 'taken@x.ba')
+    await user.click(section.getByRole('button', { name: /^save email$/i }))
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/already used/i)))
+  })
+
+  it('does not offer to change your own sign-in email here', async () => {
+    signIn(['ClinicOwner'], 'u-amra')
+    svc.getById.mockResolvedValue(staff({ access: account({ role: 'ClinicOwner' }) }))
+    renderPage()
+
+    expect((await accessSection()).getByRole('button', { name: /change sign-in email/i })).toBeDisabled()
   })
 
   it('turns sign-in off after confirming, and back on', async () => {
@@ -266,5 +313,45 @@ describe('StaffDetailPage — naming (DT-22)', () => {
 
     expect((await screen.findAllByText('Dental technician')).length).toBeGreaterThan(0)
     expect(screen.queryByText('Dental Assistant')).not.toBeInTheDocument()
+  })
+
+  // User request 2026-11-13: the profile looks like the patient record — a header card with
+  // who they are and the actions, a back link — and the owner can delete for good
+  describe('header and permanent delete', () => {
+    function Where() { return <p data-testid="where">{useLocation().pathname}</p> }
+
+    it('leads with a header card holding the name, contact and the actions', async () => {
+      signIn(['ClinicOwner'])
+      svc.getById.mockResolvedValue(staff({ phone: '+38761000111' }))
+      renderPage()
+
+      const header = await screen.findByRole('region', { name: 'Amra Hadžić' })
+      expect(within(header).getByRole('heading', { name: 'Amra Hadžić' })).toBeInTheDocument()
+      expect(header).toHaveTextContent('+38761000111')
+      expect(within(header).getByRole('button', { name: 'Edit' })).toBeInTheDocument()
+      expect(within(header).getByRole('button', { name: 'Delete permanently' })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /back to staff/i })).toHaveAttribute('href', '/staff')
+    })
+
+    it('deletes the person for good once the name is typed, and goes back to the list', async () => {
+      signIn(['ClinicOwner'])
+      svc.getById.mockResolvedValue(staff())
+      const user = userEvent.setup()
+      renderWithProviders(
+        <Routes>
+          <Route path="/staff/:id" element={<StaffDetailPage />} />
+          <Route path="/staff" element={<Where />} />
+        </Routes>,
+        { route: '/staff/s1' },
+      )
+
+      await user.click(await screen.findByRole('button', { name: 'Delete permanently' }))
+      const dialog = screen.getByRole('dialog')
+      await user.type(within(dialog).getByRole('textbox'), 'Amra Hadžić')
+      await user.click(within(dialog).getByRole('button', { name: 'Delete permanently' }))
+
+      await waitFor(() => expect(svc.deletePermanently).toHaveBeenCalledWith('s1'))
+      expect(await screen.findByTestId('where')).toHaveTextContent('/staff')
+    })
   })
 })

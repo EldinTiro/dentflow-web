@@ -6,7 +6,8 @@
     "newPatient": "+ Novi pacijent"
   },
   "search": {
-    "placeholder": "Pretraži po imenu, emailu, telefonu…"
+    "placeholder": "Pretraži po imenu, emailu, telefonu…",
+    "label": "Pretraži pacijente"
   },
   "emptyState": "Nema pronađenih pacijenata.",
   "table": {
@@ -101,7 +102,8 @@
     "occupation": "Zanimanje",
     "countryCodePlaceholder": "npr. BA",
     "saving": "Čuvanje…",
-    "saveChanges": "Sačuvaj promjene"
+    "saveChanges": "Sačuvaj promjene",
+    "sectionBasics": "Osnovni podaci"
   },
   "validation": {
     "required": "Obavezno",
@@ -331,7 +333,7 @@
     "documentCount": "Ukupan broj datoteka",
     "nextAppointment": "Sljedeći termin",
     "nothingBooked": "Ništa zakazano",
-    "balance": "Saldo",
+    "balance": "Dug",
     "paidUp": "Sve plaćeno",
     "treatmentPlan": "Plan tretmana"
   },
@@ -346,5 +348,26 @@
     "invoice": "Faktura {{number}}",
     "payment": "Uplata",
     "document": "Dokument"
+  },
+  "card": {
+    "none": "Bez kartona",
+    "title": "Otvori karton",
+    "openButton": "Otvori karton…",
+    "body": "{{name}} još nema karton. Upišite broj papirnog kartona, ili ostavite prazno za sljedeći slobodan broj.",
+    "number": "Broj kartona (neobavezno)",
+    "numberPlaceholder": "sljedeći slobodan broj",
+    "open": "Otvori karton",
+    "later": "Kasnije",
+    "opened": "Otvoren karton {{number}} za {{name}}.",
+    "numberTaken": "Drugi pacijent već ima karton broj {{number}}.",
+    "failed": "Karton nije otvoren.",
+    "withoutCard": "Bez kartona — karton se otvara pri prvom dolasku",
+    "withoutCardHint": "Za pacijenta koji se naručio, a još nije došao: broj kartona se ne troši dok ne dođe."
+  },
+  "purge": {
+    "title": "Trajno obrisati pacijenta?",
+    "body": "Briše se i sve u kartonu: termini, fakture i uplate, planovi tretmana, zubna karta, medicinski podaci i datoteke. Ovo se ne može vratiti. Ako samo želiš da ga skloniš s lista, deaktiviraj ga.",
+    "done": "Pacijent je trajno obrisan.",
+    "failed": "Pacijent nije obrisan."
   }
 }

@@ -6,7 +6,8 @@
     "newPatient": "+ New Patient"
   },
   "search": {
-    "placeholder": "Search by name, email, phone…"
+    "placeholder": "Search by name, email, phone…",
+    "label": "Search patients"
   },
   "emptyState": "No patients found.",
   "table": {
@@ -101,7 +102,8 @@
     "occupation": "Occupation",
     "countryCodePlaceholder": "e.g. US",
     "saving": "Saving…",
-    "saveChanges": "Save Changes"
+    "saveChanges": "Save Changes",
+    "sectionBasics": "Basic details"
   },
   "validation": {
     "required": "Required",
@@ -327,7 +329,7 @@
     "documentCount": "Total files",
     "nextAppointment": "Next appointment",
     "nothingBooked": "Nothing booked",
-    "balance": "Balance",
+    "balance": "Owed",
     "paidUp": "Paid up",
     "treatmentPlan": "Treatment plan"
   },
@@ -342,5 +344,26 @@
     "invoice": "Invoice {{number}}",
     "payment": "Payment",
     "document": "Document"
+  },
+  "card": {
+    "none": "No card",
+    "title": "Open card",
+    "openButton": "Open card…",
+    "body": "{{name}} has no card yet. Type the number of the paper card, or leave it empty for the next free number.",
+    "number": "Card number (optional)",
+    "numberPlaceholder": "next free number",
+    "open": "Open card",
+    "later": "Later",
+    "opened": "Card {{number}} opened for {{name}}.",
+    "numberTaken": "Another patient already has card number {{number}}.",
+    "failed": "Could not open the card.",
+    "withoutCard": "No card yet — the card is opened at the first visit",
+    "withoutCardHint": "For a patient who booked but has not come yet: no card number is used until they come."
+  },
+  "purge": {
+    "title": "Delete this patient permanently?",
+    "body": "Everything on the record goes too: appointments, invoices and payments, treatment plans, the tooth chart, medical data and files. This can’t be undone. If you only want them off the lists, deactivate them instead.",
+    "done": "Patient deleted permanently.",
+    "failed": "Could not delete the patient."
   }
 }

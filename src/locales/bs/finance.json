@@ -75,7 +75,7 @@
     "days_few": "{{count}} dana",
     "days_other": "{{count}} dana",
     "overdue": "Dospjelo",
-    "balance": "Saldo",
+    "balance": "Dug",
     "empty": "Niko ne duguje klinici.",
     "bucket": {
       "0-30": "0–30 dana",

@@ -28,6 +28,23 @@ describe('WeekCalendar current-time line', () => {
     expect(line.style.top).toBe('30%')
   })
 
+  // User request 2026-11-10: the time itself on the time axis, next to the line
+  it('shows the current time on the time axis, at the line', () => {
+    vi.setSystemTime(new Date(2026, 9, 22, 10, 30))
+    const { container } = render(<WeekCalendar {...props} />)
+
+    const label = container.querySelector<HTMLElement>('[data-testid="now-label"]')!
+    expect(label).toHaveTextContent('10:30')
+    expect(label.style.top).toBe('30%')
+  })
+
+  it('has no time label on another week', () => {
+    vi.setSystemTime(new Date(2026, 9, 27, 10, 30))
+    const { container } = render(<WeekCalendar {...props} />)
+
+    expect(container.querySelector('[data-testid="now-label"]')).toBeNull()
+  })
+
   it('moves as time passes', () => {
     vi.setSystemTime(new Date(2026, 9, 22, 10, 30))
     const { container } = render(<WeekCalendar {...props} />)

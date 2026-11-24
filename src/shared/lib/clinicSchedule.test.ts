@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { DEFAULT_WEEKLY_SCHEDULE, daySchedule, busySlotLabels, slotOccupancy, nextBookableStart, openingHourRange } from './clinicSchedule'
+import { DEFAULT_WEEKLY_SCHEDULE, daySchedule, busySlotLabels, slotOccupancy, nextBookableStart, openingHourRange, closedDaysToHide } from './clinicSchedule'
 
 describe('daySchedule', () => {
   // QA-018: Settings showed Mon–Fri 08–17 (an unsaved default) while the slot check used 08:00–22:30
@@ -124,5 +124,23 @@ describe('openingHourRange', () => {
     const closed = JSON.stringify(Object.fromEntries(
       Object.entries(DEFAULT_WEEKLY_SCHEDULE).map(([d, h]) => [d, { ...h, isOpen: false }])))
     expect(openingHourRange(closed, week)).toBeNull()
+  })
+})
+
+// User request 2026-11-10: the week leaves out days the clinic is closed
+describe('closedDaysToHide', () => {
+  const week = ['2026-11-09', '2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13', '2026-11-14', '2026-11-15']
+
+  it('hides closed days', () => {
+    expect(closedDaysToHide(JSON.stringify(DEFAULT_WEEKLY_SCHEDULE), week, [])).toEqual(['2026-11-14', '2026-11-15'])
+  })
+
+  it('keeps a closed day that has a visit on it', () => {
+    expect(closedDaysToHide(JSON.stringify(DEFAULT_WEEKLY_SCHEDULE), week, ['2026-11-14'])).toEqual(['2026-11-15'])
+  })
+
+  it('hides nothing when the clinic is never open', () => {
+    const closed = Object.fromEntries(Object.entries(DEFAULT_WEEKLY_SCHEDULE).map(([k, d]) => [k, { ...d, isOpen: false }]))
+    expect(closedDaysToHide(JSON.stringify(closed), week, [])).toEqual([])
   })
 })

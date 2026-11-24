@@ -11,6 +11,7 @@ import { FeatureProvider } from '@/shared/context/FeatureContext'
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary'
 import { useUserPreferences, useUpdateUserPreferences } from '@/features/auth/hooks/useUserPreferences'
 import { UserMenu, initialsOf } from './UserMenu'
+import { AppVersion } from './AppVersion'
 import { appointmentService } from '@/features/appointments/services/appointmentService'
 import { toLocalIsoDate } from '@/shared/lib/dates'
 import {
@@ -26,6 +27,8 @@ import {
   X,
   Globe,
   Landmark,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 
 const langOptions = [
@@ -98,14 +101,34 @@ export function AppShell() {
     if (preferences) updatePreferences.mutate({ ...preferences, theme: next })
   }
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  // User request 2026-11-11: the desktop sidebar folds to icons; the choice is remembered
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar-collapsed') === '1')
+  const toggleCollapsed = () => {
+    setCollapsed((c) => {
+      localStorage.setItem('sidebar-collapsed', c ? '0' : '1')
+      return !c
+    })
+  }
+  // [ folds and unfolds it, unless someone is typing
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '[' || e.altKey || e.ctrlKey || e.metaKey) return
+      const target = e.target instanceof HTMLElement ? e.target : null
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+      toggleCollapsed()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
   const [langOpen, setLangOpen] = useState(false)
 
   const todayCount = useTodayCount(!!user && !isSuperAdmin)
   const visible = (item: NavItem) =>
     item.show === 'finance' ? canFinance : item.show === 'settings' ? canManageSettings : true
-  const linkClass = ({ isActive }: { isActive: boolean }) =>
+  const linkClass = (folded: boolean) => ({ isActive }: { isActive: boolean }) =>
     cn(
-      'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+      'relative flex items-center rounded-lg text-sm font-medium transition-colors',
+      folded ? 'mx-auto h-9 w-10 justify-center' : 'gap-2.5 px-3 py-2',
       isActive
         ? 'bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-400'
         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
@@ -119,41 +142,60 @@ export function AppShell() {
     retry: false,
   })
 
-  const sidebarContent = (
+  // `folded`: icons only, every name kept for screen readers and as a tooltip
+  const renderSidebar = (folded: boolean) => (
     <>
       <div className="h-[3px] bg-gradient-to-r from-primary-500 to-primary-700 shrink-0" />
-      <div className="flex h-14 items-center border-b border-gray-200 dark:border-gray-800 px-5">
-        {currentTenant?.logoBase64 ? (
+      {/* The clinic, and beside it the fold button (mock C); folded, only the button stays */}
+      <div className={cn('flex h-14 items-center gap-2 border-b border-gray-200 dark:border-gray-800', folded ? 'justify-center px-2' : 'justify-between pl-5 pr-3')}>
+        {!folded && (currentTenant?.logoBase64 ? (
           <img
             src={currentTenant.logoBase64}
             alt={currentTenant.name}
             className="h-8 w-auto max-w-[140px] object-contain"
           />
         ) : (
-          <span className="text-base font-bold text-primary-600 dark:text-primary-400">
+          <span className="truncate text-base font-bold text-primary-600 dark:text-primary-400">
             {currentTenant?.name ?? t('nav.appName')}
           </span>
-        )}
+        ))}
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label={t(folded ? 'aria.expandSidebar' : 'aria.collapseSidebar')}
+          title={`${t(folded ? 'aria.expandSidebar' : 'aria.collapseSidebar')} ([)`}
+          className="hidden lg:flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+        >
+          {folded ? <ChevronRight size={15} strokeWidth={2.5} /> : <ChevronLeft size={15} strokeWidth={2.5} />}
+        </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-3">
+      <nav className={cn('flex-1 overflow-y-auto py-3', folded ? 'px-2' : 'px-3')}>
         {navGroups.map((group) => {
           const items = group.items.filter(visible)
           if (items.length === 0) return null
           const headingId = `nav-${group.labelKey}`
           return (
             <div key={group.labelKey} role="group" aria-labelledby={headingId} className="mb-3">
-              <p id={headingId} className="px-3 pb-1 pt-2 text-xs font-medium text-gray-500 dark:text-gray-400">{t(group.labelKey)}</p>
+              <p id={headingId} className={folded ? 'sr-only' : 'px-3 pb-1 pt-2 text-xs font-medium text-gray-500 dark:text-gray-400'}>{t(group.labelKey)}</p>
+              {folded && <div aria-hidden className="mx-2 mb-1 mt-2 border-t border-gray-200 dark:border-gray-800" />}
               <ul className="space-y-0.5">
                 {items.map((item) => (
                   <li key={item.to}>
-                    <NavLink to={item.to} onClick={() => setSidebarOpen(false)} className={linkClass}>
-                      <item.icon size={16} className="shrink-0" />
-                      {t(item.labelKey)}{' '}
+                    <NavLink
+                      to={item.to}
+                      onClick={() => setSidebarOpen(false)}
+                      className={linkClass(folded)}
+                      title={folded ? t(item.labelKey) : undefined}
+                    >
+                      <item.icon size={folded ? 18 : 16} className="shrink-0" />
+                      <span className={folded ? 'sr-only' : undefined}>{t(item.labelKey)}</span>{' '}
                       {item.to === '/appointments' && !!todayCount && (
                         <span
                           aria-label={t('nav.todayCount', { count: todayCount })}
-                          className="ml-auto rounded-full bg-gray-100 px-2 text-xs font-semibold tabular-nums text-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                          className={folded
+                            ? 'absolute -right-1 -top-1 min-w-[1.1rem] rounded-full bg-primary-600 px-1 text-center text-[10px] font-semibold leading-[1.1rem] tabular-nums text-white'
+                            : 'ml-auto rounded-full bg-gray-100 px-2 text-xs font-semibold tabular-nums text-gray-700 dark:bg-gray-800 dark:text-gray-200'}
                         >
                           {todayCount}
                         </span>
@@ -168,13 +210,15 @@ export function AppShell() {
       </nav>
 
       {isSuperAdmin && (
-        <div className="px-3 pb-2">
+        <div className={folded ? 'px-2 pb-2' : 'px-3 pb-2'}>
           <Link
             to="/admin"
             onClick={() => setSidebarOpen(false)}
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-950 transition-colors"
+            title={folded ? t('nav.adminPanel') : undefined}
+            className={cn('flex items-center rounded-lg text-sm font-medium text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-950 transition-colors',
+              folded ? 'mx-auto h-9 w-10 justify-center' : 'gap-2.5 px-3 py-2')}
           >
-            <Settings2 size={16} className="shrink-0" /> {t('nav.adminPanel')}
+            <Settings2 size={16} className="shrink-0" /> <span className={folded ? 'sr-only' : undefined}>{t('nav.adminPanel')}</span>
           </Link>
         </div>
       )}
@@ -184,17 +228,21 @@ export function AppShell() {
         <Link
           to="/profile"
           onClick={() => setSidebarOpen(false)}
-          className="flex items-center gap-2.5 border-t border-gray-200 px-4 py-3 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800/60"
+          title={folded ? user.fullName : undefined}
+          className={cn('flex items-center gap-2.5 border-t border-gray-200 py-3 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800/60',
+            folded ? 'justify-center px-2' : 'px-4')}
         >
           <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-600 text-xs font-semibold text-white">
             {initialsOf(user.fullName)}
           </span>
-          <span className="min-w-0">
+          <span className={folded ? 'sr-only' : 'min-w-0'}>
             <span className="block truncate text-sm font-medium text-gray-900 dark:text-gray-100">{user.fullName}</span>
             {role && <span className="block truncate text-xs text-gray-500 dark:text-gray-400">{t(`role.${role}`)}</span>}
           </span>
         </Link>
       )}
+      {/* The build running, only where a deploy wrote it (2026-11-13) */}
+      {!folded && <AppVersion />}
 
     </>
   )
@@ -213,14 +261,19 @@ export function AppShell() {
             >
               <X size={18} />
             </button>
-            {sidebarContent}
+            {renderSidebar(false)}
           </aside>
         </div>
       )}
 
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex w-56 flex-col border-r border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800">
-        {sidebarContent}
+      {/* Desktop sidebar: full, or folded to icons */}
+      <aside
+        aria-label={t('aria.mainMenu')}
+        data-collapsed={collapsed}
+        className={cn('hidden lg:flex shrink-0 flex-col border-r border-gray-200 bg-white transition-[width] duration-200 dark:bg-gray-900 dark:border-gray-800',
+          collapsed ? 'w-16' : 'w-56')}
+      >
+        {renderSidebar(collapsed)}
       </aside>
 
       {/* Main content */}

@@ -5,12 +5,14 @@ import { treatmentService } from '@/features/treatments/services/treatmentServic
 import { formatMoney } from '@/shared/lib/format'
 import type { PatientResponse } from '../services/patientService'
 import { useWhen } from './PatientWhen'
+import { visitDates } from '../lib/patientDisplay'
 
 /** The four numbers at the top of a record: next visit, last visit, balance, treatment progress. */
 export function PatientKeyFacts({ patient }: { patient: PatientResponse }) {
   const { t } = useTranslation('patients')
   const when = useWhen()
   const facts = patient.insights
+  const lastVisit = visitDates(patient).last
 
   const { data: staff } = useQuery({
     queryKey: ['staff', 'all-for-names'],
@@ -37,7 +39,7 @@ export function PatientKeyFacts({ patient }: { patient: PatientResponse }) {
       </li>
       <li className={tile}>
         <p className={label}>{t('preview.lastVisit')}</p>
-        <p className={value}>{facts?.lastVisitAt ? when(facts.lastVisitAt, false) : '—'}</p>
+        <p className={value}>{lastVisit ? when(lastVisit, false) : '—'}</p>
       </li>
       <li className={tile}>
         <p className={label}>{t('preview.balance')}</p>

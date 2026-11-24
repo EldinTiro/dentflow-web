@@ -33,9 +33,25 @@ describe('PatientsPage', () => {
     await screen.findByText('Selma Aganović')
     expect(list).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'Active' }))
 
-    await user.selectOptions(screen.getByLabelText(/status filter/i), 'all')
+    // User request 2026-11-12: filters are buttons, like the appointment list
+    const statuses = screen.getByRole('group', { name: /status filter/i })
+    expect(within(statuses).getByRole('button', { name: 'Active' })).toHaveAttribute('aria-pressed', 'true')
+    await user.click(within(statuses).getByRole('button', { name: 'All statuses' }))
 
     await waitFor(() => expect(list).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'all' })))
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  })
+
+  it('searches from a named box', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<PatientsPage />)
+    await screen.findByText('Selma Aganović')
+
+    await user.type(screen.getByRole('textbox', { name: 'Search patients' }), 'sel')
+
+    await waitFor(() => expect(list).toHaveBeenLastCalledWith(expect.objectContaining({ search: 'sel' })))
+    await user.click(screen.getByRole('button', { name: 'Clear search' }))
+    await waitFor(() => expect(list).toHaveBeenLastCalledWith(expect.objectContaining({ search: undefined })))
   })
 
   // User request: the parent's name tells same-named patients apart (kartoteka habit)

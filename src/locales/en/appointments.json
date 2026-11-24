@@ -1,7 +1,6 @@
 {
   "title": "Appointments",
   "totalCount": "{{count}} appointment(s)",
-  "filteredOf": "{{filtered}} of",
   "button": {
     "bookAppointment": "+ Book Appointment"
   },
@@ -18,10 +17,7 @@
     "from": "From date",
     "to": "To date",
     "status": "Status",
-    "provider": "Provider",
-    "allStatuses": "All statuses",
-    "allProviders": "All providers",
-    "showPast": "Show past"
+    "allStatuses": "All statuses"
   },
   "preset": {
     "today": "Today",
@@ -29,12 +25,11 @@
     "thisMonth": "This Month"
   },
   "table": {
-    "start": "Start",
     "patient": "Patient",
     "provider": "Provider",
-    "duration": "Duration",
     "status": "Status",
-    "chiefComplaint": "Chief Complaint"
+    "time": "Time",
+    "service": "Service"
   },
   "statuses": {
     "Scheduled": "Scheduled",
@@ -55,16 +50,12 @@
   },
   "emptyState": "No appointments found.",
   "calendar": {
-    "prev": "← Prev",
-    "next": "Next →",
-    "today": "Today",
     "day": "Day",
     "week": "Week",
     "prevDay": "Previous day",
     "nextDay": "Next day",
     "noProviders": "No doctors take appointments yet.",
     "moveTitle": "Move the appointment?",
-    "moveDescription": "{{patient}} → {{when}} · {{doctor}}",
     "moveConfirm": "Move",
     "moveCancel": "Cancel",
     "moved": "Appointment moved",
@@ -86,7 +77,22 @@
       "Friday",
       "Saturday",
       "Sunday"
-    ]
+    ],
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week",
+    "openDay": "Open {{day}}",
+    "resizeTitle": "Change the length?",
+    "resizeConfirm": "Save",
+    "resized": "Appointment length changed",
+    "resizeFailed": "Could not change the length",
+    "pickDate": "Pick a date",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "month": "Month",
+    "visitCount_one": "{{count}} visit",
+    "visitCount_other": "{{count}} visits",
+    "allDoctors": "All doctors",
+    "doctorsFilter": "Doctors"
   },
   "types": {
     "title": "Types of Services",
@@ -129,10 +135,8 @@
     "firstNamePlaceholder": "e.g. Amra",
     "lastNamePlaceholder": "e.g. Begić",
     "phone": "Phone",
-    "chartOpenedOnBooking": "A patient chart is opened when the appointment is booked.",
     "patientSearchPlaceholder": "Name, phone or chart number…",
     "searching": "Searching…",
-    "createChartFor": "Create a new chart for “{{query}}”",
     "provider": "Provider",
     "loading": "Loading…",
     "selectProvider": "Select a provider…",
@@ -158,7 +162,9 @@
     "startRequired": "Start time is required",
     "patientCreated": "Patient {{name}} created",
     "patientCreateFailed": "Could not create the patient",
-    "bookFailed": "Failed to book the appointment. Please try again."
+    "bookFailed": "Failed to book the appointment. Please try again.",
+    "noCardUntilVisit": "No card number yet: it is opened when the patient comes in, at check-in.",
+    "addAsNewPatient": "Add “{{query}}” as a new patient"
   },
   "detail": {
     "title": "Appointment detail",
@@ -201,6 +207,22 @@
     "notYetDue": "Check-in and treatment open on the day of the visit.",
     "patientNotFound": "Patient not found",
     "overrideNewStatus": "New status",
-    "billed": "Billed"
+    "billed": "Billed",
+    "finishVisit": "Finish visit",
+    "visitProgress": "Visit progress",
+    "visitLine": "Visit",
+    "invoiceFailed": "Could not create the invoice",
+    "step": {
+      "scheduled": "Scheduled",
+      "arrived": "Arrived",
+      "done": "Done"
+    },
+    "closeVisit": "Close the visit"
+  },
+  "list": {
+    "prevPeriod": "Previous period",
+    "nextPeriod": "Next period",
+    "choosePeriod": "Choose a period",
+    "tomorrow": "Tomorrow"
   }
 }

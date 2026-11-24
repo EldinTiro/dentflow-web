@@ -29,7 +29,8 @@
     "previous": "Vorherige",
     "activate": "Aktivieren",
     "deactivate": "Deaktivieren",
-    "exportCsv": "CSV exportieren"
+    "exportCsv": "CSV exportieren",
+    "clearSearch": "Suche löschen"
   },
   "status": {
     "active": "Aktiv",
@@ -127,7 +128,10 @@
     "close": "Schließen",
     "hidePassword": "Passwort ausblenden",
     "showPassword": "Passwort anzeigen",
-    "userMenu": "Kontomenü"
+    "userMenu": "Kontomenü",
+    "collapseSidebar": "Seitenleiste einklappen",
+    "expandSidebar": "Seitenleiste ausklappen",
+    "mainMenu": "Hauptmenü"
   },
   "errorBoundary": {
     "title": "Etwas ist schiefgelaufen",
@@ -181,5 +185,9 @@
     "passwordSpecial": "Muss ein Sonderzeichen enthalten",
     "passwordsMismatch": "Passwörter stimmen nicht überein",
     "passwordUnchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden."
+  },
+  "permanentDelete": {
+    "confirm": "Endgültig löschen",
+    "typeToConfirm": "Zur Bestätigung {{name}} eingeben"
   }
 }

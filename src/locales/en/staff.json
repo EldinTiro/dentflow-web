@@ -5,7 +5,8 @@
     "addStaff": "+ Add Staff"
   },
   "search": {
-    "placeholder": "Search by name or email…"
+    "placeholder": "Search by name or email…",
+    "label": "Search staff"
   },
   "emptyState": "No staff members found.",
   "table": {
@@ -130,7 +131,10 @@
     "successTitle": "Staff member added",
     "successMessage": "{{name}} can now sign in with this email and temporary password:",
     "tempPasswordWarning": "This password will not be shown again. It must be changed at first sign-in.",
-    "done": "Done"
+    "done": "Done",
+    "sectionPerson": "Person",
+    "sectionContact": "Contact",
+    "sectionWork": "Work"
   },
   "access": {
     "title": "App access",
@@ -164,7 +168,12 @@
     "roleTitle": "Change role?",
     "roleBody": "{{name}} becomes {{role}}. What they can see and do changes at their next sign-in.",
     "roleOwnerBody": "{{name}} becomes Clinic owner and gets full control of the clinic: staff and sign-in access, finance and settings.",
-    "roleConfirm": "Change role"
+    "roleConfirm": "Change role",
+    "changeEmail": "Change sign-in email",
+    "newEmail": "New sign-in email",
+    "saveEmail": "Save email",
+    "newEmailHint": "The password and appointments stay the same; from now on they sign in with this email.",
+    "emailChanged": "{{name}} now signs in with {{email}}."
   },
   "status": {
     "deactivate": "Deactivate",
@@ -182,7 +191,8 @@
     "access": "Access filter",
     "anyAccess": "Any access",
     "withAccess": "Has access",
-    "withoutAccess": "No access"
+    "withoutAccess": "No access",
+    "type": "Type filter"
   },
   "edit": {
     "title": "Edit — {{name}}",
@@ -197,5 +207,10 @@
     "removeBody": "{{name}} will be removed. Only possible for a profile with no appointments — otherwise deactivate it.",
     "removeConfirm": "Remove",
     "staffTypeHint": "Who can be booked follows the type. Sign-in role (e.g. owner) is set separately under App access."
+  },
+  "purge": {
+    "title": "Delete this person permanently?",
+    "body": "The profile goes with its working hours, absences and sign-in. This can’t be undone. Someone who has had appointments can only be deactivated.",
+    "done": "Staff member deleted permanently."
   }
 }

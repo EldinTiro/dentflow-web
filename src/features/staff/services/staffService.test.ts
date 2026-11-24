@@ -33,6 +33,15 @@ describe('staffService access', () => {
     expect(JSON.parse(seen[1].data).access).toEqual({ role: 'Staff' })
   })
 
+  it('changes a sign-in email through the account', async () => {
+    const seen = captureRequests(undefined)
+
+    await staffService.changeSignInEmail('u1', 'new@x.ba')
+
+    expect(`${seen[0].method} ${seen[0].url}`).toBe('put /api/v1/users/u1/email')
+    expect(JSON.parse(seen[0].data)).toEqual({ email: 'new@x.ba' })
+  })
+
   it('grants access to an existing profile', async () => {
     const seen = captureRequests({ userId: 'u1', tempPassword: 'Tmp-123' })
 

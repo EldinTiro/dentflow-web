@@ -172,6 +172,7 @@ const { accessToken, user, isAuthenticated, setAuth, clearAuth, hasRole } = useA
 - There is no Team page or `features/users`: a person is a staff profile, and signing in is an option on it (`/settings/users` redirects to `/staff`). The add-staff drawer has a **Can sign in** switch; the profile's *App access* section gives access, changes the role, resets the password and turns sign-in off — owner only (`people.manage`)
 - Who can be booked comes from the API (`isBookable`), never from staff-type lists
 - `GET /staff` and `GET /patients` return **active** records by default; pass `isActive: 'all'` / `status: 'all'` where inactive ones must still resolve (e.g. provider names on past appointments)
+- A patient can have **no card number yet** (`patientNumber: null`, saved with `withoutCard`): show `<NoCardBadge />`, never an empty cell. `OpenCardDialog` opens the card (on the profile, and offered at check-in)
 - Patients and staff are **deactivated**, not deleted. Read 409 details with `getApiErrorCodes(err)` (`shared/utils/apiError.ts`) — e.g. `codes.get('Patient.HasUpcomingAppointments.count')`
 
 ## Routing & Route Guards
